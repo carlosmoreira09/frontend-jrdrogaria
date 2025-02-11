@@ -17,3 +17,15 @@ export type Supplier = {
     payment_mode: string,
     payment_term: string,
 }
+
+export interface Login {
+    username: string;
+    password: string;
+}
+export interface LoginResponse {
+    status: string,
+    message: string,
+    data?: {
+        token: string;
+    }
+}

@@ -1,6 +1,8 @@
 import React, { createContext, useState } from "react";
 import Database from "@tauri-apps/plugin-sql";
-
+import Cookies from 'js-cookie';
+import { LoginResponse } from "../types/types";
+import { loginService } from "../service/authService";
 
 
 
@@ -16,10 +18,16 @@ export type Props = {
 
 export const StoreContext = createContext<StoreContext>({} as StoreContext);
 
+const saveStorage = (user: LoginResponse, token: string) => {
+    Cookies.set('token', token);
+    Cookies.set('user', JSON.stringify(user));
+};
+
 const StoreProvider = ({ children }: Props) => {
 
     const [store, setStore] = useState<Database | null>(null)
-    const login = async () => {
+    const login = async (username: string, password: string) => {
+        await loginService(username,password)
         return ''
         }
 
