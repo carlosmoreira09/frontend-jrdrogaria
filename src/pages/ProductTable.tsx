@@ -1,0 +1,43 @@
+import React from "react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/ui/table"
+import {Product} from "../database/products/productsQuery.tsx";
+import {Button} from "../components/ui/button.tsx";
+import {Pencil, Trash2} from "lucide-react";
+
+type ProductTableProps = {
+    products: Product[]
+    deleteProduct: (id: number | undefined) => void
+}
+const ProductTable: React.FC<ProductTableProps> = ({products,deleteProduct}) => {
+    return (
+        <Table>
+            <TableHeader>
+                <TableRow>
+                    <TableHead>Nome</TableHead>
+                    <TableHead>Estoque</TableHead>
+                    <TableHead>Ação</TableHead>
+                </TableRow>
+            </TableHeader>
+            <TableBody>
+                {products.map((product) => (
+                    <TableRow key={product.id}>
+                        <TableCell className="font-medium">{product.product}</TableCell>
+                        <TableCell>{product.stock}</TableCell>
+                        <TableCell>
+                            <Button className="w-36">
+                                <Pencil className="mr-1 h-4 w-4" />
+                                <span className="text-sm">Editar</span>
+                            </Button>
+                            <Button onClick={() => deleteProduct(product.id)} className="w-36">
+                                <Trash2 className="mr-1 h-4 w-4" />
+                                <span className="text-sm">Remover</span>
+                            </Button>
+                        </TableCell>
+                    </TableRow>
+                ))}
+            </TableBody>
+        </Table>
+    )
+}
+
+export default ProductTable;
