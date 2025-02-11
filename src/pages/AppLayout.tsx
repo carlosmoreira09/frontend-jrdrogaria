@@ -5,8 +5,7 @@ import Header from "../components/Header.tsx";
 
 
 const AppLayout: React.FC = () => {
-
-
+    
     return (
             <div className="overscroll-none overflow-x-hidden overscroll-x-none">
             <div className="top-0 w-full">

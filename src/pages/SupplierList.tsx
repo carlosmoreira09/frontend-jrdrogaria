@@ -16,10 +16,7 @@ const ShoppingList: React.FC = () => {
     const totalProducts = suppliers.length
     const fetchSuppliers = async () => {
         if (store) {
-
-            if (result) {
-                setSuppliers(result)
-            }
+            
         }
     }
     useEffect(() => {
@@ -28,16 +25,6 @@ const ShoppingList: React.FC = () => {
 
     const handleDelete = async (id: number | undefined) => {
         if(store) {
-            await deleteProduct(store, id).then(() => {
-                toast({
-                    variant: 'destructive',
-                    title: "JR DROGARIA - Shopping List",
-                    description: "Erro ao Adicionar Produto",
-                })
-            }). finally(() => {
-                fetchSuppliers()
-                }
-            )
 
         }
     }

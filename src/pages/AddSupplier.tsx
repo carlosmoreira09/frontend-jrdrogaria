@@ -3,7 +3,6 @@ import { Button } from "../components/ui/button"
 import { Input } from "../components/ui/input"
 import { Label } from "../components/ui/label"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "../components/ui/card"
-
 import {useStore} from "../hooks/store.tsx";
 import {toast} from "../hooks/use-toast.ts";
 import {useNavigate} from "react-router";
@@ -26,17 +25,7 @@ const AddSupplier: React.FC = () => {
 
         try {
             if(store) {
-                await saveSupplier(store,newSupplier).then(
-                    (result) => {
-                        console.log(result)
-                        if(result.rowsAffected !== 0) { }
-                        toast({
-                            title: "JR DROGARIA - Shopping List",
-                            description: "Fornecedor Adicionado com Sucesso",
-                        })
-                        navigate('/supplier/home')
-                    }
-                )
+
 
             }
 

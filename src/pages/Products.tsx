@@ -3,14 +3,8 @@ import ProductStats from "./ProductStats.tsx";
 import React, {useEffect, useState} from "react";
 import {useStore} from "../hooks/store.tsx";
 import AddProduct from "./AddProduct.tsx";
-import {
-    createProductsTable,
-    deleteProduct,
-    listProducts,
-    Product,
-    saveProduct
-} from "../database/products/productsQuery.tsx";
 import { useToast } from "../hooks/use-toast.ts";
+import { Product } from "../types/types.ts";
 
 
 const ProductsPage: React.FC = () => {
@@ -24,11 +18,7 @@ const ProductsPage: React.FC = () => {
 
     const fetchProducts = async () => {
         if (store) {
-            await createProductsTable(store)
-            const result = await listProducts(store)
-            if (result) {
-                setProducts(result)
-            }
+
         }
     }
     useEffect(() => {
@@ -40,29 +30,6 @@ const ProductsPage: React.FC = () => {
         if (store) {
             try {
 
-                await saveProduct(store, {product: product, stock: stock}).then(
-                    (result) => {
-                        console.log(result)
-                        if (result.rowsAffected !== 0) {
-                            toast({
-                                title: "JR DROGARIA - Shopping List",
-                                description: "Produto Adicionado com Sucesso",
-                            })
-                        }
-                    }
-                ).catch(
-                    () => {
-                        toast({
-                            variant: 'destructive',
-                            title: "JR DROGARIA - Shopping List",
-                            description: "Erro ao Adicionar Produto",
-                        })
-                    }
-                ).finally(() => {
-                    fetchProducts()
-                    setProduct('')
-                    setStock(0)
-                })
             } catch (error) {
                 console.log(error)
             }
@@ -70,16 +37,7 @@ const ProductsPage: React.FC = () => {
     }
     const handleDelete = async (id: number | undefined) => {
         if(store) {
-            await deleteProduct(store, id).then(() => {
-                toast({
-                    variant: 'destructive',
-                    title: "JR DROGARIA - Shopping List",
-                    description: "Erro ao Adicionar Produto",
-                })
-            }). finally(() => {
-                fetchProducts()
-            }
-            )
+
 
         }
     }

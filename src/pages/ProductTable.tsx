@@ -1,8 +1,8 @@
 import React from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/ui/table"
-import {Product} from "../database/products/productsQuery.tsx";
 import {Button} from "../components/ui/button.tsx";
 import {Pencil, Trash2} from "lucide-react";
+import { Product } from "../types/types.ts";
 
 type ProductTableProps = {
     products: Product[]

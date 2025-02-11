@@ -10,7 +10,9 @@ const App: React.FC = () => {
             <main className="flex-1">
                 <StoreProvider>
                     <ToastProvider>
-                    <RouterProvider router={router}/>
+                    <RouterProvider future={{
+                        v7_startTransition: true,
+                    }} router={router}/>
                     </ToastProvider>
                 </StoreProvider>
             </main>

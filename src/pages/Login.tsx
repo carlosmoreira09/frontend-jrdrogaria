@@ -21,23 +21,7 @@ const Login:React.FC = () => {
     const [database,setDatabase] = useState<Database | null>(null)
     const navigate = useNavigate();
     const store = useStore()
-
-    useEffect(() => {
-        switch (parseInt(selectStore)) {
-            case 1:
-                setDatabase(storeJR)
-                break;
-            case 2:
-                setDatabase(storeGR)
-                break;
-            case 3:
-                setDatabase(storeLB)
-                break;
-            case 4:
-                setDatabase(storeBarao)
-                break;
-            }
-    }, [selectStore]);
+    
     const handleLogin = async (e: React.FormEvent<HTMLFormElement>) =>  {
        e.preventDefault()
 
