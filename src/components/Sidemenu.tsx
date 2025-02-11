@@ -3,6 +3,7 @@ import {ChevronRight, ShoppingCart, Pill, Truck, Settings, HomeIcon, LogOut} fro
 import type React from "react"
 import {Link} from "react-router-dom";
 import {useNavigate} from "react-router";
+import {useStore} from "../hooks/store.tsx";
 
 type MenuItem = {
     id: string
@@ -81,8 +82,11 @@ const menuItems: MenuItem[] = [
 const SidebarMenu: React.FC = () => {
     const [activeMenu, setActiveMenu] = useState<string | null>(null)
     const navigate = useNavigate();
+    const store = useStore()
+
     const handleLogout = () => {
-        navigate('/')
+        store.logOut()
+        navigate("/")
     }
 
     return (

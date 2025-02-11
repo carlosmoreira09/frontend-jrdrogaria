@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react'
+import React, { useState} from 'react'
 import {AlertCircle, EyeIcon, EyeOff} from "lucide-react";
 import logoClintia  from '../assets/logo.jpeg'
 import { Button } from '../components/ui/button';
@@ -6,9 +6,9 @@ import {Input} from "../components/ui/input.tsx";
 import {Alert, AlertDescription, AlertTitle} from "../components/ui/alert.tsx";
 import {useNavigate} from "react-router";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "../components/ui/select.tsx"
-import Database from "@tauri-apps/plugin-sql";
 import {useStore} from "../hooks/store.tsx";
 import {storeOptions} from "../lib/utils.ts";
+import {GeneralResponse} from "../types/types.ts";
 
 
 const Login:React.FC = () => {
@@ -18,26 +18,23 @@ const Login:React.FC = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [erro, setErro] = useState<string | null>(null)
     const [selectStore, setSelectedStore] = useState('')
-    const [database,setDatabase] = useState<Database | null>(null)
     const navigate = useNavigate();
     const store = useStore()
     
     const handleLogin = async (e: React.FormEvent<HTMLFormElement>) =>  {
        e.preventDefault()
-
-        if(!identifier || password)  {
+        if(!identifier || !password || !selectStore)  {
             setErro('Preencha os dados de login e senha')
+            return
         }
-        if(database) {
-            const result =  await store.login(database, identifier, password)
+            const result: GeneralResponse =  await store.login(identifier, password,parseInt(selectStore))
 
-            if(result.loggedIn) {
+            if(result) {
                 navigate('/home')
             } else {
                 setErro('Erro ao realizar login')
                 return
             }
-        }
     }
 
 

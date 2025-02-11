@@ -1,3 +1,5 @@
+import {ProfileRole} from "./ProfileRole.ts";
+
 export type User = {
     id: number
     username: string,
@@ -22,10 +24,17 @@ export interface Login {
     username: string;
     password: string;
 }
-export interface LoginResponse {
-    status: string,
-    message: string,
-    data?: {
-        token: string;
-    }
+export interface GeneralResponse {
+    message: string;
+    token?: string;
+    data?: string;
+}
+
+export interface ITokenPayload {
+    userId: number;
+    tenantId?: number;
+    role: ProfileRole;
+    exp: number;
+    iat: number;
+    tenantName?: string;
 }

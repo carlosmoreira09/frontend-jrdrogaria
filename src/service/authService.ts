@@ -1,18 +1,13 @@
 import { isAxiosError } from "axios";
 import apiClient from "../lib/interceptor";
-import { LoginResponse } from "../types/types";
+import {GeneralResponse} from "../types/types.ts";
 
 
-export const loginService = async (user: string, password: string): Promise<LoginResponse | undefined> => {
+export const loginService = async (user: string, password: string): Promise<GeneralResponse | undefined> => {
     try {
         const data = {
-            user: user,
+            user: user.toLowerCase(),
             password: password
-        }
-        if(user.includes('@')) {
-            data.user = user
-        } else {
-            data.user = user.replace(/\D/g, '')
         }
         
         const response = await apiClient.post('/auth/login', data);
