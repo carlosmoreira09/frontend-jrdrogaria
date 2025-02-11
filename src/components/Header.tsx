@@ -20,8 +20,8 @@ const Header: React.FC = () => {
     useEffect(() => {
         if(selectStore) {
            const result = storeOptions.find((store) => store.id == parseInt(selectStore))
-            if(result?.connection){
-                store.setStore(result.connection)
+            if(result){
+                store.setStore(result.id)
                 setTitle(result.name)
             }
         }

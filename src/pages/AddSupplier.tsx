@@ -7,6 +7,7 @@ import {useStore} from "../hooks/store.tsx";
 import {toast} from "../hooks/use-toast.ts";
 import {useNavigate} from "react-router";
 import {Supplier} from "../types/types.ts";
+import {createSupplier} from "../service/supplierService.ts";
 
 const AddSupplier: React.FC = () => {
 
@@ -20,13 +21,29 @@ const AddSupplier: React.FC = () => {
     }
     const handleSubmit = async (e: React.FormEvent) => {
        e.preventDefault()
-        console.log(newSupplier)
         setIsPending(true)
-
         try {
             if(store) {
 
-
+                await createSupplier(newSupplier,store).then(
+                    (result) => {
+                        if(result?.data) {
+                            toast({
+                                variant: 'default',
+                                title: 'JR Drogaria',
+                                description: 'Produto adicionado'
+                            })
+                          navigate('/supplier/home')
+                        } else {
+                            toast({
+                                variant: 'destructive',
+                                title: 'JR Drogaria',
+                                description: 'Erro ao cadastrar produto'
+                            })
+                        }
+                    }).finally(
+                    () =>  setIsPending(false)
+                )
             }
 
         } catch (error) {
@@ -52,23 +69,33 @@ const AddSupplier: React.FC = () => {
                     <div className="grid gap-4">
                         <div className="grid gap-2">
                             <Label htmlFor="supplier_name">Nome do Fornecedor</Label>
-                            <Input id="supplier_name" name="supplier_name" value={newSupplier.supplier_name} onChange={handleInputChange} required />
+                            <Input id="supplier_name" name="supplier_name" value={newSupplier.supplier_name}
+                                   onChange={handleInputChange} required/>
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="cnpj">CNPJ</Label>
-                            <Input id="cnpj" name="cnpj" value={newSupplier.cnpj} onChange={handleInputChange} required />
+                            <Input id="cnpj" name="cnpj" value={newSupplier.cnpj} onChange={handleInputChange}
+                                   required/>
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="whatsapp">WhatsApp</Label>
-                            <Input id="whatsapp" name="whatsapp" value={newSupplier.whatsapp} onChange={handleInputChange} required />
+                            <Label htmlFor="email">E-mail</Label>
+                            <Input id="email" name="email" value={newSupplier.email}
+                                   onChange={handleInputChange} required/>
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="whatsAppNumber">WhatsApp</Label>
+                            <Input id="whatsapp" name="whatsAppNumber" value={newSupplier.whatsAppNumber}
+                                   onChange={handleInputChange} required/>
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="payment_mode">Modo de Pagamento</Label>
-                            <Input id="payment_mode" name="payment_mode" value={newSupplier.payment_mode} onChange={handleInputChange} required />
+                            <Input id="payment_mode" name="payment_mode" value={newSupplier.payment_mode}
+                                   onChange={handleInputChange} required/>
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="payment_term">Prazo de Pagamento</Label>
-                            <Input id="payment_term" name="payment_term" value={newSupplier.payment_term} onChange={handleInputChange} required />
+                            <Input id="payment_term" name="payment_term" value={newSupplier.payment_term}
+                                   onChange={handleInputChange} required/>
                         </div>
                     </div>
                     <CardFooter className="flex justify-between mt-4 p-0">

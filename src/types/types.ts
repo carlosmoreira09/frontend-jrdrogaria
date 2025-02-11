@@ -8,16 +8,25 @@ export type User = {
 
 export type Product = {
     id?: number,
-    product: string,
+    product_name: string,
     stock: number,
+    tenants?: Tenant
+}
+export interface Tenant {
+    id: number
+    name: string
+    domain: string
+    whatsAppNumber: string
+
 }
 export type Supplier = {
-    id?: number,
-    supplier_name: string,
-    cnpj: string,
-    whatsapp: string,
-    payment_mode: string,
-    payment_term: string,
+    id?: number;
+    supplier_name: string;
+    cnpj: string;
+    email: string;
+    whatsAppNumber: string;
+    payment_mode: string;
+    payment_term: string;
 }
 
 export interface Login {
@@ -27,7 +36,7 @@ export interface Login {
 export interface GeneralResponse {
     message: string;
     token?: string;
-    data?: string;
+    data?: any[];
 }
 
 export interface ITokenPayload {

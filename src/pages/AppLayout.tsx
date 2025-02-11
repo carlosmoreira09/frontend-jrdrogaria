@@ -2,7 +2,7 @@ import React from "react";
 import { Outlet } from "react-router-dom";
 import SidebarMenu from "../components/Sidemenu.tsx";
 import Header from "../components/Header.tsx";
-
+import { Toaster } from "../components/ui/toaster"
 
 const AppLayout: React.FC = () => {
     
@@ -17,6 +17,7 @@ const AppLayout: React.FC = () => {
                 </div>
                 <div className="flex-1 p-4">
                     <Outlet/>
+                    <Toaster/>
                 </div>
             </div>
             </div>
