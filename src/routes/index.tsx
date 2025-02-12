@@ -4,10 +4,10 @@ import Home from "../pages/Home.tsx";
 import AddSupplier from "../pages/AddSupplier.tsx";
 import SupplierList from "../pages/SupplierList.tsx";
 import AppLayout from "../pages/AppLayout.tsx";
-import ShoppingList from "../pages/SupplierList.tsx";
 import ProductsPage from "../pages/Products.tsx";
 import {ProtectedRoute} from "./ProtectedRoute/ProtectedRoute.tsx";
 import {ProfileRole} from "../types/ProfileRole.ts";
+import ShoppingList from "../pages/ShoppingList.tsx";
 
 export const router = createBrowserRouter([
     {

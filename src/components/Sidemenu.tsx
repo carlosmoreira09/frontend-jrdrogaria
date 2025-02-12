@@ -49,11 +49,11 @@ const menuItems: MenuItem[] = [
         icon: <ShoppingCart className="w-5 h-5" />,
         subItems: [
             {
-                title: "Listar Compras",
-                linkTo: '/shopping/list-shopping'
+                title: "Criar Lista Compras",
+                linkTo: '/shopping/home'
             },
             {
-                title: "Criar Lista de Compras",
+                title: "Listas de Compras Criadas",
                 linkTo: '/shopping/add-shopping'
             }
         ],

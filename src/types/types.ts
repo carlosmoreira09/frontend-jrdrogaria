@@ -10,6 +10,8 @@ export type Product = {
     id?: number,
     product_name: string,
     stock: number,
+    selected?: boolean
+    price?: number
     tenants?: Tenant
 }
 export interface Tenant {
