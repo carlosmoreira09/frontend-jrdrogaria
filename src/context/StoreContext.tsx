@@ -6,7 +6,7 @@ import {jwtDecode} from "jwt-decode";
 import {ProfileRole} from "../types/ProfileRole.ts";
 
 
-export type StoreContext = {
+export interface StoreContext {
     store: number | undefined;
     setStore: (store: number) => void;
     login: (username: string, password: string, store: number) => Promise<GeneralResponse>

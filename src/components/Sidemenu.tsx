@@ -107,7 +107,7 @@ const SidebarMenu: React.FC = () => {
                             <button
                                 onClick={() => setActiveMenu(activeMenu === item.id ? null : item.id)}
                                 className={`flex items-center w-full px-4 py-3 text-left hover:text-green-800 hover:bg-gray-100 focus:outline-none ${
-                                    activeMenu === item.id ? "bg-gray-200" : ""
+                                    activeMenu === item.id ? "bg-green-900" : ""
                                 }`}
                             >
                                 {item.icon}
@@ -130,7 +130,7 @@ const SidebarMenu: React.FC = () => {
             {/* Submenu */}
             {activeMenu && (
                 <div className="w-64 bg-green-800 text-white shadow-lg">
-                    <h2 className="px-4 py-3 font-semibold bg-gray-200">
+                    <h2 className="px-4 py-3 font-semibold bg-green-900">
                         {menuItems.find((item) => item.id === activeMenu)?.title}
                     </h2>
                     <ul>

@@ -5,8 +5,6 @@ import AddSupplier from "../pages/AddSupplier.tsx";
 import SupplierList from "../pages/SupplierList.tsx";
 import AppLayout from "../pages/AppLayout.tsx";
 import ProductsPage from "../pages/Products.tsx";
-import {ProtectedRoute} from "./ProtectedRoute/ProtectedRoute.tsx";
-import {ProfileRole} from "../types/ProfileRole.ts";
 import ShoppingList from "../pages/ShoppingList.tsx";
 
 export const router = createBrowserRouter([
@@ -24,7 +22,7 @@ export const router = createBrowserRouter([
         children: [
             {
                 index: true,
-                element: (<ProtectedRoute role={ProfileRole.supplier}> <Home /> </ProtectedRoute>)
+                element: <Home />
             }]
     },
     {

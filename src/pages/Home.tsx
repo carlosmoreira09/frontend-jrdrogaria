@@ -1,31 +1,28 @@
-import type React from "react"
+import React, {useEffect, useState} from "react"
 import Cards from "../components/Cards.tsx";
-import ShoppingListTable, {ShoppingItem} from "./ShoppingListTable.tsx";
-import {Pill, ShoppingBag, Truck} from "lucide-react"; // Added import for React
+import ShoppingListTable from "./ShoppingListTable.tsx";
+import {Pill, ShoppingBag, Truck} from "lucide-react";
+import {IShoppingList} from "../types/types.ts";
+import {useStore} from "../hooks/store.tsx";
+import {listShoppingLists} from "../service/shoppingListService.ts"; // Added import for React
 
-const mockList: ShoppingItem[] = [
-    {
-        id: 1,
-        name: 'Dipirona',
-        quantity: 3,
-        price: 20.00
-    },
-    {
-        id: 1,
-        name: 'Dipirona',
-        quantity: 3,
-        price: 20.00
-    },
-    {
-        id: 1,
-        name: 'Dipirona',
-        quantity: 3,
-        price: 20.00
-    }
-]
 
 const Home: React.FC = () => {
+    const [shoppingList, setShoppingList] = useState<IShoppingList[]>([])
+    const { store } = useStore()
 
+    useEffect(() => {
+        const fetchShoppingList = async () => {
+            if(store) {
+                const result = await listShoppingLists(store)
+                if(result?.data) {
+                    setShoppingList(result.data)
+                }
+            }
+        }
+        fetchShoppingList().then()
+
+    }, []);
     return (
 
         <div className="flex flex-col">
@@ -41,7 +38,7 @@ const Home: React.FC = () => {
                         <h1 className="text-green-950 capitalize font-bold text-2xl"> Ultimas Listas de Compras</h1>
                     </div>
                     <div className="mt-2 p-2 ">
-                        <ShoppingListTable items={mockList}/>
+                        <ShoppingListTable items={shoppingList}/>
                     </div>
 
                 </div>

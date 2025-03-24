@@ -1,15 +1,15 @@
 import {ProfileRole} from "./ProfileRole.ts";
 
-export type User = {
+export interface User {
     id: number
     username: string,
     password: string
 }
 
-export type Product = {
+export interface Product {
     id?: number,
-    product_name: string,
-    stock: number,
+    product_name?: string,
+    stock?: number,
     selected?: boolean
     price?: number
     tenants?: Tenant
@@ -21,7 +21,15 @@ export interface Tenant {
     whatsAppNumber: string
 
 }
-export type Supplier = {
+
+export interface IShoppingList {
+    id?: number
+    products: Product[]
+    product_price?: number
+    supplier?: Supplier
+    tenants?: Tenant
+}
+export interface Supplier  {
     id?: number;
     supplier_name: string;
     cnpj: string;

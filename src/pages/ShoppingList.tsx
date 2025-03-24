@@ -3,13 +3,15 @@ import { Button } from "../components/ui/button"
 import { Label } from "../components/ui/label"
 import { Checkbox } from "../components/ui/checkbox"
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
-import {Product} from "../types/types.ts";
+import {IShoppingList, Product} from "../types/types.ts";
 import {listProducts} from "../service/productService.ts";
 import {useStore} from "../hooks/store.tsx";
 import {toast} from "../hooks/use-toast.ts";
 import AutocompleteFilter from "../components/ProductFilter.tsx";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "../components/ui/table.tsx";
-import {Trash2} from "lucide-react";
+import {Download, Trash2} from "lucide-react";
+import {createShoppingList} from "../service/shoppingListService.ts";
+import {convertToCSV, downloadCSV} from "../lib/csv-export.ts";
 
 
 const ShoppingList: React.FC = () => {
@@ -47,9 +49,44 @@ const ShoppingList: React.FC = () => {
     const removeItem = (id: number | undefined) => {
         setSelectedProducts(selectedProducts.filter((item) => item.id !== id))
     }
+    const exportToCSV = () => {
 
-    const createNewList = () => {
-        setSelectedProducts(products.filter((p) => p.selected))
+        const exportData = selectedProducts.map((product) => ({
+            ID: product.id,
+            Nome: product.product_name,
+            Estoque: product.stock,
+            ["Preço Unitário"]: '',
+            Fornecedor: ''
+        }))
+
+        const csvData = convertToCSV(exportData)
+
+        const date = new Date()
+        const formattedDate = date.toISOString().split("T")[0] // YYYY-MM-DD
+        const filename = `Lista_de_Compras_${formattedDate}.csv`
+
+        // Iniciar download
+        downloadCSV(csvData, filename)
+    }
+    const createNewList = async () => {
+        if(store) {
+            const newList: IShoppingList = {
+                products: selectedProducts
+
+            }
+            await createShoppingList(newList,store).then(
+                (result) => {
+                    console.log(result)
+                    if(result?.data) {
+                        toast({
+                            title: 'JR Drogaria',
+                            description: 'Lista de compras criada'
+
+                        })
+                    }
+                }
+            )
+        }
 
     }
 
@@ -57,68 +94,76 @@ const ShoppingList: React.FC = () => {
         <div className="container mx-auto p-4">
             <h1 className="text-2xl font-bold mb-4">Gerenciador de Listas de Compras</h1>
 
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex justify-center">Selecione os Produtos</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <AutocompleteFilter onClick={handleProductSelect} items={products} />
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex justify-center">Selecione os Produtos</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <AutocompleteFilter onClick={handleProductSelect} items={products}/>
+                    <div className="mt-10">
+                        <h2>Produtos com estoque zerado</h2>
+                        <div className="mt-2">
+                            <Card className="grid col-auto row-auto p-2">
+                                {products.map((product) =>
+                                    (
+                                        product.stock == 0 ?
+                                            (<div key={product.id} className="flex items-center space-x-2 mb-2">
+                                                <Checkbox
+                                                    id={`product-${product.id}`}
+                                                    checked={product.selected}
+                                                    onCheckedChange={() => handleProductSelect(product.id)}
+                                                />
 
-                        <div className="mt-10">
-                            <h2>Produtos com estoque zerado</h2>
-                            <div className="mt-2">
-                                <Card className="grid col-auto row-auto p-2">
-                                    {products.map((product) =>
-                                        (
-                                            product.stock == 0 ?
-                                                (<div key={product.id} className="flex items-center space-x-2 mb-2">
-                                                    <Checkbox
-                                                        id={`product-${product.id}`}
-                                                        checked={product.selected}
-                                                        onCheckedChange={() => handleProductSelect(product.id)}
-                                                    />
-
-                                                    <Label htmlFor={`product-${product.id}`}>{product.product_name}</Label>
-                                                </div>) : <></>
-                                        )
-                                    )}
-                                </Card>
-
-                            </div>
+                                                <Label htmlFor={`product-${product.id}`}>{product.product_name}</Label>
+                                            </div>) : <></>
+                                    )
+                                )}
+                            </Card>
 
                         </div>
-                        <Button onClick={createNewList} className="mt-4">
-                            Criar Nova Lista
-                        </Button>
-                    </CardContent>
-                </Card>
+
+                    </div>
+                    <Button onClick={createNewList} className="mt-4">
+                        Criar Nova Lista
+                    </Button>
+                </CardContent>
+            </Card>
+            <div className="flex mt-4">
+                <Button onClick={exportToCSV} disabled={selectedProducts.length === 0}
+                        className="flex items-center gap-2">
+                    <Download className="h-5 w-5"/>
+                    Exportar CSV
+                </Button>
+            </div>
             {selectedProducts.length > 0 && (
                 <div className="mt-5">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Produtos adicionados a lista os Preços</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Produto</TableHead>
-                                    <TableHead>Estoque</TableHead>
-                                    <TableHead>Remover</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                        {selectedProducts.map((product) => (
-                                <TableRow key={product.id}>
-                                    <TableCell>{product.product_name}</TableCell>
-                                    <TableCell>{product.stock}</TableCell>
-                                    <TableCell className="cursor-pointer" onClick={() => removeItem(product.id)}><Trash2 className="text-red-700" /></TableCell>
-                                </TableRow>
-                        ))}
-                            </TableBody>
-                        </Table>
-                    </CardContent>
-                </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Produtos adicionados a lista os Preços</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Produto</TableHead>
+                                        <TableHead>Estoque</TableHead>
+                                        <TableHead>Remover</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {selectedProducts.map((product) => (
+                                        <TableRow key={product.id}>
+                                            <TableCell>{product.product_name}</TableCell>
+                                            <TableCell>{product.stock}</TableCell>
+                                            <TableCell className="cursor-pointer"
+                                                       onClick={() => removeItem(product.id)}><Trash2
+                                                className="text-red-700"/></TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </CardContent>
+                    </Card>
                 </div>
             )}
         </div>
