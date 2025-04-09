@@ -1,7 +1,7 @@
 import React from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/ui/table"
 import {Button} from "../components/ui/button.tsx";
-import {Pencil, Trash2} from "lucide-react";
+import {Trash2} from "lucide-react";
 import { Product } from "../types/types.ts";
 
 type ProductTableProps = {
@@ -21,13 +21,9 @@ const ProductTable: React.FC<ProductTableProps> = ({products,deleteProduct}) => 
             <TableBody>
                 {products.map((product) => (
                     <TableRow key={product.id}>
-                        <TableCell className="font-medium">{product.product}</TableCell>
+                        <TableCell className="font-medium">{product.product_name}</TableCell>
                         <TableCell>{product.stock}</TableCell>
                         <TableCell>
-                            <Button className="w-36">
-                                <Pencil className="mr-1 h-4 w-4" />
-                                <span className="text-sm">Editar</span>
-                            </Button>
                             <Button onClick={() => deleteProduct(product.id)} className="w-36">
                                 <Trash2 className="mr-1 h-4 w-4" />
                                 <span className="text-sm">Remover</span>

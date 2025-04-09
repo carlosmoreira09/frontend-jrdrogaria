@@ -1,11 +1,11 @@
 import {createBrowserRouter, Navigate} from "react-router-dom";
-import Login from "../pages/Login.tsx";
 import Home from "../pages/Home.tsx";
 import AddSupplier from "../pages/AddSupplier.tsx";
 import SupplierList from "../pages/SupplierList.tsx";
 import AppLayout from "../pages/AppLayout.tsx";
-import ShoppingList from "../pages/SupplierList.tsx";
 import ProductsPage from "../pages/Products.tsx";
+import ShoppingList from "../pages/ShoppingList.tsx";
+import AdminLogin from "../pages/AdminLogin.tsx";
 
 export const router = createBrowserRouter([
     {
@@ -14,7 +14,7 @@ export const router = createBrowserRouter([
     },
     {
         path: 'login',
-        element: <Login />
+        element: <AdminLogin />
     },
     {
         path: 'home',

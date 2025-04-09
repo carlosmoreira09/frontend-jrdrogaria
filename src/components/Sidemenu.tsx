@@ -3,6 +3,7 @@ import {ChevronRight, ShoppingCart, Pill, Truck, Settings, HomeIcon, LogOut} fro
 import type React from "react"
 import {Link} from "react-router-dom";
 import {useNavigate} from "react-router";
+import {useStore} from "../hooks/store.tsx";
 
 type MenuItem = {
     id: string
@@ -48,11 +49,11 @@ const menuItems: MenuItem[] = [
         icon: <ShoppingCart className="w-5 h-5" />,
         subItems: [
             {
-                title: "Listar Compras",
-                linkTo: '/shopping/list-shopping'
+                title: "Criar Lista Compras",
+                linkTo: '/shopping/home'
             },
             {
-                title: "Criar Lista de Compras",
+                title: "Listas de Compras Criadas",
                 linkTo: '/shopping/add-shopping'
             }
         ],
@@ -81,8 +82,11 @@ const menuItems: MenuItem[] = [
 const SidebarMenu: React.FC = () => {
     const [activeMenu, setActiveMenu] = useState<string | null>(null)
     const navigate = useNavigate();
+    const store = useStore()
+
     const handleLogout = () => {
-        navigate('/')
+        store.logOut()
+        navigate("/")
     }
 
     return (
@@ -103,7 +107,7 @@ const SidebarMenu: React.FC = () => {
                             <button
                                 onClick={() => setActiveMenu(activeMenu === item.id ? null : item.id)}
                                 className={`flex items-center w-full px-4 py-3 text-left hover:text-green-800 hover:bg-gray-100 focus:outline-none ${
-                                    activeMenu === item.id ? "bg-gray-200" : ""
+                                    activeMenu === item.id ? "bg-green-900" : ""
                                 }`}
                             >
                                 {item.icon}
@@ -126,7 +130,7 @@ const SidebarMenu: React.FC = () => {
             {/* Submenu */}
             {activeMenu && (
                 <div className="w-64 bg-green-800 text-white shadow-lg">
-                    <h2 className="px-4 py-3 font-semibold bg-gray-200">
+                    <h2 className="px-4 py-3 font-semibold bg-green-900">
                         {menuItems.find((item) => item.id === activeMenu)?.title}
                     </h2>
                     <ul>
