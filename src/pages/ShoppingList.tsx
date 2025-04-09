@@ -65,7 +65,6 @@ const ShoppingList: React.FC = () => {
         const formattedDate = date.toISOString().split("T")[0] // YYYY-MM-DD
         const filename = `Lista_de_Compras_${formattedDate}.csv`
 
-        // Iniciar download
         downloadCSV(csvData, filename)
     }
     const createNewList = async () => {
