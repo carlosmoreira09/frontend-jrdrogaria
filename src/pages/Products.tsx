@@ -13,7 +13,7 @@ const ProductsPage: React.FC = () => {
     const [product, setProduct] = useState<string>("")
     const [stock, setStock] = useState<number>(0)
     const totalProducts = products.length
-    const lowStockProducts = products.filter((p) => p.stock <= 10).length
+    const lowStockProducts = products.filter((p) => p.stock ?? 0 <= 10).length
     const { store} = useStore()
     const { toast } = useToast()
 
