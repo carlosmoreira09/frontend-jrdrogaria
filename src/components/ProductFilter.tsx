@@ -13,7 +13,7 @@ export default function AutocompleteFilter({ items = [],onClick }: AutocompleteF
 
     useEffect(() => {
         if (items && items.length > 0) {
-            const results = items.filter((item) => item.product_name.toLowerCase().includes(searchTerm.toLowerCase()))
+            const results = items.filter((item) => item.product_name?.toLowerCase().includes(searchTerm.toLowerCase()))
             setFilteredItems(results)
         } else {
             setFilteredItems([])
