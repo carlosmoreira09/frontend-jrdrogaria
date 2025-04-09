@@ -22,6 +22,7 @@ const Header: React.FC = () => {
            const result = storeOptions.find((store) => store.id == parseInt(selectStore))
             if(result){
                 store.setStore(result.id)
+                store.setTenantName(result.name)
                 setTitle(result.name)
             }
         }

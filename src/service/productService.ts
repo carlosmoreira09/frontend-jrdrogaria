@@ -43,7 +43,6 @@ export const deleteProduct = async (id: number | undefined,id_store: number): Pr
             }
 
         })
-        console.log(response)
         return  response.data
     } catch (error) {
         if (isAxiosError(error)) {

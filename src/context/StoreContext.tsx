@@ -9,7 +9,8 @@ import {ProfileRole} from "../types/ProfileRole.ts";
 export interface StoreContext {
     store: number | undefined;
     setStore: (store: number) => void;
-    login: (username: string, password: string, store: number) => Promise<GeneralResponse>
+    setTenantName: (tenant: string) => void;
+    login: (username: string, password: string) => Promise<GeneralResponse>
     logOut: () => void;
     isAuthenticated: boolean;
     userId?: number;
@@ -60,7 +61,7 @@ const StoreProvider = ({ children }: Props) => {
     const [userId, setUserId] = useState<number>();
     const [tenantName, setTenantName] = useState<string>();
     const [store, setStore] = useState<number | undefined>(undefined)
-    const login = async (username: string, password: string, store: number) => {
+    const login = async (username: string, password: string) => {
         const result = await loginService(username,password)
 
         if(result  && result?.token) {
@@ -93,6 +94,7 @@ const StoreProvider = ({ children }: Props) => {
             token,
             logOut,
             userId,
+            setTenantName,
             tenantName}}>
             { children }
         </StoreContext.Provider>

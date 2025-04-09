@@ -42,7 +42,6 @@ const ProductsPage: React.FC = () => {
                 await createProduct({ product_name: product, stock: stock}, store)
                     .then(
                     (result) => {
-                        console.log(result)
                     if(result?.data) {
                         fetchProducts()
                         toast({

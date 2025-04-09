@@ -17,8 +17,9 @@ import {convertToCSV, downloadCSV} from "../lib/csv-export.ts";
 const ShoppingList: React.FC = () => {
     const [products, setProducts] = useState<Product[]>([])
     const [selectedProducts, setSelectedProducts] = useState<Product[]>([])
-    const { store } = useStore()
+    const { store, tenantName,  } = useStore()
     const fetchProducts = async () => {
+        console.log(tenantName)
         if (store) {
             const result = await listProducts(store)
             if(result?.data) {
@@ -54,9 +55,9 @@ const ShoppingList: React.FC = () => {
         const exportData = selectedProducts.map((product) => ({
             ID: product.id,
             Nome: product.product_name,
-            Estoque: product.stock,
             ["Preço Unitário"]: '',
-            Fornecedor: ''
+            Fornecedor: '',
+            ["Loja"]: tenantName + "Drograria"
         }))
 
         const csvData = convertToCSV(exportData)
@@ -75,7 +76,6 @@ const ShoppingList: React.FC = () => {
             }
             await createShoppingList(newList,store).then(
                 (result) => {
-                    console.log(result)
                     if(result?.data) {
                         toast({
                             title: 'JR Drogaria',
