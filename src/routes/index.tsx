@@ -5,11 +5,11 @@ import SupplierList from "../pages/supplier/SupplierList.tsx";
 import AppLayout from "../pages/AppLayout.tsx";
 import ProductsPage from "../pages/product/Products.tsx";
 import ShoppingList from "../pages/shoppinglist/ShoppingList.tsx";
-import PriceComparison from "../pages/shoppinglist/PriceComparison.tsx";
 import LandingPage from "../pages/LandingPage.tsx";
 import AdminLogin from "../pages/AdminLogin.tsx";
 import {ProtectedRoute} from "./ProtectedRoute/ProtectedRoute.tsx";
 import {ProfileRole} from "../types/ProfileRole.ts";
+import {PriceComparison} from "../pages/shoppinglist/PriceComparison.tsx";
 
 export const router = createBrowserRouter([
     {

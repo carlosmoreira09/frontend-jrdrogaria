@@ -22,7 +22,7 @@ interface ProductComparison {
   bestPrice: number;
 }
 
-const PriceComparison: React.FC = () => {
+export const PriceComparison: React.FC = () => {
   const [supplierPrices, setSupplierPrices] = useState<SupplierPrice[]>([]);
   const [comparisons, setComparisons] = useState<ProductComparison[]>([]);
   const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
@@ -43,9 +43,44 @@ const PriceComparison: React.FC = () => {
         const worksheet = workbook.Sheets[sheetName];
         const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
-        // Check if the required columns exist
-        const firstRow = jsonData[0] as Record<string, any>;
-        if (!firstRow || !('Preço Unitário' in firstRow) || !('Fornecedor' in firstRow) || !('Nome' in firstRow)) {
+        // Check if we have enough data
+        if (!jsonData || jsonData.length < 3) {
+          toast({
+            variant: 'destructive',
+            title: 'Arquivo incompleto',
+            description: 'O arquivo não contém dados suficientes'
+          });
+          return;
+        }
+        
+        // Check if the required columns exist in row 3 (index 2)
+        const headerRow = jsonData[2] as Record<string, any>;
+        console.log('Header row:', headerRow);
+        
+        if (!headerRow) {
+          toast({
+            variant: 'destructive',
+            title: 'Erro no formato do arquivo',
+            description: 'Não foi possível encontrar o cabeçalho na linha 3'
+          });
+          return;
+        }
+        
+        // Helper function to check if a property with a specific value exists in the object
+        const hasPropertyWithValue = (obj: Record<string, any>, value: string): boolean => {
+          return Object.values(obj).some(val => 
+            typeof val === 'string' && val.includes(value)
+          );
+        };
+        
+        // Check for required columns in the values rather than keys
+        const hasPriceColumn = hasPropertyWithValue(headerRow, 'Preço Unitário');
+        const hasSupplierColumn = hasPropertyWithValue(headerRow, 'Fornecedor');
+        const hasNameColumn = hasPropertyWithValue(headerRow, 'Nome');
+        
+        console.log('Column check:', { hasPriceColumn, hasSupplierColumn, hasNameColumn });
+        
+        if (!hasPriceColumn || !hasSupplierColumn || !hasNameColumn) {
           toast({
             variant: 'destructive',
             title: 'Erro no formato do arquivo',
@@ -54,18 +89,62 @@ const PriceComparison: React.FC = () => {
           return;
         }
 
-        // Extract the data we need
-        const extractedData: SupplierPrice[] = jsonData.map((row: any) => {
+        // Helper function to find the key for a specific column value
+        const findKeyForValue = (obj: Record<string, any>, value: string): string | null => {
+          for (const key in obj) {
+            if (typeof obj[key] === 'string' && obj[key].includes(value)) {
+              return key;
+            }
+          }
+          return null;
+        };
+        
+        // Find the keys for our required columns
+        const priceKey = findKeyForValue(headerRow, 'Preço Unitário');
+        const supplierKey = findKeyForValue(headerRow, 'Fornecedor');
+        const nameKey = findKeyForValue(headerRow, 'Nome');
+        
+        console.log('Column keys:', { priceKey, supplierKey, nameKey });
+        
+        if (!priceKey || !supplierKey || !nameKey) {
+          toast({
+            variant: 'destructive',
+            title: 'Erro interno',
+            description: 'Não foi possível determinar as colunas corretamente'
+          });
+          return;
+        }
+
+        // Extract the data starting from row 3 (index 2)
+        const extractedData: SupplierPrice[] = [];
+        
+        for (let i = 3; i < jsonData.length; i++) {
+          const row = jsonData[i] as Record<string, any>;
+          
+          // Skip rows without required data
+          if (!row[priceKey] || !row[nameKey]) continue;
+          
           // Convert price string to number (handling comma as decimal separator)
-          const priceStr = String(row['Preço Unitário']).replace(',', '.');
+          const priceStr = String(row[priceKey]).replace(',', '.');
           const price = parseFloat(priceStr);
           
-          return {
-            productName: row['Nome'],
-            price: isNaN(price) ? 0 : price,
-            supplier: row['Fornecedor'] || 'Desconhecido'
-          };
-        }).filter(item => item.price > 0 && item.productName);
+          if (!isNaN(price) && price > 0) {
+            extractedData.push({
+              productName: row[nameKey],
+              price: price,
+              supplier: row[supplierKey] || 'Desconhecido'
+            });
+          }
+        }
+        
+        if (extractedData.length === 0) {
+          toast({
+            variant: 'destructive',
+            title: 'Nenhum dado válido',
+            description: 'Não foi possível extrair dados válidos do arquivo'
+          });
+          return;
+        }
 
         // Add to existing data
         setSupplierPrices(prev => [...prev, ...extractedData]);
@@ -308,5 +387,3 @@ const PriceComparison: React.FC = () => {
     </div>
   );
 };
-
-export default PriceComparison;
