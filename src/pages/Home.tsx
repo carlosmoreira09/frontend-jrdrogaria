@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from "react"
 import Cards from "../components/Cards.tsx";
-import ShoppingListTable from "./ShoppingListTable.tsx";
+import ShoppingListTable from "./supplier/ShoppingListTable.tsx";
 import {Pill, ShoppingBag, Truck} from "lucide-react";
 import {IShoppingList} from "../types/types.ts";
 import {useStore} from "../hooks/store.tsx";

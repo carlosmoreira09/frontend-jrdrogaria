@@ -1,7 +1,7 @@
 import React from "react"
-import { Input } from "../components/ui/input"
-import { Label } from "../components/ui/label"
-import { Button } from "../components/ui/button.tsx"
+import { Input } from "../../components/ui/input.tsx"
+import { Label } from "../../components/ui/label.tsx"
+import { Button } from "../../components/ui/button.tsx"
 
 type AddProductProps = {
     submitProduct: (e: React.FormEvent<HTMLFormElement>) => void

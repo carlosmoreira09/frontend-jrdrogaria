@@ -1,13 +1,13 @@
 import React, { useState } from "react"
-import { Button } from "../components/ui/button"
-import { Input } from "../components/ui/input"
-import { Label } from "../components/ui/label"
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "../components/ui/card"
-import {useStore} from "../hooks/store.tsx";
-import {toast} from "../hooks/use-toast.ts";
+import { Button } from "../../components/ui/button.tsx"
+import { Input } from "../../components/ui/input.tsx"
+import { Label } from "../../components/ui/label.tsx"
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "../../components/ui/card.tsx"
+import {useStore} from "../../hooks/store.tsx";
+import {toast} from "../../hooks/use-toast.ts";
 import {useNavigate} from "react-router";
-import {Supplier} from "../types/types.ts";
-import {createSupplier} from "../service/supplierService.ts";
+import {Supplier} from "../../types/types.ts";
+import {createSupplier} from "../../service/supplierService.ts";
 
 const AddSupplier: React.FC = () => {
 

@@ -1,11 +1,11 @@
 import ProductTable from "./ProductTable.tsx";
 import ProductStats from "./ProductStats.tsx";
 import React, {useEffect, useState} from "react";
-import {useStore} from "../hooks/store.tsx";
+import {useStore} from "../../hooks/store.tsx";
 import AddProduct from "./AddProduct.tsx";
-import { useToast } from "../hooks/use-toast"
-import { Product } from "../types/types.ts";
-import {createProduct, deleteProduct, listProducts} from "../service/productService.ts";
+import { useToast } from "../../hooks/use-toast.ts"
+import { Product } from "../../types/types.ts";
+import {createProduct, deleteProduct, listProducts} from "../../service/productService.ts";
 
 
 const ProductsPage: React.FC = () => {

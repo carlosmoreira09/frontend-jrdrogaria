@@ -1,6 +1,6 @@
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/ui/table.tsx"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../components/ui/table.tsx"
 import React from "react";
-import {IShoppingList} from "../types/types.ts";
+import {IShoppingList} from "../../types/types.ts";
 
 
 type ShoppingListTableProps = {

@@ -1,12 +1,12 @@
 import React, {useEffect, useState} from "react";
-import ProductStats from "./ProductStats.tsx";
-import {useStore} from "../hooks/store.tsx";
+import ProductStats from "../product/ProductStats.tsx";
+import {useStore} from "../../hooks/store.tsx";
 import SupplierTable from "./SupplierTable.tsx";
-import {useToast} from "../hooks/use-toast.ts";
-import {Button} from "../components/ui/button.tsx";
+import {useToast} from "../../hooks/use-toast.ts";
+import {Button} from "../../components/ui/button.tsx";
 import {useNavigate} from "react-router";
-import {Supplier} from "../types/types.ts";
-import {deleteSupplier, listSuppliers} from "../service/supplierService.ts";
+import {Supplier} from "../../types/types.ts";
+import {deleteSupplier, listSuppliers} from "../../service/supplierService.ts";
 
 const ShoppingList: React.FC = () => {
 

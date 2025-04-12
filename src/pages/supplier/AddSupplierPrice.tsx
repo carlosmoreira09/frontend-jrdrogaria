@@ -1,5 +1,5 @@
 import React from "react";
-import {Product, Supplier} from "../types/types.ts";
+import {Product, Supplier} from "../../types/types.ts";
 
 export interface ShoppingList {
     id: number

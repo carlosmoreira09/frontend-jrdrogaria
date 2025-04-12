@@ -1,17 +1,17 @@
 import React, {useEffect, useState} from "react"
-import { Button } from "../components/ui/button"
-import { Label } from "../components/ui/label"
-import { Checkbox } from "../components/ui/checkbox"
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
-import {IShoppingList, Product} from "../types/types.ts";
-import {listProducts} from "../service/productService.ts";
-import {useStore} from "../hooks/store.tsx";
-import {toast} from "../hooks/use-toast.ts";
-import AutocompleteFilter from "../components/ProductFilter.tsx";
-import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "../components/ui/table.tsx";
+import { Button } from "../../components/ui/button.tsx"
+import { Label } from "../../components/ui/label.tsx"
+import { Checkbox } from "../../components/ui/checkbox.tsx"
+import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card.tsx"
+import {IShoppingList, Product} from "../../types/types.ts";
+import {listProducts} from "../../service/productService.ts";
+import {useStore} from "../../hooks/store.tsx";
+import {toast} from "../../hooks/use-toast.ts";
+import AutocompleteFilter from "../../components/ProductFilter.tsx";
+import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "../../components/ui/table.tsx";
 import {Download, Trash2} from "lucide-react";
-import {createShoppingList} from "../service/shoppingListService.ts";
-import {convertToCSV, downloadCSV} from "../lib/csv-export.ts";
+import {createShoppingList} from "../../service/shoppingListService.ts";
+import {exportLeadsToCSV} from "../../components/serverExportCsv.tsx";
 
 
 const ShoppingList: React.FC = () => {
@@ -50,23 +50,17 @@ const ShoppingList: React.FC = () => {
     const removeItem = (id: number | undefined) => {
         setSelectedProducts(selectedProducts.filter((item) => item.id !== id))
     }
-    const exportToCSV = () => {
+    const exportToCSV = async () => {
 
         const exportData = selectedProducts.map((product) => ({
             ID: product.id,
             Nome: product.product_name,
             ["Preço Unitário"]: '',
             Fornecedor: '',
-            ["Loja"]: tenantName + "Drograria"
+            ["Loja"]: tenantName + " Drograria"
         }))
 
-        const csvData = convertToCSV(exportData)
-
-        const date = new Date()
-        const formattedDate = date.toISOString().split("T")[0] // YYYY-MM-DD
-        const filename = `Lista_de_Compras_${formattedDate}.csv`
-
-        downloadCSV(csvData, filename)
+        await exportLeadsToCSV(exportData)
     }
     const createNewList = async () => {
         if(store) {

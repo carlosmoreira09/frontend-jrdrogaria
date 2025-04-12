@@ -1,11 +1,13 @@
 import {createBrowserRouter, Navigate} from "react-router-dom";
 import Home from "../pages/Home.tsx";
-import AddSupplier from "../pages/AddSupplier.tsx";
-import SupplierList from "../pages/SupplierList.tsx";
+import AddSupplier from "../pages/supplier/AddSupplier.tsx";
+import SupplierList from "../pages/supplier/SupplierList.tsx";
 import AppLayout from "../pages/AppLayout.tsx";
-import ProductsPage from "../pages/Products.tsx";
-import ShoppingList from "../pages/ShoppingList.tsx";
+import ProductsPage from "../pages/product/Products.tsx";
+import ShoppingList from "../pages/supplier/ShoppingList.tsx";
 import AdminLogin from "../pages/AdminLogin.tsx";
+import {ProtectedRoute} from "./ProtectedRoute/ProtectedRoute.tsx";
+import {ProfileRole} from "../types/ProfileRole.ts";
 
 export const router = createBrowserRouter([
     {
@@ -22,7 +24,7 @@ export const router = createBrowserRouter([
         children: [
             {
                 index: true,
-                element: <Home />
+                element: <ProtectedRoute role={ProfileRole.admin}><Home /></ProtectedRoute>
             }]
     },
     {
@@ -35,7 +37,7 @@ export const router = createBrowserRouter([
             },
             {
                 path: 'home',
-                element: <ProductsPage />
+                element: <ProtectedRoute role={ProfileRole.admin}><ProductsPage /></ProtectedRoute>
             },
 
             ]
@@ -50,11 +52,11 @@ export const router = createBrowserRouter([
             },
             {
                 path: 'home',
-                element: <SupplierList />
+                element: <ProtectedRoute role={ProfileRole.admin}><SupplierList /></ProtectedRoute>
             },
             {
                 path: 'add-supplier',
-                element: <AddSupplier />
+                element: <ProtectedRoute role={ProfileRole.admin}><AddSupplier /></ProtectedRoute>
             }
         ]
     },
@@ -68,7 +70,7 @@ export const router = createBrowserRouter([
             },
             {
                 path: 'home',
-                element: <ShoppingList />
+                element:<ProtectedRoute role={ProfileRole.admin}><ShoppingList /></ProtectedRoute>
             },
         ]
     },
