@@ -1,4 +1,4 @@
-name: Deploy Backend to EC2
+name: Deploy Frontend to VPS
 
 on:
   push:
@@ -18,7 +18,7 @@ jobs:
           echo "${{ secrets.CARLOS }}" > key.pem
           chmod 400 key.pem
 
-      - name: Deploy para EC2
+      - name: Deploy para VPS
         run: |
           ssh -o StrictHostKeyChecking=no -i key.pem root@172.235.150.164 << 'EOF'
           cd /var/www/html/frontend-jrdrogaria
