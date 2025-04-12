@@ -7,11 +7,8 @@ import {
   Settings,
   Home,
   LogOut,
-  Users,
-  Building,
   PlusCircle,
   List,
-  ShoppingBag,
   BarChart2
 } from "lucide-react"
 import type React from "react"

@@ -1,10 +1,8 @@
 import React, {useEffect, useState} from "react"
 import Cards from "../components/Cards.tsx";
-import ShoppingListTable from "./shoppinglist/ShoppingListTable.tsx";
 import {BarChart3, Pill, ShoppingBag, Truck, Activity, Package} from "lucide-react";
-import {IShoppingList, Product} from "../types/types.ts";
+import { Product} from "../types/types.ts";
 import {useStore} from "../hooks/store.tsx";
-import {listShoppingLists} from "../service/shoppingListService.ts";
 import {getTotalAmount} from "../service/generalService.ts";
 import {listProducts} from "../service/productService.ts";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/ui/card.tsx";
@@ -17,24 +15,11 @@ interface Totals {
 }
 
 const Home: React.FC = () => {
-    const [shoppingList, setShoppingList] = useState<IShoppingList[]>([])
     const [lowStockProducts, setLowStockProducts] = useState<Product[]>([])
     const { store, tenantName } = useStore()
     const [totals, setTotals] = useState<Totals>()
     const [isLoading, setIsLoading] = useState(true)
 
-    useEffect(() => {
-        const fetchShoppingList = async () => {
-            if(store) {
-                const result = await listShoppingLists(store)
-                if(result?.data) {
-                    setShoppingList(result.data)
-                }
-            }
-        }
-        fetchShoppingList().then()
-
-    }, [store]);
     
     useEffect(() => {
         const fetchTotal = async () => {
