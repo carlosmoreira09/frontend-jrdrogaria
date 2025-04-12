@@ -3,8 +3,9 @@ import {Card, CardContent, CardHeader, CardTitle} from "./ui/card.tsx";
 
 interface CardProps {
     name: string
-    content?: number
+    content?: number | string
     icon?: React.ReactNode
+    className?: string;
 
 }
 const Cards: React.FC<CardProps> = ({name, content, icon}: CardProps) => {

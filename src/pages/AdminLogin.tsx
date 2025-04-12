@@ -5,6 +5,7 @@ import { Input } from '../components/ui/input';
 import { Toaster, toast } from 'react-hot-toast';
 import {useStore} from "../hooks/store.tsx";
 import  logoLogin  from "../assets/logo.jpeg"
+import {ArrowLeft} from "lucide-react";
 export default function AdminLogin() {
   const navigate = useNavigate();
   const auth = useStore();
@@ -68,7 +69,12 @@ export default function AdminLogin() {
   };
 
   return (
+
       <div className="min-h-screen flex flex-col items-center justify-center light:bg-gray-100 dark:bg-black">
+          <ArrowLeft
+              className="fixed top-20 left-10 text-2xl cursor-pointer text-amber-700 mr-2"
+              onClick={() => navigate('/')}
+          />
         <div
             className="w-full rounded-xl max-w-md p-8 space-y-8 bg-background dark:bg-white shadow-md dark:shadow-white">
           <div className="text-center">

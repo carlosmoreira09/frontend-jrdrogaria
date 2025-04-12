@@ -4,9 +4,8 @@ import * as XLSX from "xlsx"
  * Função de servidor para exportar dados para CSV
  * Útil para conjuntos de dados grandes que podem ser melhor processados no servidor
  */
-export async function exportLeadsToCSV(data: any[]) {
+export async function exportLeadsToCSV(data: any[], supplierName: string = '') {
     try {
-
             const workbook = XLSX.utils.book_new()
 
             const worksheet = XLSX.utils.json_to_sheet(data)
@@ -15,7 +14,8 @@ export async function exportLeadsToCSV(data: any[]) {
 
         const date = new Date()
         const formattedDate = date.toISOString().split("T")[0] // YYYY-MM-DD
-        const filename = `LISTA_DE_COMPRAS_${formattedDate}.xlsx`
+        const supplierText = supplierName ? `_${supplierName.replace(/\s+/g, '_')}` : ''
+        const filename = `LISTA_DE_COMPRAS_${supplierText}_${formattedDate}.xlsx`
 
         // Caminho para salvar o arquivo (ajuste conforme necessário)
 
@@ -30,4 +30,3 @@ export async function exportLeadsToCSV(data: any[]) {
         throw new Error("Falha ao exportar dados para XLSX")
     }
 }
-
