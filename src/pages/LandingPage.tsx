@@ -6,8 +6,8 @@ import { PhoneCall, LogIn } from "lucide-react";
 
 const LandingPage: React.FC = () => {
   // WhatsApp number - replace with the actual number
-  const whatsappNumber = "5522999999999"; // Format: country code + number
-  const whatsappMessage = encodeURIComponent("Olá! Gostaria de mais informações sobre a JR Drogaria.");
+  const whatsappNumber = "5522998987184"; // Format: country code + number
+  const whatsappMessage = encodeURIComponent("Olá! Gostaria de fazer um pedido.");
   const whatsappLink = `https://wa.me/${whatsappNumber}?text=${whatsappMessage}`;
 
   return (

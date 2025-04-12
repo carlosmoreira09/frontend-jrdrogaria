@@ -28,6 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../components/ui/select.tsx"
+import Cookies from "js-cookie";
 
 
 const ShoppingList: React.FC = () => {
@@ -39,7 +40,6 @@ const ShoppingList: React.FC = () => {
     const { store, tenantName } = useStore()
     
     const fetchProducts = async () => {
-        console.log(tenantName)
         if (store) {
             const result = await listProducts(store)
             if(result?.data) {
@@ -53,11 +53,11 @@ const ShoppingList: React.FC = () => {
             }
         }
     }
-    
+
     const fetchSuppliers = async () => {
         const result = await listSuppliers()
         if(result?.data) {
-            setSuppliers(result.data)
+            setSuppliers(result.data || [])
         } else {
             toast({
                 variant: 'destructive',
@@ -66,7 +66,60 @@ const ShoppingList: React.FC = () => {
             })
         }
     }
+    useEffect(() => {
+        console.log('Trying to load products from cookies for store:', store);
+        const savedProducts = Cookies.get(`selectedProducts_${store}`);
+        console.log('Retrieved from cookies:', savedProducts);
+        
+        if (savedProducts) {
+            try {
+                const parsedProducts = JSON.parse(savedProducts);
+                console.log('Successfully parsed products:', parsedProducts);
+                setSelectedProducts(parsedProducts);
+            } catch (error) {
+                console.error('Error parsing saved products:', error);
+                Cookies.remove(`selectedProducts_${store}`);
+            }
+        }
+    }, []);
     
+    useEffect(() => {
+        if (selectedProducts.length > 0) {
+            // Set cookie with proper options
+            const productData = JSON.stringify(selectedProducts);
+            console.log('Saving to cookies:', productData);
+            
+            // Use proper cookie options
+            Cookies.set(`selectedProducts_${store}`, productData, { 
+                expires: 7, // 7 days
+                path: '/',  // Available across the site
+                sameSite: 'strict',
+                secure: window.location.protocol === 'https:'
+            });
+            
+            // Verify it was set
+            console.log('Verification - Cookie after setting:', Cookies.get(`selectedProducts_${store}`));
+        }
+    }, [store]);
+    
+    // Add a function to debug cookies
+    const debugCookies = () => {
+        console.log('All cookies:', document.cookie);
+        console.log('Selected products cookie:', Cookies.get(`selectedProducts_${store}`));
+        console.log('Current selectedProducts state:', selectedProducts);
+    }
+    
+    const clearSelection = () => {
+        setSelectedProducts([]);
+        // Cookie removal happens automatically via the useEffect
+        toast({
+            title: 'JR Drogaria',
+            description: 'Seleção de produtos limpa'
+        });
+        
+        // Debug after clearing
+        setTimeout(debugCookies, 100);
+    }
     useEffect(() => {
         fetchProducts().then()
         fetchSuppliers().then()
@@ -101,7 +154,6 @@ const ShoppingList: React.FC = () => {
     
     const exportToCSV = async () => {
         const supplierName = selectedSupplier || ''
-        
         const exportData = selectedProducts.map((product) => ({
             ID: product.id,
             Nome: product.product_name,
@@ -110,7 +162,7 @@ const ShoppingList: React.FC = () => {
             ["Loja"]: tenantName + " Drogaria"
         }))
 
-        await exportLeadsToCSV(exportData)
+        await exportLeadsToCSV(exportData, supplierName)
         setExportDialogOpen(false)
         
         toast({
@@ -157,8 +209,7 @@ const ShoppingList: React.FC = () => {
                                             (<div key={product.id} className="flex items-center space-x-2 mb-2">
                                                 <Checkbox
                                                     id={`product-${product.id}`}
-                                                    checked={product.selected}
-                                                    onCheckedChange={() => handleProductSelect(product.id)}
+                                                    checked={selectedProducts.some(item => item.id === product.id)}                                                    onCheckedChange={() => handleProductSelect(product.id)}
                                                 />
 
                                                 <Label htmlFor={`product-${product.id}`}>{product.product_name}</Label>
@@ -174,19 +225,25 @@ const ShoppingList: React.FC = () => {
                 </CardContent>
             </Card>
             <div className="flex mt-4 gap-2">
-                <Button 
-                    onClick={openExportDialog} 
+                <Button
+                    onClick={openExportDialog}
                     disabled={selectedProducts.length === 0}
-                    className="flex items-center gap-2"
+                    className="flex cursor-pointer items-center gap-2"
                 >
                     <Download className="h-5 w-5"/>
                     Exportar Excel
                 </Button>
-                <Button 
-                    onClick={() => window.location.href = '/shopping/price-comparison'} 
-                    className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700">
+                <Button
+                    onClick={() => window.location.href = '/shopping/price-comparison'}
+                    className="flex items-center gap-2 cursor-pointer text-white bg-green-700 hover:bg-green-800">
                     <BarChart2 className="h-5 w-5"/>
                     Comparar Preços
+                </Button>
+                <Button
+                    onClick={clearSelection}
+                    className="flex items-center gap-2 cursor-pointer text-white bg-red-600 hover:bg-red-700">
+                    <Trash2 className="h-5 w-5"/>
+                    Limpar Seleção
                 </Button>
             </div>
             {selectedProducts.length > 0 && (
@@ -245,8 +302,7 @@ const ShoppingList: React.FC = () => {
                                 <SelectTrigger className="col-span-3">
                                     <SelectValue placeholder="Selecione um fornecedor" />
                                 </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="">Nenhum</SelectItem>
+                                <SelectContent className="bg-white rounded-2xl">
                                     {suppliers.map((supplier) => (
                                         <SelectItem 
                                             key={supplier.id} 

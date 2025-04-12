@@ -9,6 +9,7 @@ type ProductTableProps = {
     deleteProduct: (id: number | undefined) => void
 }
 const ProductTable: React.FC<ProductTableProps> = ({products,deleteProduct}) => {
+
     return (
         <Table>
             <TableHeader>

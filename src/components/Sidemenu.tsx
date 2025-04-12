@@ -73,39 +73,34 @@ const menuItems: MenuItem[] = [
                 icon: <PlusCircle className="w-4 h-4" />
             },
             {
-                title: "Listas Criadas",
-                linkTo: '/shopping/add-shopping',
-                icon: <ShoppingBag className="w-4 h-4" />
-            },
-            {
                 title: "Comparar Preços",
                 linkTo: '/shopping/price-comparison',
                 icon: <BarChart2 className="w-4 h-4" />
             }
         ],
     },
-    {
-        id: "gerenciar",
-        title: "Gerenciar",
-        icon: <Settings className="w-5 h-5" />,
-        subItems: [
-            {
-                title: "Criar usuário",
-                linkTo: '/add-user',
-                icon: <PlusCircle className="w-4 h-4" />
-            },
-            {
-                title: "Gerenciar Usuários",
-                linkTo: '/manage-users',
-                icon: <Users className="w-4 h-4" />
-            },
-            {
-                title: "Gerenciar Lojas",
-                linkTo: '/lojas',
-                icon: <Building className="w-4 h-4" />
-            }
-        ],
-    },
+    // {
+    //     id: "gerenciar",
+    //     title: "Gerenciar",
+    //     icon: <Settings className="w-5 h-5" />,
+    //     subItems: [
+    //         {
+    //             title: "Criar usuário",
+    //             linkTo: '/add-user',
+    //             icon: <PlusCircle className="w-4 h-4" />
+    //         },
+    //         {
+    //             title: "Gerenciar Usuários",
+    //             linkTo: '/manage-users',
+    //             icon: <Users className="w-4 h-4" />
+    //         },
+    //         {
+    //             title: "Gerenciar Lojas",
+    //             linkTo: '/lojas',
+    //             icon: <Building className="w-4 h-4" />
+    //         }
+    //     ],
+    // },
 ]
 
 const SidebarMenu: React.FC = () => {
