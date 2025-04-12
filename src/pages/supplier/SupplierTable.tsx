@@ -14,9 +14,7 @@ const SupplierTable: React.FC<ProductTableProps> = ({supplier,deleteProduct}) =>
             <TableHeader>
                 <TableRow>
                     <TableHead>Nome</TableHead>
-                    <TableHead>CNPJ</TableHead>
                     <TableHead>Whatsapp</TableHead>
-                    <TableHead>Forma de Pagamento</TableHead>
                     <TableHead>Prazo para pagamento</TableHead>
                     <TableHead>Ação</TableHead>
                 </TableRow>
@@ -25,9 +23,7 @@ const SupplierTable: React.FC<ProductTableProps> = ({supplier,deleteProduct}) =>
                 {supplier.map((supplier) => (
                     <TableRow key={supplier.id}>
                         <TableCell className="font-medium">{supplier.supplier_name}</TableCell>
-                        <TableCell>{supplier.cnpj}</TableCell>
                         <TableCell className="font-medium">{supplier.whatsAppNumber}</TableCell>
-                        <TableCell>{supplier.payment_mode}</TableCell>
                         <TableCell className="font-medium">{supplier.payment_term}</TableCell>
                         <TableCell>
                             <Button onClick={() => deleteProduct(supplier.id)} className="w-36">

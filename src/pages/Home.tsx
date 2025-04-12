@@ -1,10 +1,8 @@
 import React, {useEffect, useState} from "react"
 import Cards from "../components/Cards.tsx";
-import {BarChart3, Pill, ShoppingBag, Truck, Activity, Package} from "lucide-react";
-import { Product} from "../types/types.ts";
+import {BarChart3, Pill, ShoppingBag, Truck, Package} from "lucide-react";
 import {useStore} from "../hooks/store.tsx";
 import {getTotalAmount} from "../service/generalService.ts";
-import {listProducts} from "../service/productService.ts";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/ui/card.tsx";
 import { Button } from "../components/ui/button.tsx";
 
@@ -15,7 +13,6 @@ interface Totals {
 }
 
 const Home: React.FC = () => {
-    const [lowStockProducts, setLowStockProducts] = useState<Product[]>([])
     const { store, tenantName } = useStore()
     const [totals, setTotals] = useState<Totals>()
     const [isLoading, setIsLoading] = useState(true)
@@ -35,22 +32,7 @@ const Home: React.FC = () => {
         fetchTotal().then()
 
     }, [store]);
-    
-    useEffect(() => {
-        const fetchProducts = async () => {
-            if(store) {
-                const result = await listProducts(store)
-                if(result?.data) {
-                    // Filter products with low stock (less than 5)
-                    const lowStock = result.data.filter(product => 
-                        product.stock !== undefined && product.stock < 5 && product.stock > 0
-                    )
-                    setLowStockProducts(lowStock)
-                }
-            }
-        }
-        fetchProducts().then()
-    }, [store]);
+
 
     return (
         <div className="flex flex-col space-y-8 p-4">
@@ -152,59 +134,6 @@ const Home: React.FC = () => {
                 {/*</Card>*/}
                 
                 {/* Low Stock Products */}
-                <Card className="border-amber-200">
-                    <CardHeader>
-                        <CardTitle className="text-amber-800 flex items-center">
-                            <Activity className="mr-2 h-5 w-5" />
-                            Produtos com Estoque Baixo
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        {lowStockProducts.length > 0 ? (
-                            <div className="overflow-x-auto">
-                                <table className="w-full">
-                                    <thead>
-                                        <tr className="border-b">
-                                            <th className="text-left py-2 px-2">Produto</th>
-                                            <th className="text-center py-2 px-2">Estoque</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {lowStockProducts.slice(0, 8).map((product) => (
-                                            <tr key={product.id} className="border-b border-gray-100">
-                                                <td className="py-2 px-2">{product.product_name}</td>
-                                                <td className="text-center py-2 px-2">
-                                                    <span className={`inline-block px-2 py-1 rounded-full text-xs ${
-                                                        product.stock === 0 ? 'bg-red-100 text-red-800' : 
-                                                        product.stock && product.stock < 3 ? 'bg-amber-100 text-amber-800' : 
-                                                        'bg-yellow-100 text-yellow-800'
-                                                    }`}>
-                                                        {product.stock}
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                                {lowStockProducts.length > 8 && (
-                                    <div className="mt-4 text-center">
-                                        <Button 
-                                            variant="link" 
-                                            onClick={() => window.location.href = '/product/home'}
-                                            className="text-amber-700"
-                                        >
-                                            Ver todos os produtos com estoque baixo
-                                        </Button>
-                                    </div>
-                                )}
-                            </div>
-                        ) : (
-                            <div className="text-center py-8 text-gray-500">
-                                Não há produtos com estoque baixo no momento
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
             </div>
         </div>
     )

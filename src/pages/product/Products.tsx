@@ -11,9 +11,7 @@ import {createProduct, deleteProduct, listProducts} from "../../service/productS
 const ProductsPage: React.FC = () => {
     const [products, setProducts] = useState<Product[]>([])
     const [product, setProduct] = useState<string>("")
-    const [stock, setStock] = useState<number>(0)
     const totalProducts = products.length
-    const lowStockProducts = products.filter((p) => p.stock ?? 0 <= 10).length
     const { store} = useStore()
     const { toast } = useToast()
 
@@ -39,7 +37,7 @@ const ProductsPage: React.FC = () => {
         e.preventDefault()
         if (store) {
             try {
-                await createProduct({ product_name: product, stock: stock}, store)
+                await createProduct({ product_name: product}, store)
                     .then(
                     (result) => {
                     if(result?.data) {
@@ -50,7 +48,6 @@ const ProductsPage: React.FC = () => {
                             description: 'Produto adicionado'
                         })
                         setProduct('')
-                        setStock(0)
                     } else {
                         toast({
                             variant: 'destructive',
@@ -87,11 +84,11 @@ const ProductsPage: React.FC = () => {
 
     return (
         <div className="container mx-auto py-10">
-            <h1 className="text-3xl font-bold mb-6">Gerenciamento de Produtos</h1>
-            <ProductStats title="Total de Produtos" totalProducts={totalProducts} lowStockProducts={lowStockProducts} />
+            <h1 className="text-3xl font-bold mb-6">Lista de Produtos</h1>
+            <ProductStats title="Total de Produtos" totalProducts={totalProducts}/>
             <div className="flex flex-col p-4 mt-5 gap-4">
                 <div>
-                    <AddProduct submitProduct={handleSubmit} setProduct={setProduct} setStock={setStock} product={product} stock={stock} />
+                    <AddProduct submitProduct={handleSubmit} setProduct={setProduct} product={product} />
                 </div>
                 <div>
                     <ProductTable deleteProduct={handleDelete} products={products} />

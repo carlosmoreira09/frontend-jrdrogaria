@@ -24,9 +24,10 @@ export type Props = {
 
 export const StoreContext = createContext<StoreContext>({} as StoreContext);
 
-const saveStorage = (user: ITokenPayload, token: string) => {
+const saveStorage = (user: ITokenPayload, token: string, store?: number) => {
     Cookies.set('token', token);
     Cookies.set('user', JSON.stringify(user));
+    if(store) Cookies.set('tenant', store.toString());
 };
 
 const StoreProvider = ({ children }: Props) => {
@@ -36,8 +37,8 @@ const StoreProvider = ({ children }: Props) => {
             try {
                 const tokenFromStorage = Cookies.get('token');
                 const user = Cookies.get('user');
-
-                if (tokenFromStorage && user) {
+                const tenant = Cookies.get('tenant');
+                if (tokenFromStorage && user && tenant) {
                     const decoded: ITokenPayload = jwtDecode(tokenFromStorage);
                     if (decoded.exp * 1000 < Date.now()) {
                         logOut();
@@ -66,7 +67,7 @@ const StoreProvider = ({ children }: Props) => {
 
         if(result  && result?.token) {
             const decoded: ITokenPayload = jwtDecode(result.token)
-            saveStorage(decoded,result.token)
+            saveStorage(decoded,result.token, store)
             setStore(store)
             setRole(decoded.role)
             setIsAuthenticated(true)

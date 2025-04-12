@@ -9,9 +9,6 @@ export interface User {
 export interface Product {
     id?: number,
     product_name?: string,
-    stock?: number,
-    selected?: boolean
-    price?: number
     tenants?: Tenant
 }
 export interface Tenant {
@@ -22,20 +19,20 @@ export interface Tenant {
 
 }
 
+export interface IProductAndStock {
+    product?: string
+    stock: number
+}
+
 export interface IShoppingList {
     id?: number
-    products: Product[]
-    product_price?: number
-    supplier?: Supplier
-    tenants?: Tenant
+    list_name: string
+    products: IProductAndStock[]
 }
 export interface Supplier  {
     id?: number;
     supplier_name: string;
-    cnpj: string;
-    email: string;
     whatsAppNumber: string;
-    payment_mode: string;
     payment_term: string;
 }
 

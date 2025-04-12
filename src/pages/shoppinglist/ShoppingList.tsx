@@ -1,15 +1,14 @@
 import React, {useEffect, useState} from "react"
 import { Button } from "../../components/ui/button.tsx"
 import { Label } from "../../components/ui/label.tsx"
-import { Checkbox } from "../../components/ui/checkbox.tsx"
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "../../components/ui/card.tsx"
-import {IShoppingList, Product, Supplier} from "../../types/types.ts";
+import {IProductAndStock, IShoppingList, Product, Supplier} from "../../types/types.ts";
 import {listProducts} from "../../service/productService.ts";
 import {useStore} from "../../hooks/store.tsx";
 import {toast} from "../../hooks/use-toast.ts";
 import AutocompleteFilter from "../../components/ProductFilter.tsx";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "../../components/ui/table.tsx";
-import {Download, Trash2, BarChart2} from "lucide-react";
+import {Download, Trash2, BarChart2, SaveIcon} from "lucide-react";
 import {createShoppingList} from "../../service/shoppingListService.ts";
 import {exportLeadsToCSV} from "../../components/serverExportCsv.tsx";
 import {listSuppliers} from "../../service/supplierService.ts";
@@ -29,6 +28,7 @@ import {
   SelectValue,
 } from "../../components/ui/select.tsx"
 import Cookies from "js-cookie";
+import {Input} from "../../components/ui/input.tsx";
 
 
 const ShoppingList: React.FC = () => {
@@ -37,6 +37,7 @@ const ShoppingList: React.FC = () => {
     const [suppliers, setSuppliers] = useState<Supplier[]>([])
     const [selectedSupplier, setSelectedSupplier] = useState<string>("")
     const [exportDialogOpen, setExportDialogOpen] = useState(false)
+    const [lowStockProducts, setLowStockProducts] = useState<IProductAndStock[]>([])
     const { store, tenantName } = useStore()
     
     const fetchProducts = async () => {
@@ -172,20 +173,38 @@ const ShoppingList: React.FC = () => {
     }
     
     const createNewList = async () => {
+        const date = new Date()
+        const formattedDate = date.toISOString().split("T")[0] // YYYY-MM-DD
+        const filename = `LISTA_DE_COMPRAS_${formattedDate}`
+
+        const shoppingList: IShoppingList = {
+            list_name: filename,
+            products: lowStockProducts,
+        }
         if(store) {
-            const newList: IShoppingList = {
-                products: selectedProducts
-            }
-            await createShoppingList(newList,store).then(
-                (result) => {
-                    if(result?.data) {
-                        toast({
-                            title: 'JR Drogaria',
-                            description: 'Lista de compras criada'
-                        })
-                    }
-                }
-            )
+            const result = await createShoppingList(shoppingList, store)
+            console.log(result)
+        }
+
+    }
+
+    const handleAddProduct = (e: React.ChangeEvent<HTMLInputElement> , product?: string) => {
+        e.preventDefault()
+
+        const stock = Number(e.target.value)
+        const existingProductIndex = lowStockProducts.findIndex(item => item.product === product);
+
+        if (existingProductIndex !== -1) {
+            // Product exists, update its stock
+            const updatedProducts = [...lowStockProducts];
+            updatedProducts[existingProductIndex] = {
+                ...updatedProducts[existingProductIndex],
+                stock: stock
+            };
+            setLowStockProducts(updatedProducts);
+        } else {
+            // Product doesn't exist, add it to the array
+            setLowStockProducts([...lowStockProducts, { product: product, stock: stock }]);
         }
     }
 
@@ -199,29 +218,6 @@ const ShoppingList: React.FC = () => {
                 </CardHeader>
                 <CardContent>
                     <AutocompleteFilter onClick={handleProductSelect} items={products}/>
-                    <div className="mt-10">
-                        <h2>Produtos com estoque zerado</h2>
-                        <div className="mt-2">
-                            <Card className="grid col-auto row-auto p-2">
-                                {products.map((product) =>
-                                    (
-                                        product.stock == 0 ?
-                                            (<div key={product.id} className="flex items-center space-x-2 mb-2">
-                                                <Checkbox
-                                                    id={`product-${product.id}`}
-                                                    checked={selectedProducts.some(item => item.id === product.id)}                                                    onCheckedChange={() => handleProductSelect(product.id)}
-                                                />
-
-                                                <Label htmlFor={`product-${product.id}`}>{product.product_name}</Label>
-                                            </div>) : <></>
-                                    )
-                                )}
-                            </Card>
-                        </div>
-                    </div>
-                    <Button onClick={createNewList} className="mt-4">
-                        Criar Nova Lista
-                    </Button>
                 </CardContent>
             </Card>
             <div className="flex mt-4 gap-2">
@@ -265,7 +261,9 @@ const ShoppingList: React.FC = () => {
                                     {selectedProducts.map((product) => (
                                         <TableRow key={product.id}>
                                             <TableCell>{product.product_name}</TableCell>
-                                            <TableCell>{product.stock}</TableCell>
+                                            <TableCell><Input onChange={(e) => {
+                                                handleAddProduct(e, product.product_name)
+                                            }} className="w-16" id="stock" /> </TableCell>
                                             <TableCell className="cursor-pointer"
                                                        onClick={() => removeItem(product.id)}><Trash2
                                                 className="text-red-700"/></TableCell>
@@ -274,8 +272,14 @@ const ShoppingList: React.FC = () => {
                                 </TableBody>
                             </Table>
                         </CardContent>
-                        <CardFooter className="flex justify-between">
+                        <CardFooter className="flex flew-row justify-between">
                             <div>Total de produtos: {selectedProducts.length}</div>
+                            <Button
+                                onClick={createNewList}
+                                className="flex items-center gap-2 cursor-pointer text-white bg-green-700 hover:bg-green-800">
+                                <SaveIcon className="h-5 w-5"/>
+                                Salvar Lista
+                            </Button>
                         </CardFooter>
                     </Card>
                 </div>

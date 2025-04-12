@@ -15,7 +15,6 @@ const ProductTable: React.FC<ProductTableProps> = ({products,deleteProduct}) => 
             <TableHeader>
                 <TableRow>
                     <TableHead>Nome</TableHead>
-                    <TableHead>Estoque</TableHead>
                     <TableHead>Ação</TableHead>
                 </TableRow>
             </TableHeader>
@@ -23,7 +22,6 @@ const ProductTable: React.FC<ProductTableProps> = ({products,deleteProduct}) => 
                 {products.map((product) => (
                     <TableRow key={product.id}>
                         <TableCell className="font-medium">{product.product_name}</TableCell>
-                        <TableCell>{product.stock}</TableCell>
                         <TableCell>
                             <Button onClick={() => deleteProduct(product.id)} className="w-36">
                                 <Trash2 className="mr-1 h-4 w-4" />

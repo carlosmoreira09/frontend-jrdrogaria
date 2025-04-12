@@ -20,11 +20,12 @@ export const listShoppingLists = async (id_store: number): Promise<GeneralRespon
 
 export const createShoppingList = async (newList: IShoppingList, id_store: number): Promise<GeneralResponse | undefined> => {
     try {
-        const response = await apiClient.post<GeneralResponse>('/shopping', newList, {
-            headers: {
-                'x-tenant-id': id_store
-            }
-        })
+        const response = await apiClient.post<GeneralResponse>('/shopping', newList,
+            {
+                headers: {
+                    'x-tenant-id': id_store
+                }
+            })
         return response.data
     } catch (error) {
         if(isAxiosError(error)) {

@@ -73,23 +73,8 @@ const AddSupplier: React.FC = () => {
                                    onChange={handleInputChange} required/>
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="cnpj">CNPJ</Label>
-                            <Input id="cnpj" name="cnpj" value={newSupplier.cnpj} onChange={handleInputChange}
-                                   required/>
-                        </div>
-                        <div className="grid gap-2">
-                            <Label htmlFor="email">E-mail</Label>
-                            <Input id="email" name="email" value={newSupplier.email}
-                                   onChange={handleInputChange} required/>
-                        </div>
-                        <div className="grid gap-2">
                             <Label htmlFor="whatsAppNumber">WhatsApp</Label>
                             <Input id="whatsapp" name="whatsAppNumber" value={newSupplier.whatsAppNumber}
-                                   onChange={handleInputChange} required/>
-                        </div>
-                        <div className="grid gap-2">
-                            <Label htmlFor="payment_mode">Modo de Pagamento</Label>
-                            <Input id="payment_mode" name="payment_mode" value={newSupplier.payment_mode}
                                    onChange={handleInputChange} required/>
                         </div>
                         <div className="grid gap-2">
