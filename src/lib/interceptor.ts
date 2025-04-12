@@ -2,7 +2,7 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 
 export const apiClient = axios.create({
-    baseURL: 'http://172.235.150.164/api/v1',
+    baseURL: 'https://jrdrograria.com.br/api/v1',
 });
 
 apiClient.interceptors.request.use(
