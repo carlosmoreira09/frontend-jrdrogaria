@@ -24,7 +24,7 @@ const Header: React.FC = () => {
     const [title, setTitle] = useState<string>('')
     const store = useStore();
     const [selectStore, setSelectedStore] = useState<string>('1')
-    const [username, setUsername] = useState<string>('Usuário')
+    const [username, setUsername] = useState<string>('Gustavo')
     
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 1000)

@@ -20,6 +20,7 @@ export interface Tenant {
 }
 
 export interface IProductAndStock {
+    id?: number
     product?: string
     stock: number
 }
@@ -36,10 +37,6 @@ export interface Supplier  {
     payment_term: string;
 }
 
-export interface Login {
-    username: string;
-    password: string;
-}
 export interface GeneralResponse {
     message: string;
     token?: string;

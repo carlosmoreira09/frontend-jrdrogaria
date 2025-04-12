@@ -4,7 +4,7 @@ import {Product} from "../types/types.ts";
 
 interface AutocompleteFilterProps {
     items?: Product[]
-    onClick: (id: number | undefined) => void
+    onClick: (name: string | undefined) => void
 }
 
 export default function AutocompleteFilter({ items = [],onClick }: AutocompleteFilterProps) {
@@ -32,7 +32,7 @@ export default function AutocompleteFilter({ items = [],onClick }: AutocompleteF
             {searchTerm && (
                 <ul className="mt-2 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
                     {filteredItems.map((item) => (
-                        <li onClick={() => onClick(item.id)} key={item.id} className="px-4 py-2 hover:bg-gray-100">
+                        <li onClick={() => onClick(item.product_name)} key={item.id} className="px-4 py-2 hover:bg-gray-100">
                             <div className="font-semibold">{item.product_name}</div>
                         </li>
                     ))}

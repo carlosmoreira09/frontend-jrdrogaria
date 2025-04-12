@@ -1,6 +1,9 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../components/ui/table.tsx"
 import React from "react";
 import {IShoppingList} from "../../types/types.ts";
+import {format} from "date-fns";
+import {ptBR} from "date-fns/locale";
+import {useNavigate} from "react-router";
 
 
 type ShoppingListTableProps = {
@@ -8,23 +11,26 @@ type ShoppingListTableProps = {
 }
 
 const ShoppingListTable:React.FC<ShoppingListTableProps> = ({ items }: ShoppingListTableProps) => {
+    const navigate = useNavigate()
+
+    const handleRowClick = (list: IShoppingList) => {
+        navigate(`/shopping/home/`, { state: list})
+    }
 
     return (
         <div className="w-full">
             <Table>
                 <TableHeader>
                     <TableRow>
-                        <TableHead>Nome</TableHead>
-                        <TableHead>Quantidade</TableHead>
-                        <TableHead>Preço Unitário</TableHead>
-
+                        <TableHead>Data da Lista</TableHead>
+                        <TableHead>Quantidade de Produtos</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
                     {items.map((item) => (
-                        <TableRow key={item.id}>
-                            <TableCell>{item.products.toString()}</TableCell>
-                            <TableCell>{item.product_price}</TableCell>
+                        <TableRow onClick={() => handleRowClick(item)} className="cursor-pointer hover:bg-muted"  key={item.id}>
+                            <TableCell>{format(item.list_name.split('_')[3], "dd/MM/yyyy", { locale: ptBR })}</TableCell>
+                            <TableCell>{item.products.length}</TableCell>
                         </TableRow>
                     ))}
                     <TableRow>

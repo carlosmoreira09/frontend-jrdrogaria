@@ -5,6 +5,9 @@ import {useStore} from "../hooks/store.tsx";
 import {getTotalAmount} from "../service/generalService.ts";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/ui/card.tsx";
 import { Button } from "../components/ui/button.tsx";
+import {IShoppingList} from "../types/types.ts";
+import {listShoppingLists} from "../service/shoppingListService.ts";
+import ShoppingListTable from "./shoppinglist/ShoppingListTable.tsx";
 
 interface Totals {
     totalSupplier: number
@@ -16,8 +19,8 @@ const Home: React.FC = () => {
     const { store, tenantName } = useStore()
     const [totals, setTotals] = useState<Totals>()
     const [isLoading, setIsLoading] = useState(true)
+    const [shoppingList, setShoppingList] = useState<IShoppingList[]>([])
 
-    
     useEffect(() => {
         const fetchTotal = async () => {
             if(store) {
@@ -30,6 +33,24 @@ const Home: React.FC = () => {
             }
         }
         fetchTotal().then()
+
+    }, [store]);
+
+    useEffect(() => {
+        const fetchShoppingList = async () => {
+            if(store) {
+                setIsLoading(true)
+                console.log(store)
+                const result = await listShoppingLists(store)
+                console.log(result)
+                if(result?.data) {
+                    setShoppingList(result.data)
+                    console.log(result)
+                }
+                setIsLoading(false)
+            }
+        }
+        fetchShoppingList().then()
 
     }, [store]);
 
@@ -108,32 +129,30 @@ const Home: React.FC = () => {
             </Card>
             
             {/* Two column layout for latest lists and low stock */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Latest Shopping Lists */}
-                {/*<Card className="border-green-200">*/}
-                {/*    <CardHeader>*/}
-                {/*        <CardTitle className="text-green-800 flex items-center">*/}
-                {/*            <ShoppingBag className="mr-2 h-5 w-5" />*/}
-                {/*            Últimas Listas de Compras*/}
-                {/*        </CardTitle>*/}
-                {/*    </CardHeader>*/}
-                {/*    <CardContent>*/}
-                {/*        <ShoppingListTable items={shoppingList.slice(0, 5)}/>*/}
-                {/*        {shoppingList.length > 5 && (*/}
-                {/*            <div className="mt-4 text-center">*/}
-                {/*                <Button */}
-                {/*                    variant="link" */}
-                {/*                    onClick={() => window.location.href = '/shopping/home'}*/}
-                {/*                    className="text-green-700"*/}
-                {/*                >*/}
-                {/*                    Ver todas as listas*/}
-                {/*                </Button>*/}
-                {/*            </div>*/}
-                {/*        )}*/}
-                {/*    </CardContent>*/}
-                {/*</Card>*/}
-                
-                {/* Low Stock Products */}
+            <div className="grid grid-cols-1 gap-6">
+                <Card className="border-green-200">
+                    <CardHeader>
+                        <CardTitle className="text-green-800 flex items-center">
+                            <ShoppingBag className="mr-2 h-5 w-5" />
+                            Últimas Listas de Compras
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <ShoppingListTable items={shoppingList.slice(0, 5)}/>
+                        {shoppingList.length > 5 && (
+                            <div className="mt-4 text-center">
+                                <Button
+                                    variant="link"
+                                    onClick={() => window.location.href = '/shopping/home'}
+                                    className="text-green-700"
+                                >
+                                    Ver todas as listas
+                                </Button>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+
             </div>
         </div>
     )

@@ -9,7 +9,7 @@ import {toast} from "../../hooks/use-toast.ts";
 import AutocompleteFilter from "../../components/ProductFilter.tsx";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "../../components/ui/table.tsx";
 import {Download, Trash2, BarChart2, SaveIcon} from "lucide-react";
-import {createShoppingList} from "../../service/shoppingListService.ts";
+import {createShoppingList, updateShoppingList} from "../../service/shoppingListService.ts";
 import {exportLeadsToCSV} from "../../components/serverExportCsv.tsx";
 import {listSuppliers} from "../../service/supplierService.ts";
 import {
@@ -27,19 +27,33 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../components/ui/select.tsx"
-import Cookies from "js-cookie";
 import {Input} from "../../components/ui/input.tsx";
+import {useLocation} from "react-router-dom";
 
 
 const ShoppingList: React.FC = () => {
     const [products, setProducts] = useState<Product[]>([])
-    const [selectedProducts, setSelectedProducts] = useState<Product[]>([])
     const [suppliers, setSuppliers] = useState<Supplier[]>([])
     const [selectedSupplier, setSelectedSupplier] = useState<string>("")
     const [exportDialogOpen, setExportDialogOpen] = useState(false)
+    const [idList,setIdList] = useState<number>()
+    const [isUpdate, setIsUpdate] = useState<boolean>(false)
     const [lowStockProducts, setLowStockProducts] = useState<IProductAndStock[]>([])
     const { store, tenantName } = useStore()
-    
+    const location = useLocation()
+    const [isEdit, setIsEdit] = useState<boolean>(false)
+    const fetchList = async () => {
+        if(location.state) {
+            const list = location.state
+            setIdList(list.id)
+            setLowStockProducts(list.products)
+            setIsUpdate(true)
+            setIsEdit(true)
+        }
+    }
+    useEffect(() => {
+        fetchList().then()
+    }, [store]);
     const fetchProducts = async () => {
         if (store) {
             const result = await listProducts(store)
@@ -67,82 +81,36 @@ const ShoppingList: React.FC = () => {
             })
         }
     }
-    useEffect(() => {
-        console.log('Trying to load products from cookies for store:', store);
-        const savedProducts = Cookies.get(`selectedProducts_${store}`);
-        console.log('Retrieved from cookies:', savedProducts);
-        
-        if (savedProducts) {
-            try {
-                const parsedProducts = JSON.parse(savedProducts);
-                console.log('Successfully parsed products:', parsedProducts);
-                setSelectedProducts(parsedProducts);
-            } catch (error) {
-                console.error('Error parsing saved products:', error);
-                Cookies.remove(`selectedProducts_${store}`);
-            }
-        }
-    }, []);
-    
-    useEffect(() => {
-        if (selectedProducts.length > 0) {
-            // Set cookie with proper options
-            const productData = JSON.stringify(selectedProducts);
-            console.log('Saving to cookies:', productData);
-            
-            // Use proper cookie options
-            Cookies.set(`selectedProducts_${store}`, productData, { 
-                expires: 7, // 7 days
-                path: '/',  // Available across the site
-                sameSite: 'strict',
-                secure: window.location.protocol === 'https:'
-            });
-            
-            // Verify it was set
-            console.log('Verification - Cookie after setting:', Cookies.get(`selectedProducts_${store}`));
-        }
-    }, [store]);
-    
-    // Add a function to debug cookies
-    const debugCookies = () => {
-        console.log('All cookies:', document.cookie);
-        console.log('Selected products cookie:', Cookies.get(`selectedProducts_${store}`));
-        console.log('Current selectedProducts state:', selectedProducts);
-    }
-    
     const clearSelection = () => {
-        setSelectedProducts([]);
+        setLowStockProducts([]);
         // Cookie removal happens automatically via the useEffect
         toast({
             title: 'JR Drogaria',
             description: 'Seleção de produtos limpa'
         });
-        
-        // Debug after clearing
-        setTimeout(debugCookies, 100);
+        window.history.replaceState({}, document.title, window.location.pathname);
     }
     useEffect(() => {
         fetchProducts().then()
         fetchSuppliers().then()
-        setSelectedProducts([])
     }, [store]);
 
-    const handleProductSelect = (id: number | undefined) => {
-        const product = products.find((products) => products.id === id)
-        if(product && selectedProducts.some((i) => i.id === product.id)) {
-                removeItem(product.id)
+    const handleProductSelect = (name_product: string | undefined) => {
+        const product = products.find((products) => products.product_name === name_product)
+        if(product && lowStockProducts.some((i) => i.product === product.product_name)) {
+                removeItem(product.product_name)
         }
-        if(product && !selectedProducts.some((i) => i.id === product.id)) {
-            setSelectedProducts([...selectedProducts, product])
+        if(product && !lowStockProducts.some((i) => i.product === product.product_name)) {
+            setLowStockProducts([...lowStockProducts, { product: product.product_name, stock: 0 }])
         }
     }
     
-    const removeItem = (id: number | undefined) => {
-        setSelectedProducts(selectedProducts.filter((item) => item.id !== id))
+    const removeItem = (name_product: string | undefined) => {
+        setLowStockProducts(lowStockProducts.filter((item) => item.product !== name_product))
     }
     
     const openExportDialog = () => {
-        if (selectedProducts.length === 0) {
+        if (lowStockProducts.length === 0) {
             toast({
                 variant: 'destructive',
                 title: 'JR Drogaria',
@@ -155,9 +123,9 @@ const ShoppingList: React.FC = () => {
     
     const exportToCSV = async () => {
         const supplierName = selectedSupplier || ''
-        const exportData = selectedProducts.map((product) => ({
+        const exportData = lowStockProducts.map((product) => ({
             ID: product.id,
-            Nome: product.product_name,
+            Nome: product.product,
             ["Preço Unitário"]: '',
             Fornecedor: supplierName,
             ["Loja"]: tenantName + " Drogaria"
@@ -178,19 +146,36 @@ const ShoppingList: React.FC = () => {
         const filename = `LISTA_DE_COMPRAS_${formattedDate}`
 
         const shoppingList: IShoppingList = {
+            id: idList,
             list_name: filename,
             products: lowStockProducts,
         }
-        if(store) {
-            const result = await createShoppingList(shoppingList, store)
-            console.log(result)
-        }
+        if (store) {
 
+            if (isUpdate) {
+                const result = await updateShoppingList(shoppingList, store)
+                if(result) {
+                    toast({
+                        variant: 'default',
+                        title: 'JR Drogaria',
+                        description: 'Lista atualizada com sucesso'
+                    })
+                }
+            } else {
+                const result = await createShoppingList(shoppingList, store)
+                if(result) {
+                    toast({
+                        variant: 'default',
+                        title: 'JR Drogaria',
+                        description: 'Lista criada com sucesso'
+                    })
+                }
+            }
+        }
     }
 
-    const handleAddProduct = (e: React.ChangeEvent<HTMLInputElement> , product?: string) => {
+    const handleAddProduct = (e: React.ChangeEvent<HTMLInputElement>, product?: string) => {
         e.preventDefault()
-
         const stock = Number(e.target.value)
         const existingProductIndex = lowStockProducts.findIndex(item => item.product === product);
 
@@ -223,7 +208,7 @@ const ShoppingList: React.FC = () => {
             <div className="flex mt-4 gap-2">
                 <Button
                     onClick={openExportDialog}
-                    disabled={selectedProducts.length === 0}
+                    disabled={lowStockProducts.length === 0}
                     className="flex cursor-pointer items-center gap-2"
                 >
                     <Download className="h-5 w-5"/>
@@ -241,8 +226,22 @@ const ShoppingList: React.FC = () => {
                     <Trash2 className="h-5 w-5"/>
                     Limpar Seleção
                 </Button>
+                <div className="flex items-center ml-auto">
+                    <div className="flex items-center space-x-2">
+                        <input
+                            type="checkbox"
+                            id="edit-mode"
+                            checked={isEdit}
+                            onChange={() => setIsEdit(!isEdit)}
+                            className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                        />
+                        <Label htmlFor="edit-mode" className="text-sm font-medium text-gray-700">
+                            Modo de Edição
+                        </Label>
+                    </div>
+                </div>
             </div>
-            {selectedProducts.length > 0 && (
+            {lowStockProducts.length > 0 && (
                 <div className="mt-5">
                     <Card>
                         <CardHeader>
@@ -258,14 +257,15 @@ const ShoppingList: React.FC = () => {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {selectedProducts.map((product) => (
+                                    {lowStockProducts.map((product) => (
                                         <TableRow key={product.id}>
-                                            <TableCell>{product.product_name}</TableCell>
-                                            <TableCell><Input onChange={(e) => {
-                                                handleAddProduct(e, product.product_name)
+                                            <TableCell>{product.product}</TableCell>
+                                            <TableCell><Input disabled={isEdit} placeholder={product.stock.toString()}
+                                                onChange={(e) => {
+                                                handleAddProduct(e, product.product)
                                             }} className="w-16" id="stock" /> </TableCell>
                                             <TableCell className="cursor-pointer"
-                                                       onClick={() => removeItem(product.id)}><Trash2
+                                                       onClick={() => removeItem(product.product)}><Trash2
                                                 className="text-red-700"/></TableCell>
                                         </TableRow>
                                     ))}
@@ -273,12 +273,12 @@ const ShoppingList: React.FC = () => {
                             </Table>
                         </CardContent>
                         <CardFooter className="flex flew-row justify-between">
-                            <div>Total de produtos: {selectedProducts.length}</div>
+                            <div>Total de produtos: {lowStockProducts.length}</div>
                             <Button
                                 onClick={createNewList}
                                 className="flex items-center gap-2 cursor-pointer text-white bg-green-700 hover:bg-green-800">
                                 <SaveIcon className="h-5 w-5"/>
-                                Salvar Lista
+                                {isUpdate ? 'Atualizar Lista' : 'Salvar Lista'}
                             </Button>
                         </CardFooter>
                     </Card>

@@ -33,4 +33,22 @@ export const createShoppingList = async (newList: IShoppingList, id_store: numbe
         }
     }
 }
+export const updateShoppingList = async (newList: IShoppingList, id_store: number): Promise<GeneralResponse | undefined> => {
+    try {
+        const response = await apiClient.put<GeneralResponse>(`/shopping/${newList.id}`, newList,
+            {
+                headers: {
+                    'x-tenant-id': id_store
+                },
+                params: {
+                    id: newList.id
+                }
+            })
+        return response.data
+    } catch (error) {
+        if(isAxiosError(error)) {
+            return error.response?.data
+        }
+    }
+}
 
