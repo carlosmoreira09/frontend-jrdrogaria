@@ -55,7 +55,7 @@ export const PriceComparison: React.FC = () => {
         
         // Check if the required columns exist in row 3 (index 2)
         const headerRow = jsonData[2] as Record<string, any>;
-        console.log('Header row:', headerRow);
+
         
         if (!headerRow) {
           toast({
@@ -65,21 +65,20 @@ export const PriceComparison: React.FC = () => {
           });
           return;
         }
-        
+
         // Helper function to check if a property with a specific value exists in the object
         const hasPropertyWithValue = (obj: Record<string, any>, value: string): boolean => {
-          return Object.values(obj).some(val => 
+          return Object.values(obj).some(val =>
             typeof val === 'string' && val.includes(value)
           );
         };
-        
+
         // Check for required columns in the values rather than keys
         const hasPriceColumn = hasPropertyWithValue(headerRow, 'Preço Unitário');
         const hasSupplierColumn = hasPropertyWithValue(headerRow, 'Fornecedor');
         const hasNameColumn = hasPropertyWithValue(headerRow, 'Nome');
-        
-        console.log('Column check:', { hasPriceColumn, hasSupplierColumn, hasNameColumn });
-        
+
+
         if (!hasPriceColumn || !hasSupplierColumn || !hasNameColumn) {
           toast({
             variant: 'destructive',
@@ -98,14 +97,14 @@ export const PriceComparison: React.FC = () => {
           }
           return null;
         };
-        
+
         // Find the keys for our required columns
         const priceKey = findKeyForValue(headerRow, 'Preço Unitário');
         const supplierKey = findKeyForValue(headerRow, 'Fornecedor');
         const nameKey = findKeyForValue(headerRow, 'Nome');
         
         console.log('Column keys:', { priceKey, supplierKey, nameKey });
-        
+
         if (!priceKey || !supplierKey || !nameKey) {
           toast({
             variant: 'destructive',

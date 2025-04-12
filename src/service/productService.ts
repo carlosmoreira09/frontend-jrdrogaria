@@ -50,3 +50,18 @@ export const deleteProduct = async (id: number | undefined,id_store: number): Pr
         }
     }
 }
+
+export const createMultipleProducts = async (products: Product[], id_store: number): Promise<GeneralResponse | undefined> => {
+    try {
+        const response = await apiClient.post<GeneralResponse>('/products/multiple',  products , {
+            headers: {
+                'x-tenant-id': id_store
+            }
+        })
+        return response.data
+    } catch (error) {
+        if(isAxiosError(error)) {
+            return error.response?.data
+        }
+    }
+}
