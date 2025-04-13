@@ -8,7 +8,7 @@ import {useStore} from "../../hooks/store.tsx";
 import {toast} from "../../hooks/use-toast.ts";
 import AutocompleteFilter from "../../components/ProductFilter.tsx";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "../../components/ui/table.tsx";
-import {Download, Trash2, BarChart2, SaveIcon} from "lucide-react";
+import {Download, MessageSquare, Trash2, BarChart2, SaveIcon} from "lucide-react";
 import {createShoppingList, updateShoppingList} from "../../service/shoppingListService.ts";
 import {exportLeadsToCSV} from "../../components/serverExportCsv.tsx";
 import {listSuppliers} from "../../service/supplierService.ts";
@@ -139,6 +139,44 @@ const ShoppingList: React.FC = () => {
             description: 'Lista exportada com sucesso'
         })
     }
+    const sendViaWhatsApp = () => {
+        const supplier = suppliers.find(s => s.supplier_name === selectedSupplier);
+
+        if (!supplier || !supplier.whatsAppNumber) {
+            toast({
+                variant: 'destructive',
+                title: 'JR Drogaria',
+                description: 'Número de WhatsApp não encontrado para este fornecedor'
+            });
+            return;
+        }
+
+        // Format the message
+        const date = new Date().toLocaleDateString('pt-BR');
+        const productsList = lowStockProducts.map(p => `- ${p.product}: `).join('\n');
+
+        const message = `*Lista de Compras - ${tenantName} Drogaria*\n\n` +
+            `*Fornecedor:* ${selectedSupplier}\n` +
+            `*Data:* ${date}\n\n` +
+            `*Produtos:*\n${productsList}\n\n` +
+            `Por favor, envie um orçamento para estes itens. Obrigado!`;
+
+        // Format phone number (remove non-numeric characters)
+        const phoneNumber = supplier.whatsAppNumber.replace(/\D/g, '');
+
+        // Create WhatsApp URL
+        const whatsappUrl = `https://wa.me/55${phoneNumber}?text=${encodeURIComponent(message)}`;
+
+        // Open WhatsApp in a new tab
+        window.open(whatsappUrl, '_blank');
+
+        setExportDialogOpen(false);
+
+        toast({
+            title: 'JR Drogaria',
+            description: 'Redirecionando para WhatsApp'
+        });
+    }
     
     const createNewList = async () => {
         const date = new Date()
@@ -212,7 +250,7 @@ const ShoppingList: React.FC = () => {
                     className="flex cursor-pointer items-center gap-2"
                 >
                     <Download className="h-5 w-5"/>
-                    Exportar Excel
+                    Exportar
                 </Button>
                 <Button
                     onClick={() => window.location.href = '/shopping/price-comparison'}
@@ -287,7 +325,7 @@ const ShoppingList: React.FC = () => {
             
             {/* Export Dialog */}
             <Dialog open={exportDialogOpen} onOpenChange={setExportDialogOpen}>
-                <DialogContent className="sm:max-w-[425px]">
+                <DialogContent className="sm:max-w-[600px]">
                     <DialogHeader>
                         <DialogTitle>Exportar Lista de Compras</DialogTitle>
                         <DialogDescription>
@@ -319,12 +357,23 @@ const ShoppingList: React.FC = () => {
                             </Select>
                         </div>
                     </div>
-                    <DialogFooter>
+                    <DialogFooter className="flex flex-col sm:flex-row gap-2">
                         <Button variant="outline" onClick={() => setExportDialogOpen(false)}>
                             Cancelar
                         </Button>
-                        <Button onClick={exportToCSV}>
-                            Exportar
+                        <Button 
+                            onClick={exportToCSV}
+                            className="flex items-center gap-2"
+                        >
+                            <Download className="h-4 w-4" />
+                            Exportar Excel
+                        </Button>
+                        <Button 
+                            onClick={sendViaWhatsApp}
+                            variant="outline"
+                        >
+                            <MessageSquare className="h-4 w-4" />
+                            Enviar WhatsApp
                         </Button>
                     </DialogFooter>
                 </DialogContent>

@@ -78,7 +78,6 @@ export const PriceComparison: React.FC = () => {
         const hasSupplierColumn = hasPropertyWithValue(headerRow, 'Fornecedor');
         const hasNameColumn = hasPropertyWithValue(headerRow, 'Nome');
 
-
         if (!hasPriceColumn || !hasSupplierColumn || !hasNameColumn) {
           toast({
             variant: 'destructive',
