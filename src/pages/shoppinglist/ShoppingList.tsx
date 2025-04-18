@@ -1,17 +1,17 @@
 import React, {useEffect, useState} from "react"
-import { Button } from "../../components/ui/button.tsx"
-import { Label } from "../../components/ui/label.tsx"
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "../../components/ui/card.tsx"
-import {IProductAndStock, IShoppingList, Product, Supplier} from "../../types/types.ts";
-import {listProducts} from "../../service/productService.ts";
-import {useStore} from "../../hooks/store.tsx";
-import {toast} from "../../hooks/use-toast.ts";
-import AutocompleteFilter from "../../components/ProductFilter.tsx";
-import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "../../components/ui/table.tsx";
+import { Button } from "../../components/ui/button"
+import { Label } from "../../components/ui/label"
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "../../components/ui/card"
+import {IProductAndStock, IShoppingList, Product, Supplier} from "../../types/types";
+import {listProducts} from "../../service/productService";
+import {useStore} from "../../hooks/store";
+import {toast} from "../../hooks/use-toast";
+import AutocompleteFilter from "../../components/ProductFilter";
+import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "../../components/ui/table";
 import {Download, MessageSquare, Trash2, BarChart2, SaveIcon} from "lucide-react";
-import {createShoppingList, updateShoppingList} from "../../service/shoppingListService.ts";
-import {exportLeadsToCSV} from "../../components/serverExportCsv.tsx";
-import {listSuppliers} from "../../service/supplierService.ts";
+import {createShoppingList, updateShoppingList} from "../../service/shoppingListService";
+import {exportLeadsToCSV} from "../../components/serverExportCsv";
+import {listSuppliers} from "../../service/supplierService";
 import {
   Dialog,
   DialogContent,
@@ -19,17 +19,16 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "../../components/ui/dialog.tsx"
+} from "../../components/ui/dialog"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../../components/ui/select.tsx"
-import {Input} from "../../components/ui/input.tsx";
+} from "../../components/ui/select"
+import {Input} from "../../components/ui/input";
 import {useLocation} from "react-router-dom";
-
 
 const ShoppingList: React.FC = () => {
     const [products, setProducts] = useState<Product[]>([])

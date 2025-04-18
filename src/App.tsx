@@ -1,8 +1,8 @@
 import {RouterProvider} from "react-router";
 import React from "react";
 import {router} from "./routes";
-import StoreProvider from "./context/StoreContext.tsx";
-import {ToastProvider} from "./components/ui/toast.tsx";
+import StoreProvider from "./context/StoreContext";
+import {ToastProvider} from "./components/ui/toast";
 
 const App: React.FC = () => {
     return (

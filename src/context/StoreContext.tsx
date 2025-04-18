@@ -3,7 +3,7 @@ import Cookies from 'js-cookie';
 import {GeneralResponse, ITokenPayload} from "../types/types";
 import { loginService } from "../service/authService";
 import {jwtDecode} from "jwt-decode";
-import {ProfileRole} from "../types/ProfileRole.ts";
+import {ProfileRole} from "../types/ProfileRole";
 
 
 export interface StoreContext {

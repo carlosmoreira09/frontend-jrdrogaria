@@ -1,8 +1,5 @@
-"use client"
-
-// Inspired by react-hot-toast library
 import * as React from "react"
-import {ToastActionElement, ToastProps} from "../components/ui/toast.tsx";
+import {ToastActionElement, ToastProps} from "../components/ui/toast";
 
 
 

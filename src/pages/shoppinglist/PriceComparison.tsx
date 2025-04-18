@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import { Button } from "../../components/ui/button.tsx";
-import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card.tsx";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../components/ui/table.tsx";
+import { Button } from "../../components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../components/ui/table";
 import { Upload, FileDown } from "lucide-react";
 import * as XLSX from 'xlsx';
-import { toast } from "../../hooks/use-toast.ts";
+import { toast } from "../../hooks/use-toast";
 
 interface SupplierPrice {
   productName: string;

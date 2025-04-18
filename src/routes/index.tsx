@@ -1,15 +1,15 @@
 import {createBrowserRouter, Navigate} from "react-router-dom";
-import Home from "../pages/Home.tsx";
-import AddSupplier from "../pages/supplier/AddSupplier.tsx";
-import SupplierList from "../pages/supplier/SupplierList.tsx";
-import AppLayout from "../pages/AppLayout.tsx";
-import ProductsPage from "../pages/product/Products.tsx";
-import ShoppingList from "../pages/shoppinglist/ShoppingList.tsx";
-import LandingPage from "../pages/LandingPage.tsx";
-import AdminLogin from "../pages/AdminLogin.tsx";
-import {ProtectedRoute} from "./ProtectedRoute/ProtectedRoute.tsx";
-import {ProfileRole} from "../types/ProfileRole.ts";
-import {PriceComparison} from "../pages/shoppinglist/PriceComparison.tsx";
+import Home from "../pages/Home";
+import AddSupplier from "../pages/supplier/AddSupplier";
+import SupplierList from "../pages/supplier/SupplierList";
+import AppLayout from "../pages/AppLayout";
+import ProductsPage from "../pages/product/Products";
+import ShoppingList from "../pages/shoppinglist/ShoppingList";
+import LandingPage from "../pages/LandingPage";
+import AdminLogin from "../pages/AdminLogin";
+import {ProtectedRoute} from "./ProtectedRoute/ProtectedRoute";
+import {ProfileRole} from "../types/ProfileRole";
+import {PriceComparison} from "../pages/shoppinglist/PriceComparison";
 
 export const router = createBrowserRouter([
     {
