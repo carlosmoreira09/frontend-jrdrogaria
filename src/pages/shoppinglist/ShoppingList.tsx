@@ -29,6 +29,7 @@ import {
 } from "../../components/ui/select"
 import {Input} from "../../components/ui/input";
 import {useLocation} from "react-router-dom";
+import {useNavigate} from "react-router";
 
 const ShoppingList: React.FC = () => {
     const [products, setProducts] = useState<Product[]>([])
@@ -40,6 +41,7 @@ const ShoppingList: React.FC = () => {
     const [lowStockProducts, setLowStockProducts] = useState<IProductAndStock[]>([])
     const { store, tenantName } = useStore()
     const location = useLocation()
+    const navigate = useNavigate();
     const [isEdit, setIsEdit] = useState<boolean>(false)
     const fetchList = async () => {
         if(location.state) {
@@ -252,7 +254,7 @@ const ShoppingList: React.FC = () => {
                     Exportar
                 </Button>
                 <Button
-                    onClick={() => window.location.href = '/shopping/price-comparison'}
+                    onClick={() => navigate('/shopping/price-comparison')}
                     className="flex items-center gap-2 cursor-pointer text-white bg-green-700 hover:bg-green-800">
                     <BarChart2 className="h-5 w-5"/>
                     Comparar Preços

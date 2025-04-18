@@ -8,6 +8,7 @@ import { Button } from "../components/ui/button.tsx";
 import {IShoppingList} from "../types/types.ts";
 import {listShoppingLists} from "../service/shoppingListService.ts";
 import ShoppingListTable from "./shoppinglist/ShoppingListTable.tsx";
+import {useNavigate} from "react-router";
 
 interface Totals {
     totalSupplier: number
@@ -20,7 +21,7 @@ const Home: React.FC = () => {
     const [totals, setTotals] = useState<Totals>()
     const [isLoading, setIsLoading] = useState(true)
     const [shoppingList, setShoppingList] = useState<IShoppingList[]>([])
-
+    const navigate = useNavigate()
     useEffect(() => {
         const fetchTotal = async () => {
             if(store) {
@@ -95,21 +96,21 @@ const Home: React.FC = () => {
                 <CardContent>
                     <div className="flex flex-wrap gap-3">
                         <Button 
-                            onClick={() => window.location.href = '/shopping/home'} 
+                            onClick={() => navigate('/shopping/home')}
                             className="bg-green-700 text-white hover:bg-green-800"
                         >
                             <ShoppingBag className="mr-2 h-4 w-4" />
                             Nova Lista de Compras
                         </Button>
                         <Button 
-                            onClick={() => window.location.href = '/shopping/price-comparison'} 
+                            onClick={() => navigate('/shopping/price-comparison')}
                             className="bg-green-700 text-white hover:bg-green-800"
                         >
                             <BarChart3 className="mr-2 h-4 w-4" />
                             Comparar Preços
                         </Button>
                         <Button 
-                            onClick={() => window.location.href = '/product/home'} 
+                            onClick={() => navigate('/product/home')}
                             variant="outline"
                             className="border-green-700 text-green-700 hover:bg-green-700 hover:text-white"
                         >
@@ -117,7 +118,7 @@ const Home: React.FC = () => {
                             Gerenciar Produtos
                         </Button>
                         <Button 
-                            onClick={() => window.location.href = '/supplier/home'} 
+                            onClick={() => navigate('/supplier/home')}
                             variant="outline"
                             className="border-green-700 text-green-700 hover:bg-green-700 hover:text-white"
                         >
@@ -143,7 +144,7 @@ const Home: React.FC = () => {
                             <div className="mt-4 text-center">
                                 <Button
                                     variant="link"
-                                    onClick={() => window.location.href = '/shopping/home'}
+                                    onClick={() => navigate('/shopping/home')}
                                     className="text-green-700"
                                 >
                                     Ver todas as listas
