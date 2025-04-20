@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import {
   ChevronRight,
   ShoppingCart,
@@ -104,14 +104,27 @@ const SidebarMenu: React.FC = () => {
     const [activeMenu, setActiveMenu] = useState<string | null>(null)
     const navigate = useNavigate();
     const store = useStore()
+    const menuRef = useRef<HTMLDivElement>(null);
 
     const handleLogout = () => {
         store.logOut()
         navigate("/")
     }
 
+    useEffect(() => {
+        const handleOutsideClick = (event: MouseEvent) => {
+            if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+                setActiveMenu(null);
+            }
+        };
+        document.addEventListener('mousedown', handleOutsideClick);
+        return () => {
+            document.removeEventListener('mousedown', handleOutsideClick);
+        };
+    }, []);
+
     return (
-        <div className="flex h-screen bg-green-900">
+        <div ref={menuRef} className="flex h-screen bg-green-900">
             <nav className="w-64 bg-green-900 text-white shadow-lg flex flex-col">
                 {/* Logo section */}
                 <div className="p-4 border-b border-green-800 flex items-center justify-center">
