@@ -17,8 +17,8 @@ const ProductsPage: React.FC = () => {
     const { toast } = useToast()
 
     const fetchProducts = async () => {
-        if (store) {
-            const result = await listProducts(store)
+
+            const result = await listProducts()
             if(result?.data) {
                 setProducts(result.data)
             } else {
@@ -28,7 +28,6 @@ const ProductsPage: React.FC = () => {
                     description: 'Erro ao listar produtos'
                 })
             }
-        }
     }
     useEffect(() => {
         fetchProducts().then()
@@ -36,9 +35,8 @@ const ProductsPage: React.FC = () => {
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
-        if (store) {
             try {
-                await createProduct({ product_name: product}, store)
+                await createProduct({ product_name: product})
                     .then(
                         (result) => {
                             if(result?.data) {
@@ -61,11 +59,9 @@ const ProductsPage: React.FC = () => {
             } catch (error) {
                 console.log(error)
             }
-        }
     }
     const handleDelete = async (id: number | undefined) => {
-        if(store) {
-            await deleteProduct(id,store).then(
+            await deleteProduct(id).then(
                 (result) => {
                     if(result?.message.includes('deletado')) {
                         toast({
@@ -81,7 +77,6 @@ const ProductsPage: React.FC = () => {
                 }
             )
         }
-    }
 
     return (
         <div className="container mx-auto py-10">

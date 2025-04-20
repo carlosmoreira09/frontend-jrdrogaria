@@ -4,14 +4,10 @@ import {GeneralResponse, Product} from "../types/types.ts";
 
 
 
-export const listProducts = async (id_store: number): Promise<GeneralResponse | undefined> => {
+export const listProducts = async (): Promise<GeneralResponse | undefined> => {
     try {
         
-        const response = await apiClient.get<GeneralResponse>('/products', {
-            headers: {
-                'x-tenant-id': id_store
-            }
-        });
+        const response = await apiClient.get<GeneralResponse>('/products');
         return response.data;
     } catch (error) {
         if(isAxiosError(error)) {
@@ -20,13 +16,9 @@ export const listProducts = async (id_store: number): Promise<GeneralResponse | 
     }
 };
 
-export const createProduct = async (product: Product, id_store: number): Promise<GeneralResponse | undefined> => {
+export const createProduct = async (product: Product): Promise<GeneralResponse | undefined> => {
     try {
-        const response = await apiClient.post<GeneralResponse>('/products', product, {
-            headers: {
-                'x-tenant-id': id_store
-            }
-        })
+        const response = await apiClient.post<GeneralResponse>('/products', product)
         return response.data
     } catch (error) {
         if(isAxiosError(error)) {
@@ -35,14 +27,9 @@ export const createProduct = async (product: Product, id_store: number): Promise
     }
 }
 
-export const deleteProduct = async (id: number | undefined,id_store: number): Promise<GeneralResponse | undefined> => {
+export const deleteProduct = async (id: number | undefined): Promise<GeneralResponse | undefined> => {
     try {
-        const response = await apiClient.delete<GeneralResponse>(`/products/${id}`, {
-            headers: {
-                'x-tenant-id': id_store
-            }
-
-        })
+        const response = await apiClient.delete<GeneralResponse>(`/products/${id}`)
         return  response.data
     } catch (error) {
         if (isAxiosError(error)) {
@@ -51,13 +38,9 @@ export const deleteProduct = async (id: number | undefined,id_store: number): Pr
     }
 }
 
-export const createMultipleProducts = async (products: Product[], id_store: number): Promise<GeneralResponse | undefined> => {
+export const createMultipleProducts = async (products: Product[]): Promise<GeneralResponse | undefined> => {
     try {
-        const response = await apiClient.post<GeneralResponse>('/products/multiple',  products , {
-            headers: {
-                'x-tenant-id': id_store
-            }
-        })
+        const response = await apiClient.post<GeneralResponse>('/products/multiple',  products )
         return response.data
     } catch (error) {
         if(isAxiosError(error)) {

@@ -105,7 +105,7 @@ const ProductExcelUpload: React.FC<ProductExcelUploadProps> = ({ onUploadComplet
         
         setIsUploading(true);
         try {
-            const result = await createMultipleProducts(validProducts, store);
+            const result = await createMultipleProducts(validProducts);
             
             if (result?.message) {
                 toast({

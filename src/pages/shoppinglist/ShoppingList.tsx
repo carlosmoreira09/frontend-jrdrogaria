@@ -56,8 +56,7 @@ const ShoppingList: React.FC = () => {
         fetchList().then()
     }, [store]);
     const fetchProducts = async () => {
-        if (store) {
-            const result = await listProducts(store)
+            const result = await listProducts()
             if(result?.data) {
                 setProducts(result.data)
             } else {
@@ -67,7 +66,6 @@ const ShoppingList: React.FC = () => {
                     description: 'Erro ao listar produtos'
                 })
             }
-        }
     }
 
     const fetchSuppliers = async () => {

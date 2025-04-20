@@ -9,14 +9,6 @@ export interface User {
 export interface Product {
     id?: number,
     product_name?: string,
-    tenants?: Tenant
-}
-export interface Tenant {
-    id: number
-    name: string
-    domain: string
-    whatsAppNumber: string
-
 }
 
 export interface IProductAndStock {
