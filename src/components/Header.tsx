@@ -108,7 +108,7 @@ const Header: React.FC = () => {
                 </div>
             </div>
             <div className="text-lg md:text-xl capitalize font-bold hidden md:block">
-               Loja: {title} Drograria
+               Loja: {title}
             </div>
 
             <div className="flex justify-end items-center text-sm space-x-2">
@@ -131,7 +131,7 @@ const Header: React.FC = () => {
                                 <div className="flex flex-col space-y-1">
                                     <p className="text-sm font-medium leading-none">{username}</p>
                                     <p className="text-xs leading-none text-muted-foreground">
-                                        {title} Drograria
+                                        {title}
                                     </p>
                                 </div>
                             </DropdownMenuLabel>
