@@ -113,11 +113,10 @@ const ShoppingList: React.FC = () => {
     const exportToCSV = async () => {
         const supplierName = selectedSupplier || ''
         const exportData = lowStockProducts.map((product) => ({
-            ID: product.id,
             Nome: product.product,
-            ["Preço Unitário"]: '',
             Fornecedor: supplierName,
-            ["Loja"]: tenantName + " Drogaria"
+            ["Loja"]: tenantName + " Drogaria",
+            ["Preço Unitário"]: '',
         }))
 
         await exportLeadsToCSV(exportData, supplierName)

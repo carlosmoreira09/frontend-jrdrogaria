@@ -10,7 +10,6 @@ export async function exportLeadsToCSV(data: any[], supplierName: string = '') {
         const headerRows = [
             [`Fornecedor: ${supplierName || "Não especificado"}`],
             ["Data: " + new Date().toLocaleDateString('pt-BR')],
-            [""] // Empty row for spacing
         ];
         // Convert your data to array of arrays if needed
         const headers = Object.keys(data[0] || {});
@@ -25,22 +24,18 @@ export async function exportLeadsToCSV(data: any[], supplierName: string = '') {
         const worksheet = XLSX.utils.aoa_to_sheet(allRows);
         // Style the supplier and date rows
         worksheet["A1"].s = {
-            font: { bold: true, color: { rgb: "FF0000" } }, // Red, bold text
+            font: { bold: true, color: { rgb: "FF0000" }, width: 20 }, // Red, bold text
             fill: { fgColor: { rgb: "FFFF00" } }           // Yellow background
         };
         worksheet["A1"] = { t: "s", v: `Fornecedor: ${supplierName || "Não especificado"}`, s: { font: { bold: true } } };
         worksheet["A2"] = { t: "s", v: "Data: " + new Date().toLocaleDateString('pt-BR'), s: { font: { bold: true } } };
-        for (let i = 0; i < headers.length; i++) {
-            const cellRef = XLSX.utils.encode_cell({ r: 3, c: i });
-            if (worksheet[cellRef]) {
-                worksheet[cellRef].s = { font: { bold: true }, fill: { fgColor: { rgb: "E2EFDA" } } };
-            }
-        }
 
         // Or set column widths:
         worksheet['!cols'] = [
-            { wch: 20 }, // Width of column A in characters
-            { wch: 30 }  // Width of column B
+            { wch: 80 },
+            { wch: 60 } ,
+            { wch: 35 },
+            { wch: 25 }  // Width of column B// Width of column B// Width of column B// Width of column B
         ];
         XLSX.utils.book_append_sheet(workbook, worksheet, "Products")
 

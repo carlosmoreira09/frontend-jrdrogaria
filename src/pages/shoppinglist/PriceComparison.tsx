@@ -54,7 +54,7 @@ export const PriceComparison: React.FC = () => {
         }
         
         // Check if the required columns exist in row 3 (index 2)
-        const headerRow = jsonData[2] as Record<string, any>;
+        const headerRow = jsonData[1] as Record<string, any>;
 
         
         if (!headerRow) {
@@ -116,7 +116,7 @@ export const PriceComparison: React.FC = () => {
         // Extract the data starting from row 3 (index 2)
         const extractedData: SupplierPrice[] = [];
         
-        for (let i = 3; i < jsonData.length; i++) {
+        for (let i = 2; i < jsonData.length; i++) {
           const row = jsonData[i] as Record<string, any>;
           
           // Skip rows without required data
