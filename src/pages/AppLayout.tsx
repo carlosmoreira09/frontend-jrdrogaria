@@ -8,26 +8,43 @@ const AppLayout: React.FC = () => {
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
     useEffect(() => {
-        // Função para prevenir o comportamento de pull-to-refresh
+        // Function to prevent pull-to-refresh only when at the top of the page
+        // and only for vertical pulls (allowing horizontal navigation)
         const preventPullToRefresh = (e: TouchEvent) => {
-            // Previne o comportamento padrão em todos os casos
-            e.preventDefault();
-        }
+            // Only prevent default if we're at the top of the page and pulling down
+            if (document.scrollingElement?.scrollTop === 0 && e.touches[0].clientY > 0) {
+                // Check if this is a vertical pull (not a horizontal swipe)
+                const touchStartY = e.touches[0].clientY;
+                
+                // Add a move handler to check direction
+                const handleTouchMove = (moveEvent: TouchEvent) => {
+                    const touchY = moveEvent.touches[0].clientY;
+                    
+                    // If pulling down (increasing Y value) and at top, prevent default
+                    if (touchY > touchStartY + 5) { // Add a small threshold to detect intentional pull
+                        moveEvent.preventDefault();
+                    }
+                    
+                    // Remove this handler after first move
+                    document.removeEventListener('touchmove', handleTouchMove);
+                };
+                
+                // Add the move handler
+                document.addEventListener('touchmove', handleTouchMove, { passive: false });
+            }
+        };
 
-        // Adiciona event listeners para diferentes eventos de toque
-        document.addEventListener("touchstart", preventPullToRefresh, { passive: false });
-        document.addEventListener("touchmove", preventPullToRefresh, { passive: false });
-
-        // Aplica estilos CSS para prevenir overscroll
-        document.body.style.overscrollBehavior = "none";
+        // Only add the touchstart listener
+        document.addEventListener("touchstart", preventPullToRefresh, { passive: true });
         
-        // Remove os event listeners e estilos quando o componente é desmontado
+        // Apply CSS for overscroll behavior but in a way that allows normal navigation
+        document.body.style.overscrollBehaviorY = "none"; // Only prevent vertical overscroll
+        
         return () => {
             document.removeEventListener("touchstart", preventPullToRefresh);
-            document.removeEventListener("touchmove", preventPullToRefresh);
-            document.body.style.overscrollBehavior = "";
+            document.body.style.overscrollBehaviorY = "";
         }
-    }, [])
+    }, []);
 
     useEffect(() => {
         // Check if device is mobile/tablet
