@@ -1,10 +1,11 @@
-import React, {useEffect} from "react";
+import React, {useEffect, useState} from "react";
 import { Outlet } from "react-router-dom";
 import SidebarMenu from "../components/Sidemenu.tsx";
-import Header from "../components/Header.tsx";
 import { Toaster } from "../components/ui/toaster"
 
 const AppLayout: React.FC = () => {
+    const [isMobile, setIsMobile] = useState(false);
+
     useEffect(() => {
         // Função para prevenir o comportamento de pull-to-refresh
         const preventPullToRefresh = (e: TouchEvent) => {
@@ -26,23 +27,38 @@ const AppLayout: React.FC = () => {
             document.body.style.overscrollBehavior = "";
         }
     }, [])
+
+    useEffect(() => {
+        // Check if device is mobile/tablet
+        const checkMobile = () => {
+            setIsMobile(window.innerWidth < 1024); // 1024px is typical tablet breakpoint
+        };
+        
+        // Initial check
+        checkMobile();
+        
+        // Add resize listener
+        window.addEventListener('resize', checkMobile);
+        
+        return () => {
+            window.removeEventListener('resize', checkMobile);
+        };
+    }, []);
+
     return (
-            <div className="overflow-x-hidden">
-            <div className="fixed top-0 w-full z-40">
-                <Header/>
-            </div>
+        <div className="overflow-x-hidden">
+            {/* Sidebar or top navbar based on screen size */}
+            <SidebarMenu />
+            
+            {/* Main content */}
             <div className="flex h-screen">
-                <div className="fixed mt-16">
-                    <SidebarMenu/>
-                </div>
-                <div className="flex-1 ml-64 mt-18 p-4">
+                <div className={`flex-1 ${isMobile ? 'mt-16 ml-0' : 'ml-64'} p-4`}>
                     <Outlet/>
                     <Toaster/>
                 </div>
             </div>
-            </div>
-)
-    ;
+        </div>
+    );
 }
 
 export default AppLayout;

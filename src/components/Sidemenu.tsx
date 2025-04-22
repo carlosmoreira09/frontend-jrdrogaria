@@ -9,13 +9,22 @@ import {
   LogOut,
   PlusCircle,
   List,
-  BarChart2
+  BarChart2,
+  Menu as MenuIcon,
+  X
 } from "lucide-react"
 import type React from "react"
 import {Link} from "react-router-dom";
 import {useNavigate} from "react-router";
 import {useStore} from "../hooks/store.tsx";
 import appLogo from '../assets/app-logo.jpeg';
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "./ui/select.tsx";
+import {storeOptions} from "../lib/utils.ts";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "./ui/avatar.tsx";
 
 type MenuItem = {
     id: string
@@ -75,8 +84,8 @@ const menuItems: MenuItem[] = [
                 icon: <BarChart2 className="w-4 h-4" />
             }
         ],
-    },
-    // {
+    },]
+    // {{
     //     id: "gerenciar",
     //     title: "Gerenciar",
     //     icon: <Settings className="w-5 h-5" />,
@@ -98,10 +107,17 @@ const menuItems: MenuItem[] = [
     //         }
     //     ],
     // },
-]
+    // ... }}]
 
 const SidebarMenu: React.FC = () => {
     const [activeMenu, setActiveMenu] = useState<string | null>(null)
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+    const [isMobile, setIsMobile] = useState(false)
+    const [currentTime, setCurrentTime] = useState(new Date())
+    const [selectStore, setSelectedStore] = useState<string>('1')
+    const [username, setUsername] = useState<string>('Usuário')
+    const [title, setTitle] = useState<string>('')
+    
     const navigate = useNavigate();
     const store = useStore()
     const menuRef = useRef<HTMLDivElement>(null);
@@ -112,95 +128,316 @@ const SidebarMenu: React.FC = () => {
     }
 
     useEffect(() => {
+        // Timer for current time
+        const timer = setInterval(() => setCurrentTime(new Date()), 1000)
+        
+        // Get username from localStorage
+        const storedUsername = localStorage.getItem('username');
+        if (storedUsername) {
+            setUsername(storedUsername);
+        }
+        
+        return () => clearInterval(timer)
+    }, []);
+
+    useEffect(() => {
+        if(selectStore) {
+           const result = storeOptions.find((store) => store.id == parseInt(selectStore))
+            if(result){
+                store.setStore(result.id)
+                store.setTenantName(result.name)
+                setTitle(result.name)
+            }
+        }
+    }, [selectStore]);
+
+    useEffect(() => {
+        // Check if device is mobile/tablet
+        const checkMobile = () => {
+            setIsMobile(window.innerWidth < 1024); // 1024px is typical tablet breakpoint
+        };
+        
+        // Initial check
+        checkMobile();
+        
+        // Add resize listener
+        window.addEventListener('resize', checkMobile);
+        
+        return () => {
+            window.removeEventListener('resize', checkMobile);
+        };
+    }, []);
+
+    useEffect(() => {
         const handleOutsideClick = (event: MouseEvent) => {
             if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
                 setActiveMenu(null);
+                if (isMobile) {
+                    setIsMobileMenuOpen(false);
+                }
             }
         };
         document.addEventListener('mousedown', handleOutsideClick);
         return () => {
             document.removeEventListener('mousedown', handleOutsideClick);
         };
-    }, []);
+    }, [isMobile]);
 
-    return (
-        <div ref={menuRef} className="flex h-screen bg-green-900">
-            <nav className="w-64 bg-green-900 text-white shadow-lg flex flex-col">
-                {/* Logo section */}
-                <div className="p-4 border-b border-green-800 flex items-center justify-center">
-                    <Link to="/home" className="flex items-center transform hover:scale-105 transition-transform duration-200">
-                        <img src={appLogo} alt="JR Drogaria Logo" className="rounded-full h-10 w-auto mr-2" />
-                        <span className="text-xl font-bold">JR Drogaria</span>
-                    </Link>
+    const formatTime = (date: Date) => {
+        return date.toLocaleTimeString('pt-BR', {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        })
+    }
+
+    // Get initials for avatar
+    const getInitials = (name: string) => {
+        return name
+            .split(' ')
+            .map(part => part[0])
+            .join('')
+            .toUpperCase()
+            .substring(0, 2);
+    };
+
+    // Render mobile top navbar
+    const renderMobileNav = () => {
+        return (
+            <div className="fixed top-0 left-0 w-full bg-green-900 shadow-lg z-50">
+                {/* Mobile top bar */}
+                <div className="flex justify-between items-center p-3">
+                    <div className="flex items-center">
+                        <Link to={'/home'}>
+                        <img src={appLogo} alt="JR Drogaria Logo" className="rounded-full h-8 w-auto mr-2" />
+                        </Link>
+                        <span className="text-white text-lg font-bold">JR Drogaria</span>
+                    </div>
+                    
+                    <div className="flex items-center space-x-2">
+                        {/* Store selector */}
+                        <div className="hidden sm:block">
+                            <Select value={selectStore} onValueChange={setSelectedStore}>
+                                <SelectTrigger 
+                                    className="min-w-max py-3 h-8 rounded-full text-white bg-green-800 border-green-700"
+                                    id="store">
+                                    <SelectValue placeholder="Loja"/>
+                                </SelectTrigger>
+                                <SelectContent className="bg-gray-200">
+                                    {storeOptions.map((store) => (
+                                        <SelectItem key={store.id} value={store.id.toString()}>
+                                            {store.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        
+                        {/* Time display */}
+                        <div className="hidden sm:block text-white text-xs">
+                            <div>{formatTime(currentTime)}</div>
+                        </div>
+                        
+                        {/* Avatar */}
+                        <div className="mr-2">
+                            <Avatar className="h-8 w-8 cursor-pointer" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+                                <AvatarImage src="/avatars/01.png" alt={username} />
+                                <AvatarFallback className="bg-green-700">{getInitials(username)}</AvatarFallback>
+                            </Avatar>
+                        </div>
+                        
+                        {/* Menu toggle */}
+                        <button 
+                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                            className="p-1 rounded-lg text-white hover:bg-green-700 focus:outline-none"
+                        >
+                            {isMobileMenuOpen ? <X className="w-6 h-6" /> : <MenuIcon className="w-6 h-6" />}
+                        </button>
+                    </div>
                 </div>
                 
-                {/* Menu items */}
-                <div className="flex-grow overflow-y-auto py-2">
-                    <ul>
-                        <li className="px-2 py-1">
-                            <Link to='/home'
-                                  onClick={() => setActiveMenu(null)}
-                                  className={`flex items-center w-full px-4 py-3 rounded-lg text-left transition-all duration-200 hover:bg-green-700 hover:shadow-md focus:outline-none`}
-                            >
-                                <Home className="text-green-200" />
-                                <span className="ml-3">Home</span>
-                            </Link>
-                        </li>
-                        {menuItems.map((item) => (
-                            <li key={item.id} className="px-2 py-1">
-                                <button
-                                    onClick={() => setActiveMenu(activeMenu === item.id ? null : item.id)}
-                                    className={`flex items-center w-full px-4 py-3 rounded-lg text-left transition-all duration-200 hover:bg-green-700 hover:shadow-md focus:outline-none ${activeMenu === item.id ? "bg-green-800 shadow-md" : ""}`}
+                {/* Store selector for extra small screens */}
+                <div className="sm:hidden px-3 pb-2">
+                    <Select value={selectStore} onValueChange={setSelectedStore}>
+                        <SelectTrigger 
+                            className="w-full p-1 h-8 rounded-full text-white bg-green-800 border-green-700"
+                            id="mobile-store">
+                            <SelectValue placeholder="Selecione a loja"/>
+                        </SelectTrigger>
+                        <SelectContent className="bg-gray-200">
+                            {storeOptions.map((store) => (
+                                <SelectItem key={store.id} value={store.id.toString()}>
+                                    {store.name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+                
+                {/* Mobile expanded menu */}
+                {isMobileMenuOpen && (
+                    <div className="bg-green-800 text-white p-2 max-h-[80vh] overflow-y-auto">
+                        {/* User info at top of menu */}
+                        <div className="p-3 mb-2 bg-green-700 rounded-lg">
+                            <div className="flex items-center">
+                                <Avatar className="h-10 w-10 mr-3">
+                                    <AvatarImage src="/avatars/01.png" alt={username} />
+                                    <AvatarFallback className="bg-green-600">{getInitials(username)}</AvatarFallback>
+                                </Avatar>
+                                <div>
+                                    <div className="font-medium">{username}</div>
+                                    <div className="text-sm text-green-200">{title} Drogaria</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <ul>
+                            <li className="px-2 py-1">
+                                <Link to='/home'
+                                    onClick={() => {
+                                        setActiveMenu(null);
+                                        setIsMobileMenuOpen(false);
+                                    }}
+                                    className="flex items-center w-full px-4 py-3 rounded-lg text-left transition-all duration-200 hover:bg-green-700 hover:shadow-md focus:outline-none"
                                 >
-                                    <span className="text-green-200">{item.icon}</span>
-                                    <span className="ml-3">{item.title}</span>
-                                    <ChevronRight
-                                        className={`w-5 h-5 ml-auto transition-transform duration-200 text-green-200 ${activeMenu === item.id ? "rotate-90" : ""}`}
-                                    />
-                                </button>
+                                    <Home className="text-green-200" />
+                                    <span className="ml-3">Home</span>
+                                </Link>
                             </li>
-                        ))}
-                    </ul>
-                </div>
-                
-                {/* Logout button */}
-                <div className="p-4 border-t border-green-800">
-                    <button 
-                        className="flex items-center w-full px-4 py-3 rounded-lg text-left transition-all duration-200 hover:bg-red-700 focus:outline-none" 
-                        onClick={handleLogout}
-                    >
-                        <LogOut className="text-red-200" size={20}/>
-                        <span className="ml-3">Sair</span>
-                    </button>
-                </div>
-            </nav>
-
-            {/* Submenu */}
-            {activeMenu && (
-                <div className="w-64 bg-green-800 text-white shadow-lg flex flex-col">
-                    <h2 className="px-4 py-3 font-semibold bg-green-700 border-b border-green-600">
-                        {menuItems.find((item) => item.id === activeMenu)?.title}
-                    </h2>
-                    <ul className="p-2">
-                        {menuItems
-                            .find((item) => item.id === activeMenu)
-                            ?.subItems.map((subItem, index) => (
-                                <li key={index} className="px-2 py-1">
-                                    <Link 
-                                        to={subItem.linkTo}
-                                        onClick={() => setActiveMenu(null)}
-                                        className="flex items-center w-full px-4 py-2 rounded-lg transition-all duration-200 hover:bg-green-600 hover:shadow-md"
+                            {menuItems.map((item) => (
+                                <li key={item.id} className="px-2 py-1">
+                                    <button
+                                        onClick={() => setActiveMenu(activeMenu === item.id ? null : item.id)}
+                                        className={`flex items-center w-full px-4 py-3 rounded-lg text-left transition-all duration-200 hover:bg-green-700 hover:shadow-md focus:outline-none ${activeMenu === item.id ? "bg-green-700 shadow-md" : ""}`}
                                     >
-                                        <span className="text-green-200 mr-2">{subItem.icon}</span>
-                                        {subItem.title}
-                                    </Link>
+                                        <span className="text-green-200">{item.icon}</span>
+                                        <span className="ml-3">{item.title}</span>
+                                        <ChevronRight
+                                            className={`w-5 h-5 ml-auto transition-transform duration-200 text-green-200 ${activeMenu === item.id ? "rotate-90" : ""}`}
+                                        />
+                                    </button>
+                                    
+                                    {/* Submenu items */}
+                                    {activeMenu === item.id && (
+                                        <ul className="pl-8 mt-1 space-y-1">
+                                            {item.subItems.map((subItem, index) => (
+                                                <li key={index}>
+                                                    <Link 
+                                                        to={subItem.linkTo}
+                                                        onClick={() => {
+                                                            setActiveMenu(null);
+                                                            setIsMobileMenuOpen(false);
+                                                        }}
+                                                        className="flex items-center w-full px-4 py-2 rounded-lg transition-all duration-200 hover:bg-green-600 hover:shadow-md"
+                                                    >
+                                                        <span className="text-green-200 mr-2">{subItem.icon}</span>
+                                                        {subItem.title}
+                                                    </Link>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
                                 </li>
                             ))}
-                    </ul>
-                </div>
-            )}
-        </div>
-    )
+                            <li className="px-2 py-1">
+                                <button 
+                                    className="flex items-center w-full px-4 py-3 rounded-lg text-left transition-all duration-200 hover:bg-red-700 focus:outline-none" 
+                                    onClick={handleLogout}
+                                >
+                                    <LogOut className="text-red-200" size={20}/>
+                                    <span className="ml-3">Sair</span>
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                )}
+            </div>
+        );
+    };
+
+    // Render desktop sidebar
+    const renderDesktopSidebar = () => {
+        return (
+            <div ref={menuRef} className="flex h-screen bg-green-900">
+                <nav className="w-64 bg-green-900 text-white shadow-lg flex flex-col">
+                    {/* Logo section */}
+                    <div className="p-4 border-b border-green-800 flex items-center justify-center">
+                        <Link to="/home" className="flex items-center transform hover:scale-105 transition-transform duration-200">
+                            <img src={appLogo} alt="JR Drogaria Logo" className="rounded-full h-10 w-auto mr-2" />
+                            <span className="text-xl font-bold">JR Drogaria</span>
+                        </Link>
+                    </div>
+                    
+                    {/* Menu items */}
+                    <div className="flex-grow overflow-y-auto py-2">
+                        <ul>
+                            <li className="px-2 py-1">
+                                <Link to='/home'
+                                    onClick={() => setActiveMenu(null)}
+                                    className={`flex items-center w-full px-4 py-3 rounded-lg text-left transition-all duration-200 hover:bg-green-700 hover:shadow-md focus:outline-none`}
+                                >
+                                    <Home className="text-green-200" />
+                                    <span className="ml-3">Home</span>
+                                </Link>
+                            </li>
+                            {menuItems.map((item) => (
+                                <li key={item.id} className="px-2 py-1">
+                                    <button
+                                        onClick={() => setActiveMenu(activeMenu === item.id ? null : item.id)}
+                                        className={`flex items-center w-full px-4 py-3 rounded-lg text-left transition-all duration-200 hover:bg-green-700 hover:shadow-md focus:outline-none ${activeMenu === item.id ? "bg-green-800 shadow-md" : ""}`}
+                                    >
+                                        <span className="text-green-200">{item.icon}</span>
+                                        <span className="ml-3">{item.title}</span>
+                                        <ChevronRight
+                                            className={`w-5 h-5 ml-auto transition-transform duration-200 text-green-200 ${activeMenu === item.id ? "rotate-90" : ""}`}
+                                        />
+                                    </button>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                    
+                    {/* Logout button */}
+                    <div className="p-4 border-t border-green-800">
+                        <button 
+                            className="flex items-center w-full px-4 py-3 rounded-lg text-left transition-all duration-200 hover:bg-red-700 focus:outline-none" 
+                            onClick={handleLogout}
+                        >
+                            <LogOut className="text-red-200" size={20}/>
+                            <span className="ml-3">Sair</span>
+                        </button>
+                    </div>
+                </nav>
+
+                {/* Submenu */}
+                {activeMenu && (
+                    <div className="w-64 bg-green-800 text-white shadow-lg flex flex-col">
+                        <h2 className="px-4 py-3 font-semibold bg-green-700 border-b border-green-600">
+                            {menuItems.find((item) => item.id === activeMenu)?.title}
+                        </h2>
+                        <ul className="p-2">
+                            {menuItems
+                                .find((item) => item.id === activeMenu)
+                                ?.subItems.map((subItem, index) => (
+                                    <li key={index} className="px-2 py-1">
+                                        <Link 
+                                            to={subItem.linkTo}
+                                            onClick={() => setActiveMenu(null)}
+                                            className="flex items-center w-full px-4 py-2 rounded-lg transition-all duration-200 hover:bg-green-600 hover:shadow-md"
+                                        >
+                                            <span className="text-green-200 mr-2">{subItem.icon}</span>
+                                            {subItem.title}
+                                        </Link>
+                                    </li>
+                                ))}
+                        </ul>
+                    </div>
+                )}
+            </div>
+        );
+    };
+
+    return isMobile ? renderMobileNav() : renderDesktopSidebar();
 }
 
 export default SidebarMenu;
