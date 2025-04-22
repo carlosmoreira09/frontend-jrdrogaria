@@ -231,10 +231,10 @@ const SidebarMenu: React.FC = () => {
                     
                     <div className="flex items-center space-x-2">
                         {/* Store selector */}
-                        <div className="hidden sm:block">
+                        <div className="flex justify-center">
                             <Select value={selectStore} onValueChange={setSelectedStore}>
                                 <SelectTrigger 
-                                    className="min-w-max p-1 h-8 rounded-full text-white bg-green-800 border-green-700"
+                                    className="w-max px-8 h-8 rounded-full text-white bg-green-800 border-green-700"
                                     id="store">
                                     <SelectValue placeholder="Loja"/>
                                 </SelectTrigger>
@@ -270,24 +270,7 @@ const SidebarMenu: React.FC = () => {
                         </button>
                     </div>
                 </div>
-                
-                {/* Store selector for extra small screens */}
-                <div className="sm:hidden px-3 pb-2">
-                    <Select value={selectStore} onValueChange={setSelectedStore}>
-                        <SelectTrigger 
-                            className="w-full p-1 h-8 rounded-full text-white bg-green-800 border-green-700"
-                            id="mobile-store">
-                            <SelectValue placeholder="Selecione a loja"/>
-                        </SelectTrigger>
-                        <SelectContent className="bg-gray-200">
-                            {storeOptions.map((store) => (
-                                <SelectItem key={store.id} value={store.id.toString()}>
-                                    {store.name}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                </div>
+
                 
                 {/* Mobile expanded menu */}
                 {isMobileMenuOpen && (
@@ -440,30 +423,46 @@ const SidebarMenu: React.FC = () => {
                 <nav className="w-64 bg-green-900 text-white shadow-lg flex flex-col">
                     {/* Logo section */}
                     <div className="p-4 border-b border-green-800 flex items-center justify-between">
-                        <Link to="/home" className="flex items-center transform hover:scale-105 transition-transform duration-200">
-                            <img src={appLogo} alt="JR Drogaria Logo" className="rounded-full h-10 w-auto mr-2" />
+                        <Link to="/home"
+                              className="flex items-center transform hover:scale-105 transition-transform duration-200">
+                            <img src={appLogo} alt="JR Drogaria Logo" className="rounded-full h-10 w-auto mr-2"/>
                             <span className="text-xl font-bold">JR Drogaria</span>
                         </Link>
-                        
+
                         {/* Toggle button */}
-                        <button 
+                        <button
                             onClick={toggleSidebar}
                             className="p-1 text-green-200 hover:bg-green-800 rounded-lg focus:outline-none"
                             title="Collapse sidebar"
                         >
-                            <PanelLeftClose className="w-5 h-5" />
+                            <PanelLeftClose className="w-5 h-5"/>
                         </button>
                     </div>
-                    
+                    <div className="mt-2 flex justify-center">
+                        <Select value={selectStore} onValueChange={setSelectedStore}>
+                            <SelectTrigger
+                                className="w-max px-8 h-8 rounded-full text-white bg-green-800 border-green-700"
+                                id="mobile-store">
+                                <SelectValue placeholder="Selecione a loja"/>
+                            </SelectTrigger>
+                            <SelectContent className="text-center bg-gray-200">
+                                {storeOptions.map((store) => (
+                                    <SelectItem key={store.id} value={store.id.toString()}>
+                                        {store.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
                     {/* Menu items */}
                     <div className="flex-grow overflow-y-auto py-2">
                         <ul>
                             <li className="px-2 py-1">
                                 <Link to='/home'
-                                    onClick={() => setActiveMenu(null)}
-                                    className={`flex items-center w-full px-4 py-3 rounded-lg text-left transition-all duration-200 hover:bg-green-700 hover:shadow-md focus:outline-none`}
+                                      onClick={() => setActiveMenu(null)}
+                                      className={`flex items-center w-full px-4 py-3 rounded-lg text-left transition-all duration-200 hover:bg-green-700 hover:shadow-md focus:outline-none`}
                                 >
-                                    <Home className="text-green-200" />
+                                    <Home className="text-green-200"/>
                                     <span className="ml-3">Home</span>
                                 </Link>
                             </li>
@@ -483,11 +482,11 @@ const SidebarMenu: React.FC = () => {
                             ))}
                         </ul>
                     </div>
-                    
+
                     {/* Logout button */}
                     <div className="p-4 border-t border-green-800">
-                        <button 
-                            className="flex items-center w-full px-4 py-3 rounded-lg text-left transition-all duration-200 hover:bg-red-700 focus:outline-none" 
+                        <button
+                            className="flex items-center w-full px-4 py-3 rounded-lg text-left transition-all duration-200 hover:bg-red-700 focus:outline-none"
                             onClick={handleLogout}
                         >
                             <LogOut className="text-red-200" size={20}/>
@@ -507,7 +506,7 @@ const SidebarMenu: React.FC = () => {
                                 .find((item) => item.id === activeMenu)
                                 ?.subItems.map((subItem, index) => (
                                     <li key={index} className="px-2 py-1">
-                                        <Link 
+                                        <Link
                                             to={subItem.linkTo}
                                             onClick={() => setActiveMenu(null)}
                                             className="flex items-center w-full px-4 py-2 rounded-lg transition-all duration-200 hover:bg-green-600 hover:shadow-md"
