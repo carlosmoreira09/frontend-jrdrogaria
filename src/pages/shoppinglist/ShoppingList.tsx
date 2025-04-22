@@ -80,15 +80,7 @@ const ShoppingList: React.FC = () => {
             })
         }
     }
-    const clearSelection = () => {
-        setLowStockProducts([]);
-        // Cookie removal happens automatically via the useEffect
-        toast({
-            title: 'JR Drogaria',
-            description: 'Seleção de produtos limpa'
-        });
-        window.history.replaceState({}, document.title, window.location.pathname);
-    }
+
     useEffect(() => {
         fetchProducts().then()
         fetchSuppliers().then()
@@ -256,12 +248,6 @@ const ShoppingList: React.FC = () => {
                     className="flex items-center gap-2 cursor-pointer text-white bg-green-700 hover:bg-green-800">
                     <BarChart2 className="h-5 w-5"/>
                     Comparar Preços
-                </Button>
-                <Button
-                    onClick={clearSelection}
-                    className="flex items-center gap-2 cursor-pointer text-white bg-red-600 hover:bg-red-700">
-                    <Trash2 className="h-5 w-5"/>
-                    Limpar Seleção
                 </Button>
                 <div className="flex items-center ml-auto">
                     <div className="flex items-center space-x-2">
