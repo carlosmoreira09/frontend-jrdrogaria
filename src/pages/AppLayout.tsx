@@ -5,6 +5,7 @@ import { Toaster } from "../components/ui/toaster"
 
 const AppLayout: React.FC = () => {
     const [isMobile, setIsMobile] = useState(false);
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
     useEffect(() => {
         // Função para prevenir o comportamento de pull-to-refresh
@@ -40,8 +41,23 @@ const AppLayout: React.FC = () => {
         // Add resize listener
         window.addEventListener('resize', checkMobile);
         
+        // Check sidebar collapsed state from localStorage
+        const sidebarCollapsed = localStorage.getItem('sidebarCollapsed');
+        if (sidebarCollapsed) {
+            setIsSidebarCollapsed(sidebarCollapsed === 'true');
+        }
+        
+        // Add event listener for sidebar collapse changes
+        const handleStorageChange = () => {
+            const collapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+            setIsSidebarCollapsed(collapsed);
+        };
+        
+        window.addEventListener('storage', handleStorageChange);
+        
         return () => {
             window.removeEventListener('resize', checkMobile);
+            window.removeEventListener('storage', handleStorageChange);
         };
     }, []);
 
@@ -52,7 +68,7 @@ const AppLayout: React.FC = () => {
             
             {/* Main content */}
             <div className="flex h-screen">
-                <div className={`flex-1 ${isMobile ? 'mt-16 ml-0' : 'ml-64'} p-4`}>
+                <div className={`flex-1 ${isMobile ? 'mt-16 ml-0' : isSidebarCollapsed ? 'ml-16' : 'ml-64'} p-4 transition-all duration-300`}>
                     <Outlet/>
                     <Toaster/>
                 </div>

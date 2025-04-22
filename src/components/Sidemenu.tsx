@@ -11,7 +11,9 @@ import {
   List,
   BarChart2,
   Menu as MenuIcon,
-  X
+  X,
+  PanelLeftClose,
+  PanelLeft
 } from "lucide-react"
 import type React from "react"
 import {Link} from "react-router-dom";
@@ -84,7 +86,8 @@ const menuItems: MenuItem[] = [
                 icon: <BarChart2 className="w-4 h-4" />
             }
         ],
-    },]
+    },
+    ]
     // {{
     //     id: "gerenciar",
     //     title: "Gerenciar",
@@ -113,6 +116,7 @@ const SidebarMenu: React.FC = () => {
     const [activeMenu, setActiveMenu] = useState<string | null>(null)
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
     const [isMobile, setIsMobile] = useState(false)
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
     const [currentTime, setCurrentTime] = useState(new Date())
     const [selectStore, setSelectedStore] = useState<string>('1')
     const [username, setUsername] = useState<string>('Usuário')
@@ -127,6 +131,13 @@ const SidebarMenu: React.FC = () => {
         navigate("/")
     }
 
+    // Toggle sidebar collapse state
+    const toggleSidebar = () => {
+        setIsSidebarCollapsed(!isSidebarCollapsed);
+        // Store preference in localStorage
+        localStorage.setItem('sidebarCollapsed', (!isSidebarCollapsed).toString());
+    }
+
     useEffect(() => {
         // Timer for current time
         const timer = setInterval(() => setCurrentTime(new Date()), 1000)
@@ -135,6 +146,12 @@ const SidebarMenu: React.FC = () => {
         const storedUsername = localStorage.getItem('username');
         if (storedUsername) {
             setUsername(storedUsername);
+        }
+
+        // Get sidebar collapsed preference
+        const sidebarCollapsed = localStorage.getItem('sidebarCollapsed');
+        if (sidebarCollapsed) {
+            setIsSidebarCollapsed(sidebarCollapsed === 'true');
         }
         
         return () => clearInterval(timer)
@@ -208,9 +225,7 @@ const SidebarMenu: React.FC = () => {
                 {/* Mobile top bar */}
                 <div className="flex justify-between items-center p-3">
                     <div className="flex items-center">
-                        <Link to={'/home'}>
                         <img src={appLogo} alt="JR Drogaria Logo" className="rounded-full h-8 w-auto mr-2" />
-                        </Link>
                         <span className="text-white text-lg font-bold">JR Drogaria</span>
                     </div>
                     
@@ -219,7 +234,7 @@ const SidebarMenu: React.FC = () => {
                         <div className="hidden sm:block">
                             <Select value={selectStore} onValueChange={setSelectedStore}>
                                 <SelectTrigger 
-                                    className="min-w-max py-3 h-8 rounded-full text-white bg-green-800 border-green-700"
+                                    className="min-w-max p-1 h-8 rounded-full text-white bg-green-800 border-green-700"
                                     id="store">
                                     <SelectValue placeholder="Loja"/>
                                 </SelectTrigger>
@@ -355,17 +370,89 @@ const SidebarMenu: React.FC = () => {
         );
     };
 
+    // Render collapsed sidebar for desktop
+    const renderCollapsedSidebar = () => {
+        return (
+            <div className="fixed h-screen bg-green-900 shadow-lg z-40 w-16">
+                <nav className="bg-green-900 text-white shadow-lg flex flex-col h-full">
+                    {/* Logo section */}
+                    <div className="p-3 border-b border-green-800 flex items-center justify-center">
+                        <img src={appLogo} alt="JR Drogaria Logo" className="rounded-full h-10 w-10" />
+                    </div>
+                    
+                    {/* Toggle button */}
+                    <button 
+                        onClick={toggleSidebar}
+                        className="p-3 text-green-200 hover:bg-green-800 focus:outline-none flex justify-center"
+                        title="Expand sidebar"
+                    >
+                        <PanelLeft className="w-6 h-6" />
+                    </button>
+                    
+                    {/* Menu items - icons only */}
+                    <div className="flex-grow overflow-y-auto py-2">
+                        <ul>
+                            <li className="py-2">
+                                <Link to='/home'
+                                    title="Home"
+                                    className="flex justify-center w-full p-2 rounded-lg transition-all duration-200 hover:bg-green-700 hover:shadow-md focus:outline-none"
+                                >
+                                    <Home className="text-green-200 w-6 h-6" />
+                                </Link>
+                            </li>
+                            {menuItems.map((item) => (
+                                <li key={item.id} className="py-2">
+                                    <Link 
+                                        to={item.subItems[0]?.linkTo || '#'}
+                                        title={item.title}
+                                        className="flex justify-center w-full p-2 rounded-lg transition-all duration-200 hover:bg-green-700 hover:shadow-md focus:outline-none"
+                                    >
+                                        <span className="text-green-200">{item.icon}</span>
+                                    </Link>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                    
+                    {/* Logout button */}
+                    <div className="p-3 border-t border-green-800">
+                        <button 
+                            className="flex justify-center w-full p-2 rounded-lg transition-all duration-200 hover:bg-red-700 focus:outline-none" 
+                            onClick={handleLogout}
+                            title="Sair"
+                        >
+                            <LogOut className="text-red-200" size={20}/>
+                        </button>
+                    </div>
+                </nav>
+            </div>
+        );
+    };
+
     // Render desktop sidebar
     const renderDesktopSidebar = () => {
+        if (isSidebarCollapsed) {
+            return renderCollapsedSidebar();
+        }
+        
         return (
-            <div ref={menuRef} className="flex h-screen bg-green-900">
+            <div ref={menuRef} className="flex h-screen bg-green-900 fixed z-40">
                 <nav className="w-64 bg-green-900 text-white shadow-lg flex flex-col">
                     {/* Logo section */}
-                    <div className="p-4 border-b border-green-800 flex items-center justify-center">
+                    <div className="p-4 border-b border-green-800 flex items-center justify-between">
                         <Link to="/home" className="flex items-center transform hover:scale-105 transition-transform duration-200">
                             <img src={appLogo} alt="JR Drogaria Logo" className="rounded-full h-10 w-auto mr-2" />
                             <span className="text-xl font-bold">JR Drogaria</span>
                         </Link>
+                        
+                        {/* Toggle button */}
+                        <button 
+                            onClick={toggleSidebar}
+                            className="p-1 text-green-200 hover:bg-green-800 rounded-lg focus:outline-none"
+                            title="Collapse sidebar"
+                        >
+                            <PanelLeftClose className="w-5 h-5" />
+                        </button>
                     </div>
                     
                     {/* Menu items */}

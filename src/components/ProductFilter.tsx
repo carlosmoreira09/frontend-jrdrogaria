@@ -20,6 +20,11 @@ export default function AutocompleteFilter({ items = [],onClick }: AutocompleteF
         }
     }, [searchTerm, items])
 
+    const handleItemClick = (productName: string | undefined) => {
+        onClick(productName);
+        setSearchTerm(""); // Clear the input field after selection
+    }
+
     return (
         <div className="w-full max-w-md mx-auto">
             <input
@@ -32,7 +37,7 @@ export default function AutocompleteFilter({ items = [],onClick }: AutocompleteF
             {searchTerm && (
                 <ul className="mt-2 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
                     {filteredItems.map((item) => (
-                        <li onClick={() => onClick(item.product_name)} key={item.id} className="px-4 py-2 hover:bg-gray-100">
+                        <li onClick={() => handleItemClick(item.product_name)} key={item.id} className="px-4 py-2 hover:bg-gray-100">
                             <div className="font-semibold">{item.product_name}</div>
                         </li>
                     ))}
@@ -42,4 +47,3 @@ export default function AutocompleteFilter({ items = [],onClick }: AutocompleteF
         </div>
     )
 }
-

@@ -42,14 +42,12 @@ const ShoppingList: React.FC = () => {
     const { store, tenantName } = useStore()
     const location = useLocation()
     const navigate = useNavigate();
-    const [isEdit, setIsEdit] = useState<boolean>(false)
     const fetchList = async () => {
         if(location.state) {
             const list = location.state
             setIdList(list.id)
             setLowStockProducts(list.products)
             setIsUpdate(true)
-            setIsEdit(true)
         }
     }
     useEffect(() => {
@@ -198,6 +196,7 @@ const ShoppingList: React.FC = () => {
                         title: 'JR Drogaria',
                         description: 'Lista criada com sucesso'
                     })
+                    setIsUpdate(true)
                 }
             }
         }
@@ -249,20 +248,6 @@ const ShoppingList: React.FC = () => {
                     <BarChart2 className="h-5 w-5"/>
                     Comparar Preços
                 </Button>
-                <div className="flex items-center ml-auto">
-                    <div className="flex items-center space-x-2">
-                        <input
-                            type="checkbox"
-                            id="edit-mode"
-                            checked={isEdit}
-                            onChange={() => setIsEdit(!isEdit)}
-                            className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                        />
-                        <Label htmlFor="edit-mode" className="text-sm font-medium text-gray-700">
-                            Modo de Edição
-                        </Label>
-                    </div>
-                </div>
             </div>
             {lowStockProducts.length > 0 && (
                 <div className="mt-5">
@@ -283,7 +268,7 @@ const ShoppingList: React.FC = () => {
                                     {lowStockProducts.map((product) => (
                                         <TableRow key={product.id}>
                                             <TableCell>{product.product}</TableCell>
-                                            <TableCell><Input disabled={isEdit} placeholder={product.stock.toString()}
+                                            <TableCell><Input placeholder={product.stock.toString()}
                                                 onChange={(e) => {
                                                 handleAddProduct(e, product.product)
                                             }} className="w-16" id="stock" /> </TableCell>
