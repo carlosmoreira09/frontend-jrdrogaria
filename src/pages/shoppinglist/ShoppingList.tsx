@@ -180,21 +180,29 @@ const ShoppingList: React.FC = () => {
 
             if (isUpdate) {
                 const result = await updateShoppingList(shoppingList, store)
-                if(result) {
+                if(result?.data) {
                     toast({
                         variant: 'default',
                         title: 'JR Drogaria',
                         description: 'Lista atualizada com sucesso'
                     })
+                } else {
+
+                    toast({
+                        variant: 'destructive',
+                        title: 'JR Drogaria',
+                        description: 'Erro ao atualizar lista'
+                    })
                 }
             } else {
                 const result = await createShoppingList(shoppingList, store)
-                if(result) {
+                if(result?.data) {
                     toast({
                         variant: 'default',
                         title: 'JR Drogaria',
                         description: 'Lista criada com sucesso'
                     })
+                    setIdList(result?.data?.data?.id)
                     setIsUpdate(true)
                 }
             }

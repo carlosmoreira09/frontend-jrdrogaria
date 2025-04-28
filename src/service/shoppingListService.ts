@@ -18,9 +18,9 @@ export const listShoppingLists = async (id_store: number): Promise<GeneralRespon
     }
 };
 
-export const createShoppingList = async (newList: IShoppingList, id_store: number): Promise<GeneralResponse | undefined> => {
+export const createShoppingList = async (newList: IShoppingList, id_store: number) => {
     try {
-        const response = await apiClient.post<GeneralResponse>('/shopping', newList,
+        const response = await apiClient.post('/shopping', newList,
             {
                 headers: {
                     'x-tenant-id': id_store
@@ -39,9 +39,6 @@ export const updateShoppingList = async (newList: IShoppingList, id_store: numbe
             {
                 headers: {
                     'x-tenant-id': id_store
-                },
-                params: {
-                    id: newList.id
                 }
             })
         return response.data

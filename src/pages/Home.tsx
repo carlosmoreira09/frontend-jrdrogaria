@@ -139,18 +139,7 @@ const Home: React.FC = () => {
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <ShoppingListTable items={shoppingList.slice(0, 5)}/>
-                        {shoppingList.length > 5 && (
-                            <div className="mt-4 text-center">
-                                <Button
-                                    variant="link"
-                                    onClick={() => navigate('/shopping/home')}
-                                    className="text-green-700"
-                                >
-                                    Ver todas as listas
-                                </Button>
-                            </div>
-                        )}
+                        <ShoppingListTable items={shoppingList}/>
                     </CardContent>
                 </Card>
 
