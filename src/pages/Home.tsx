@@ -22,39 +22,39 @@ const Home: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true)
     const [shoppingList, setShoppingList] = useState<IShoppingList[]>([])
     const navigate = useNavigate()
-    useEffect(() => {
-        const fetchTotal = async () => {
-            if(store) {
-                setIsLoading(true)
-                const result = await getTotalAmount(store)
-                if(result?.data) {
-                    setTotals(result.data)
-                }
-                setIsLoading(false)
+    
+    const fetchTotals = async () => {
+        if(store) {
+            setIsLoading(true)
+            const result = await getTotalAmount(store)
+            if(result?.data) {
+                setTotals(result.data)
             }
+            setIsLoading(false)
         }
-        fetchTotal().then()
-
-    }, [store]);
-
-    useEffect(() => {
-        const fetchShoppingList = async () => {
-            if(store) {
-                setIsLoading(true)
-                console.log(store)
-                const result = await listShoppingLists(store)
-                console.log(result)
-                if(result?.data) {
-                    setShoppingList(result.data)
-                    console.log(result)
-                }
-                setIsLoading(false)
+    }
+    
+    const fetchShoppingList = async () => {
+        if(store) {
+            setIsLoading(true)
+            const result = await listShoppingLists(store)
+            if(result?.data) {
+                setShoppingList(result.data)
             }
+            setIsLoading(false)
         }
+    }
+    
+    useEffect(() => {
+        fetchTotals().then()
         fetchShoppingList().then()
-
     }, [store]);
 
+    // Handler to refresh data after list deletion
+    const handleListDeleted = () => {
+        fetchShoppingList().then()
+        fetchTotals().then() // Also refresh totals as the number of lists has changed
+    }
 
     return (
         <div className="flex flex-col space-y-8 p-4">
@@ -139,7 +139,7 @@ const Home: React.FC = () => {
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <ShoppingListTable items={shoppingList}/>
+                        <ShoppingListTable items={shoppingList} onDelete={handleListDeleted}/>
                     </CardContent>
                 </Card>
 

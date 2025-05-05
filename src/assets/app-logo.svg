@@ -1,0 +1,17 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Background circle -->
+    <circle cx="100" cy="100" r="95" fill="#1E5631" />
+
+    <!-- Inner circle -->
+    <circle cx="100" cy="100" r="85" fill="#ffffff" />
+
+    <!-- Mortar and pestle symbol (pharmacy) -->
+    <path d="M65 85C65 75 75 65 100 65C125 65 135 75 135 85C135 95 125 105 100 105C75 105 65 95 65 85Z" fill="#1E5631" />
+
+    <!-- Pestle handle -->
+    <rect x="95" y="105" width="10" height="40" rx="5" fill="#1E5631" />
+
+    <!-- Text: JR -->
+    <path d="M70 140H80V145C80 152.5 75 155 70 155H65V150H70C72.5 150 75 149 75 145V140Z" fill="#1E5631" />
+    <path d="M85 140H95C102.5 140 105 145 105 150C105 155 102.5 160 95 160H85V140ZM90 145V155H95C100 155 100 145 95 145H90Z" fill="#1E5631" />
+</svg>

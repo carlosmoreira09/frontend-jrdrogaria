@@ -48,4 +48,19 @@ export const updateShoppingList = async (newList: IShoppingList, id_store: numbe
         }
     }
 }
+export const deleteShoppingList = async (newList: IShoppingList, id_store: number) => {
+    try {
+        const response = await apiClient.delete(`/shopping/${newList.id}`,
+            {
+                headers: {
+                    'x-tenant-id': id_store
+                }
+            })
+        return response.data
+    } catch (error) {
+        if(isAxiosError(error)) {
+            return error.response?.data
+        }
+    }
+}
 

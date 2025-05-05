@@ -38,6 +38,7 @@ const ShoppingList: React.FC = () => {
     const [exportDialogOpen, setExportDialogOpen] = useState(false)
     const [idList,setIdList] = useState<number>()
     const [isUpdate, setIsUpdate] = useState<boolean>(false)
+    const [isLoading, setIsLoading] = useState(false)
     const [lowStockProducts, setLowStockProducts] = useState<IProductAndStock[]>([])
     const { store, tenantName } = useStore()
     const location = useLocation()
@@ -86,9 +87,6 @@ const ShoppingList: React.FC = () => {
 
     const handleProductSelect = (name_product: string | undefined) => {
         const product = products.find((products) => products.product_name === name_product)
-        if(product && lowStockProducts.some((i) => i.product === product.product_name)) {
-                removeItem(product.product_name)
-        }
         if(product && !lowStockProducts.some((i) => i.product === product.product_name)) {
             setLowStockProducts([...lowStockProducts, { product: product.product_name, stock: 0 }])
         }
@@ -179,31 +177,45 @@ const ShoppingList: React.FC = () => {
         if (store) {
 
             if (isUpdate) {
-                const result = await updateShoppingList(shoppingList, store)
-                if(result?.data) {
-                    toast({
-                        variant: 'default',
-                        title: 'JR Drogaria',
-                        description: 'Lista atualizada com sucesso'
-                    })
-                } else {
+                try {
+                    setIsLoading(true)
+                    const result = await updateShoppingList(shoppingList, store)
+                    if (result?.data) {
+                        toast({
+                            variant: 'default',
+                            title: 'JR Drogaria',
+                            description: 'Lista atualizada com sucesso'
+                        })
+                    } else {
 
-                    toast({
-                        variant: 'destructive',
-                        title: 'JR Drogaria',
-                        description: 'Erro ao atualizar lista'
-                    })
+                        toast({
+                            variant: 'destructive',
+                            title: 'JR Drogaria',
+                            description: 'Erro ao atualizar lista'
+                        })
+                    }
+                } catch (error) {
+                    console.error("Failed to update shopping list:", error)
+                } finally {
+                    setIsLoading(false)
                 }
             } else {
-                const result = await createShoppingList(shoppingList, store)
-                if(result?.data) {
-                    toast({
-                        variant: 'default',
-                        title: 'JR Drogaria',
-                        description: 'Lista criada com sucesso'
-                    })
-                    setIdList(result?.data?.data?.id)
-                    setIsUpdate(true)
+                try {
+                    setIsLoading(true)
+                    const result = await createShoppingList(shoppingList, store)
+                    if (result?.data) {
+                        toast({
+                            variant: 'default',
+                            title: 'JR Drogaria',
+                            description: 'Lista criada com sucesso'
+                        })
+                        setIdList(result?.data?.data?.id)
+                        setIsUpdate(true)
+                    }
+                } catch (error) {
+                    console.error("Failed to create shopping list:", error)
+                } finally {
+                    setIsLoading(false)
                 }
             }
         }
@@ -290,6 +302,7 @@ const ShoppingList: React.FC = () => {
                         <CardFooter className="flex flew-row justify-between">
                             <div>Total de produtos: {lowStockProducts.length}</div>
                             <Button
+                                disabled={isLoading}
                                 onClick={createNewList}
                                 className="flex items-center gap-2 cursor-pointer text-white bg-green-700 hover:bg-green-800">
                                 <SaveIcon className="h-5 w-5"/>
