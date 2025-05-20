@@ -14,10 +14,10 @@ export interface Product {
 export interface IProductAndStock {
     id?: number
     product?: string
-    stockJR: number
-    stockGS: number
-    stockBARAO: number
-    stockLB: number
+    stockJR: number | string
+    stockGS: number | string
+    stockBARAO: number | string
+    stockLB: number | string
 }
 
 export interface IShoppingList {

@@ -6,37 +6,84 @@ import * as XLSX from "xlsx"
  */
 export async function exportLeadsToCSV(data: any[], supplierName: string = '') {
     try {
-            const workbook = XLSX.utils.book_new()
-        const headerRows = [
-            [`Fornecedor: ${supplierName || "Não especificado"}`],
-            ["Data: " + new Date().toLocaleDateString('pt-BR')],
-        ];
+        const workbook = XLSX.utils.book_new()
+        
         // Convert your data to array of arrays if needed
         const headers = Object.keys(data[0] || {});
 
-        const dataArray = data.map(item => headers.map(header => item[header]));
-        headerRows.push(headers);
-
-        // Combine header and data
-        const allRows = [...headerRows, ...dataArray];
-
-        // Create worksheet from the combined array
-        const worksheet = XLSX.utils.aoa_to_sheet(allRows);
-        // Style the supplier and date rows
-        worksheet["A1"].s = {
-            font: { bold: true, color: { rgb: "FF0000" }, width: 20 }, // Red, bold text
-            fill: { fgColor: { rgb: "FFFF00" } }           // Yellow background
-        };
-        worksheet["A1"] = { t: "s", v: `Fornecedor: ${supplierName || "Não especificado"}`, s: { font: { bold: true } } };
-        worksheet["A2"] = { t: "s", v: "Data: " + new Date().toLocaleDateString('pt-BR'), s: { font: { bold: true } } };
-
-        // Or set column widths:
+        // Create worksheet with empty cells
+        const ws_data = [headers];
+        const worksheet = XLSX.utils.aoa_to_sheet(ws_data);
+        
+        // Add header information
+        XLSX.utils.sheet_add_aoa(worksheet, [
+            [`Fornecedor: ${supplierName || "Não especificado"}`],
+            ["Data: " + new Date().toLocaleDateString('pt-BR')]
+        ], { origin: "A1" });
+        
+        // Process and add each row of data
+        let rowIndex = 3; // Start after headers
+        
+        data.forEach((row) => {
+            // For each column in the row
+            headers.forEach((header, colIdx) => {
+                const cellRef = XLSX.utils.encode_cell({r: rowIndex, c: colIdx});
+                const value = row[header];
+                
+                // Check if the value is a formula object
+                if (value && typeof value === 'object' && value.f) {
+                    let formula = value.f;
+                    
+                    // Replace {row} placeholder with actual row number
+                    formula = formula.replace(/\{row\}/g, (rowIndex + 1).toString());
+                    
+                    worksheet[cellRef] = { t: 'n', f: formula };
+                } else {
+                    // Regular value
+                    worksheet[cellRef] = { v: value };
+                }
+            });
+            
+            rowIndex++;
+        });
+        
+        // Set column widths
         worksheet['!cols'] = [
-            { wch: 80 },
-            { wch: 60 } ,
-            { wch: 35 },
-            { wch: 25 }  // Width of column B// Width of column B// Width of column B// Width of column B
+            { wch: 40 }, // Nome
+            { wch: 20 }, // Fornecedor
+            { wch: 20 }, // Loja
+            { wch: 10 }, // JR
+            { wch: 10 }, // GS
+            { wch: 10 }, // BARÃO
+            { wch: 10 }, // LB
+            { wch: 15 }, // Preço Unitário
+            { wch: 15 }, // Quantidade
+            { wch: 15 }, // Total
         ];
+        
+        // Style the total row
+        const lastRowIdx = rowIndex - 1;
+        const totalCellRef = XLSX.utils.encode_cell({r: lastRowIdx, c: 0});
+        worksheet[totalCellRef] = { 
+            v: "TOTAL GERAL", 
+            s: { font: { bold: true, color: { rgb: "000000" } } } 
+        };
+        
+        // Style the total formula cell
+        const totalFormulaCellRef = XLSX.utils.encode_cell({r: lastRowIdx, c: headers.length - 1});
+        if (worksheet[totalFormulaCellRef]) {
+            worksheet[totalFormulaCellRef].s = { 
+                font: { bold: true, color: { rgb: "000000" } },
+                fill: { fgColor: { rgb: "FFFF00" } } // Yellow background
+            };
+        }
+        
+        // Set the range of cells in the worksheet
+        worksheet['!ref'] = XLSX.utils.encode_range({
+            s: { c: 0, r: 0 },
+            e: { c: headers.length - 1, r: rowIndex - 1 }
+        });
+        
         XLSX.utils.book_append_sheet(workbook, worksheet, "Products")
 
         const date = new Date()
@@ -44,14 +91,11 @@ export async function exportLeadsToCSV(data: any[], supplierName: string = '') {
         const supplierText = supplierName ? `_${supplierName.replace(/\s+/g, '_')}` : ''
         const filename = `LISTA_DE_COMPRAS_${supplierText}_${formattedDate}.xlsx`
 
-        // Caminho para salvar o arquivo (ajuste conforme necessário)
-
         // Salvar o arquivo
         XLSX.writeFile(workbook, filename)
 
         // Retornar o caminho relativo para download
         return `/exports/${filename}`
-        // Retornar o caminho relativo para download
     } catch (error) {
         console.error("Erro ao exportar XLSX no servidor:", error)
         throw new Error("Falha ao exportar dados para XLSX")
