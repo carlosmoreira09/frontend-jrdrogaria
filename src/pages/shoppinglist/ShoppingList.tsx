@@ -88,7 +88,11 @@ const ShoppingList: React.FC = () => {
     const handleProductSelect = (name_product: string | undefined) => {
         const product = products.find((products) => products.product_name === name_product)
         if(product && !lowStockProducts.some((i) => i.product === product.product_name)) {
-            setLowStockProducts([...lowStockProducts, { product: product.product_name, stock: 0 }])
+            // Add the product and then sort the array alphabetically by product name
+            const updatedProducts = [...lowStockProducts, { product: product.product_name, stock: 0 }];
+            setLowStockProducts(updatedProducts.sort((a, b) => {
+                return (a.product || '').localeCompare(b.product || '');
+            }));
         }
     }
     
@@ -235,8 +239,11 @@ const ShoppingList: React.FC = () => {
             };
             setLowStockProducts(updatedProducts);
         } else {
-            // Product doesn't exist, add it to the array
-            setLowStockProducts([...lowStockProducts, { product: product, stock: stock }]);
+            // Product doesn't exist, add it to the array and sort alphabetically
+            const updatedProducts = [...lowStockProducts, { product: product, stock: stock }];
+            setLowStockProducts(updatedProducts.sort((a, b) => {
+                return (a.product || '').localeCompare(b.product || '');
+            }));
         }
     }
 
