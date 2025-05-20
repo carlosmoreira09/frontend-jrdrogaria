@@ -89,7 +89,13 @@ const ShoppingList: React.FC = () => {
         const product = products.find((products) => products.product_name === name_product)
         if(product && !lowStockProducts.some((i) => i.product === product.product_name)) {
             // Add the product and then sort the array alphabetically by product name
-            const updatedProducts = [...lowStockProducts, { product: product.product_name, stock: 0 }];
+            const updatedProducts = [...lowStockProducts, { 
+                product: product.product_name, 
+                stockJR: 0, 
+                stockGS: 0, 
+                stockBARAO: 0, 
+                stockLB: 0 
+            }];
             setLowStockProducts(updatedProducts.sort((a, b) => {
                 return (a.product || '').localeCompare(b.product || '');
             }));
@@ -118,6 +124,10 @@ const ShoppingList: React.FC = () => {
             Nome: product.product,
             Fornecedor: supplierName,
             ["Loja"]: tenantName + " Drogaria",
+            ["JR"]: product.stockJR,
+            ["GS"]: product.stockGS,
+            ["BARÃO"]: product.stockBARAO,
+            ["LB"]: product.stockLB,
             ["Preço Unitário"]: '',
         }))
 
@@ -143,7 +153,9 @@ const ShoppingList: React.FC = () => {
 
         // Format the message
         const date = new Date().toLocaleDateString('pt-BR');
-        const productsList = lowStockProducts.map(p => `- ${p.product}: `).join('\n');
+        const productsList = lowStockProducts.map(p => 
+            `- ${p.product}:\n   JR: ${p.stockJR}\n   GS: ${p.stockGS}\n   BARÃO: ${p.stockBARAO}\n   LB: ${p.stockLB}`
+        ).join('\n');
 
         const message = `*Lista de Compras - ${tenantName} Drogaria*\n\n` +
             `*Fornecedor:* ${selectedSupplier}\n` +
@@ -225,9 +237,9 @@ const ShoppingList: React.FC = () => {
         }
     }
 
-    const handleAddProduct = (e: React.ChangeEvent<HTMLInputElement>, product?: string) => {
+    const handleAddProduct = (e: React.ChangeEvent<HTMLInputElement>, product?: string, stockField: keyof Pick<IProductAndStock, 'stockJR' | 'stockGS' | 'stockBARAO' | 'stockLB'> = 'stockJR') => {
         e.preventDefault()
-        const stock = Number(e.target.value)
+        const stockValue = Number(e.target.value)
         const existingProductIndex = lowStockProducts.findIndex(item => item.product === product);
 
         if (existingProductIndex !== -1) {
@@ -235,12 +247,21 @@ const ShoppingList: React.FC = () => {
             const updatedProducts = [...lowStockProducts];
             updatedProducts[existingProductIndex] = {
                 ...updatedProducts[existingProductIndex],
-                stock: stock
+                [stockField]: stockValue
             };
             setLowStockProducts(updatedProducts);
         } else {
             // Product doesn't exist, add it to the array and sort alphabetically
-            const updatedProducts = [...lowStockProducts, { product: product, stock: stock }];
+            const newProduct: IProductAndStock = { 
+                product: product, 
+                stockJR: 0, 
+                stockGS: 0, 
+                stockBARAO: 0, 
+                stockLB: 0 
+            };
+            newProduct[stockField] = stockValue;
+            
+            const updatedProducts = [...lowStockProducts, newProduct];
             setLowStockProducts(updatedProducts.sort((a, b) => {
                 return (a.product || '').localeCompare(b.product || '');
             }));
@@ -286,7 +307,10 @@ const ShoppingList: React.FC = () => {
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead>Produto</TableHead>
-                                        <TableHead>Estoque</TableHead>
+                                        <TableHead>JR</TableHead>
+                                        <TableHead>GS</TableHead>
+                                        <TableHead>BARÃO</TableHead>
+                                        <TableHead>LB</TableHead>
                                         <TableHead>Remover</TableHead>
                                     </TableRow>
                                 </TableHeader>
@@ -294,10 +318,42 @@ const ShoppingList: React.FC = () => {
                                     {lowStockProducts.map((product) => (
                                         <TableRow key={product.id}>
                                             <TableCell>{product.product}</TableCell>
-                                            <TableCell><Input placeholder={product.stock.toString()}
-                                                onChange={(e) => {
-                                                handleAddProduct(e, product.product)
-                                            }} className="w-16" id="stock" /> </TableCell>
+                                            <TableCell>
+                                                <Input 
+                                                    placeholder={product.stockJR.toString()}
+                                                    value={product.stockJR || ''}
+                                                    onChange={(e) => handleAddProduct(e, product.product, 'stockJR')} 
+                                                    className="w-16" 
+                                                    id="stockJR" 
+                                                /> 
+                                            </TableCell>
+                                            <TableCell>
+                                                <Input 
+                                                    placeholder={product.stockGS.toString()}
+                                                    value={product.stockGS || ''}
+                                                    onChange={(e) => handleAddProduct(e, product.product, 'stockGS')} 
+                                                    className="w-16" 
+                                                    id="stockGS" 
+                                                /> 
+                                            </TableCell>
+                                            <TableCell>
+                                                <Input 
+                                                    placeholder={product.stockBARAO.toString()}
+                                                    value={product.stockBARAO || ''}
+                                                    onChange={(e) => handleAddProduct(e, product.product, 'stockBARAO')} 
+                                                    className="w-16" 
+                                                    id="stockBARAO" 
+                                                /> 
+                                            </TableCell>
+                                            <TableCell>
+                                                <Input 
+                                                    placeholder={product.stockLB.toString()}
+                                                    value={product.stockLB || ''}
+                                                    onChange={(e) => handleAddProduct(e, product.product, 'stockLB')} 
+                                                    className="w-16" 
+                                                    id="stockLB" 
+                                                /> 
+                                            </TableCell>
                                             <TableCell className="cursor-pointer"
                                                        onClick={() => removeItem(product.product)}><Trash2
                                                 className="text-red-700"/></TableCell>

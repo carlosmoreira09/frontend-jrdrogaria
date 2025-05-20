@@ -14,7 +14,10 @@ export interface Product {
 export interface IProductAndStock {
     id?: number
     product?: string
-    stock: number
+    stockJR: number
+    stockGS: number
+    stockBARAO: number
+    stockLB: number
 }
 
 export interface IShoppingList {
@@ -22,6 +25,7 @@ export interface IShoppingList {
     list_name: string
     products: IProductAndStock[]
 }
+
 export interface Supplier  {
     id?: number;
     supplier_name: string;

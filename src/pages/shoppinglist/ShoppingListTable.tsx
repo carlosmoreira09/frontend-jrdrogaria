@@ -1,7 +1,7 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../components/ui/table.tsx"
 import React, { useState } from "react";
 import {IShoppingList} from "../../types/types.ts";
-import {format} from "date-fns";
+import {format, parse} from "date-fns";
 import {ptBR} from "date-fns/locale";
 import {useNavigate} from "react-router";
 import {BadgeX} from "lucide-react";
@@ -67,6 +67,24 @@ const ShoppingListTable:React.FC<ShoppingListTableProps> = ({ items, onDelete }:
         }
     }
 
+    const formatListDate = (listName: string) => {
+        try {
+            // Extract date part from list name (format: LISTA_DE_COMPRAS_YYYY-MM-DD)
+            const datePart = listName.split('_')[3];
+            if (!datePart) return 'Data inválida';
+            
+            // Parse the date string to a Date object
+            // The parse function takes: dateString, format, referenceDate, options
+            const parsedDate = parse(datePart, 'yyyy-MM-dd', new Date(), { locale: ptBR });
+            
+            // Format the date for display
+            return format(parsedDate, 'dd/MM/yyyy', { locale: ptBR });
+        } catch (error) {
+            console.error('Error formatting date:', error);
+            return 'Data inválida';
+        }
+    };
+
     return (
         <>
             <div className="w-full">
@@ -81,7 +99,7 @@ const ShoppingListTable:React.FC<ShoppingListTableProps> = ({ items, onDelete }:
                     <TableBody>
                         {items.map((item) => (
                             <TableRow onClick={() => handleRowClick(item)} className="cursor-pointer hover:bg-muted"  key={item.id}>
-                                <TableCell>{format(item.list_name.split('_')[3], "dd/MM/yyyy", { locale: ptBR })}</TableCell>
+                                <TableCell>{formatListDate(item.list_name)}</TableCell>
                                 <TableCell>{item.products.length}</TableCell>
                                 <TableCell>
                                     <BadgeX 
