@@ -285,29 +285,29 @@ const ShoppingList: React.FC = () => {
     }
 
     return (
-        <div className="container mx-auto p-4">
-            <h1 className="text-2xl font-bold mb-4">Gerenciador de Listas de Compras</h1>
+        <div className="container mx-auto px-2 py-4 max-w-full">
+            <h1 className="text-xl md:text-2xl font-bold mb-4">Gerenciador de Listas de Compras</h1>
 
             <Card>
                 <CardHeader>
-                    <CardTitle className="flex justify-center">Selecione os Produtos</CardTitle>
+                    <CardTitle className="text-center text-lg md:text-xl">Selecione os Produtos</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <AutocompleteFilter onClick={handleProductSelect} items={products}/>
                 </CardContent>
             </Card>
-            <div className="flex mt-4 gap-2">
+            <div className="flex flex-wrap mt-4 gap-2">
                 <Button
                     onClick={openExportDialog}
                     disabled={lowStockProducts.length === 0}
-                    className="flex cursor-pointer items-center gap-2"
+                    className="flex cursor-pointer items-center gap-2 w-full sm:w-auto mb-2 sm:mb-0"
                 >
                     <Download className="h-5 w-5"/>
                     Exportar
                 </Button>
                 <Button
                     onClick={() => navigate('/shopping/price-comparison')}
-                    className="flex items-center gap-2 cursor-pointer text-white bg-green-700 hover:bg-green-800">
+                    className="flex items-center gap-2 cursor-pointer text-white bg-green-700 hover:bg-green-800 w-full sm:w-auto">
                     <BarChart2 className="h-5 w-5"/>
                     Comparar Preços
                 </Button>
@@ -316,74 +316,147 @@ const ShoppingList: React.FC = () => {
                 <div className="mt-5">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Produtos adicionados a lista de compras</CardTitle>
+                            <CardTitle className="text-center text-lg md:text-xl">Produtos adicionados a lista de compras</CardTitle>
                         </CardHeader>
-                        <CardContent>
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Produto</TableHead>
-                                        <TableHead>JR</TableHead>
-                                        <TableHead>GS</TableHead>
-                                        <TableHead>BARÃO</TableHead>
-                                        <TableHead>LB</TableHead>
-                                        <TableHead>Remover</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {lowStockProducts.map((product) => (
-                                        <TableRow key={product.id}>
-                                            <TableCell>{product.product}</TableCell>
-                                            <TableCell>
+                        <CardContent className="overflow-x-auto">
+                            {/* Desktop view - Table */}
+                            <div className="hidden md:block">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Produto</TableHead>
+                                            <TableHead>JR</TableHead>
+                                            <TableHead>GS</TableHead>
+                                            <TableHead>BARÃO</TableHead>
+                                            <TableHead>LB</TableHead>
+                                            <TableHead>Remover</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {lowStockProducts.map((product) => (
+                                            <TableRow key={product.id}>
+                                                <TableCell>{product.product}</TableCell>
+                                                <TableCell>
+                                                    <Input 
+                                                        placeholder={product.stockJR.toString()}
+                                                        value={product.stockJR || ''}
+                                                        onChange={(e) => handleAddProduct(e, product.product, 'stockJR')} 
+                                                        className="w-16" 
+                                                        id="stockJR" 
+                                                        type="number"
+                                                        inputMode="numeric"
+                                                    /> 
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Input 
+                                                        placeholder={product.stockGS.toString()}
+                                                        value={product.stockGS || ''}
+                                                        onChange={(e) => handleAddProduct(e, product.product, 'stockGS')} 
+                                                        className="w-16" 
+                                                        id="stockGS" 
+                                                        type="number"
+                                                        inputMode="numeric"
+                                                    /> 
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Input 
+                                                        placeholder={product.stockBARAO.toString()}
+                                                        value={product.stockBARAO || ''}
+                                                        onChange={(e) => handleAddProduct(e, product.product, 'stockBARAO')} 
+                                                        className="w-16" 
+                                                        id="stockBARAO" 
+                                                        type="number"
+                                                        inputMode="numeric"
+                                                    /> 
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Input 
+                                                        placeholder={product.stockLB.toString()}
+                                                        value={product.stockLB || ''}
+                                                        onChange={(e) => handleAddProduct(e, product.product, 'stockLB')} 
+                                                        className="w-16" 
+                                                        id="stockLB" 
+                                                        type="number"
+                                                        inputMode="numeric"
+                                                    /> 
+                                                </TableCell>
+                                                <TableCell className="cursor-pointer"
+                                                        onClick={() => removeItem(product.product)}><Trash2
+                                                    className="text-red-700"/></TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                            
+                            {/* Mobile view - Card based layout */}
+                            <div className="md:hidden space-y-4">
+                                {lowStockProducts.map((product) => (
+                                    <Card key={product.id} className="p-3 relative">
+                                        <div className="absolute top-2 right-2 cursor-pointer" onClick={() => removeItem(product.product)}>
+                                            <Trash2 className="text-red-700 h-5 w-5"/>
+                                        </div>
+                                        <h3 className="font-medium text-base mb-3 pr-7">{product.product}</h3>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div className="flex flex-col">
+                                                <Label htmlFor={`mobile-stockJR-${product.id}`} className="mb-1 text-sm">JR</Label>
                                                 <Input 
                                                     placeholder={product.stockJR.toString()}
                                                     value={product.stockJR || ''}
                                                     onChange={(e) => handleAddProduct(e, product.product, 'stockJR')} 
-                                                    className="w-16" 
-                                                    id="stockJR" 
+                                                    className="w-full" 
+                                                    id={`mobile-stockJR-${product.id}`} 
+                                                    type="number"
+                                                    inputMode="numeric"
                                                 /> 
-                                            </TableCell>
-                                            <TableCell>
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <Label htmlFor={`mobile-stockGS-${product.id}`} className="mb-1 text-sm">GS</Label>
                                                 <Input 
                                                     placeholder={product.stockGS.toString()}
                                                     value={product.stockGS || ''}
                                                     onChange={(e) => handleAddProduct(e, product.product, 'stockGS')} 
-                                                    className="w-16" 
-                                                    id="stockGS" 
+                                                    className="w-full" 
+                                                    id={`mobile-stockGS-${product.id}`} 
+                                                    type="number"
+                                                    inputMode="numeric"
                                                 /> 
-                                            </TableCell>
-                                            <TableCell>
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <Label htmlFor={`mobile-stockBARAO-${product.id}`} className="mb-1 text-sm">BARÃO</Label>
                                                 <Input 
                                                     placeholder={product.stockBARAO.toString()}
                                                     value={product.stockBARAO || ''}
                                                     onChange={(e) => handleAddProduct(e, product.product, 'stockBARAO')} 
-                                                    className="w-16" 
-                                                    id="stockBARAO" 
+                                                    className="w-full" 
+                                                    id={`mobile-stockBARAO-${product.id}`} 
+                                                    type="number"
+                                                    inputMode="numeric"
                                                 /> 
-                                            </TableCell>
-                                            <TableCell>
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <Label htmlFor={`mobile-stockLB-${product.id}`} className="mb-1 text-sm">LB</Label>
                                                 <Input 
                                                     placeholder={product.stockLB.toString()}
                                                     value={product.stockLB || ''}
                                                     onChange={(e) => handleAddProduct(e, product.product, 'stockLB')} 
-                                                    className="w-16" 
-                                                    id="stockLB" 
+                                                    className="w-full" 
+                                                    id={`mobile-stockLB-${product.id}`} 
+                                                    type="number"
+                                                    inputMode="numeric"
                                                 /> 
-                                            </TableCell>
-                                            <TableCell className="cursor-pointer"
-                                                       onClick={() => removeItem(product.product)}><Trash2
-                                                className="text-red-700"/></TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
+                                            </div>
+                                        </div>
+                                    </Card>
+                                ))}
+                            </div>
                         </CardContent>
-                        <CardFooter className="flex flew-row justify-between">
+                        <CardFooter className="flex flex-col sm:flex-row justify-between gap-3">
                             <div>Total de produtos: {lowStockProducts.length}</div>
                             <Button
                                 disabled={isLoading}
                                 onClick={createNewList}
-                                className="flex items-center gap-2 cursor-pointer text-white bg-green-700 hover:bg-green-800">
+                                className="flex items-center gap-2 cursor-pointer text-white bg-green-700 hover:bg-green-800 w-full sm:w-auto">
                                 <SaveIcon className="h-5 w-5"/>
                                 {isUpdate ? 'Atualizar Lista' : 'Salvar Lista'}
                             </Button>
@@ -394,7 +467,7 @@ const ShoppingList: React.FC = () => {
             
             {/* Export Dialog */}
             <Dialog open={exportDialogOpen} onOpenChange={setExportDialogOpen}>
-                <DialogContent className="sm:max-w-[600px]">
+                <DialogContent className="sm:max-w-[600px] max-w-[95vw] rounded-lg">
                     <DialogHeader>
                         <DialogTitle>Exportar Lista de Compras</DialogTitle>
                         <DialogDescription>
@@ -402,18 +475,18 @@ const ShoppingList: React.FC = () => {
                         </DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="supplier" className="text-right">
+                        <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                            <Label htmlFor="supplier" className="sm:text-right text-left">
                                 Fornecedor
                             </Label>
                             <Select 
                                 value={selectedSupplier} 
                                 onValueChange={setSelectedSupplier}
                             >
-                                <SelectTrigger className="col-span-3">
+                                <SelectTrigger className="col-span-1 sm:col-span-3">
                                     <SelectValue placeholder="Selecione um fornecedor" />
                                 </SelectTrigger>
-                                <SelectContent className="bg-white rounded-2xl">
+                                <SelectContent className="bg-white rounded-lg max-h-[40vh]">
                                     {suppliers.map((supplier) => (
                                         <SelectItem 
                                             key={supplier.id} 
@@ -427,12 +500,12 @@ const ShoppingList: React.FC = () => {
                         </div>
                     </div>
                     <DialogFooter className="flex flex-col sm:flex-row gap-2">
-                        <Button variant="outline" onClick={() => setExportDialogOpen(false)}>
+                        <Button variant="outline" onClick={() => setExportDialogOpen(false)} className="w-full sm:w-auto">
                             Cancelar
                         </Button>
                         <Button 
                             onClick={exportToCSV}
-                            className="flex items-center gap-2"
+                            className="flex items-center gap-2 w-full sm:w-auto"
                         >
                             <Download className="h-4 w-4" />
                             Exportar Excel
@@ -440,8 +513,9 @@ const ShoppingList: React.FC = () => {
                         <Button 
                             onClick={sendViaWhatsApp}
                             variant="outline"
+                            className="w-full sm:w-auto"
                         >
-                            <MessageSquare className="h-4 w-4" />
+                            <MessageSquare className="h-4 w-4 mr-2" />
                             Enviar WhatsApp
                         </Button>
                     </DialogFooter>
