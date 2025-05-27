@@ -41,7 +41,7 @@ export const PriceComparison: React.FC = () => {
         const workbook = XLSX.read(data, { type: 'binary' });
         const sheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[sheetName];
-        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+        const jsonData = XLSX.utils.sheet_to_json(worksheet, { raw: true, header: 1, defval: '' });
 
         // Check if we have enough data
         if (!jsonData || jsonData.length < 3) {
@@ -52,16 +52,16 @@ export const PriceComparison: React.FC = () => {
           });
           return;
         }
-        
-        // Check if the required columns exist in row 3 (index 2)
-        const headerRow = jsonData[1] as Record<string, any>;
 
-        
+        // Check if the required columns exist in the header row (now at index 0)
+        const headerRow = jsonData[0] as Record<string, any>;
+
+        console.log(headerRow);
         if (!headerRow) {
           toast({
             variant: 'destructive',
             title: 'Erro no formato do arquivo',
-            description: 'Não foi possível encontrar o cabeçalho na linha 3'
+            description: 'Não foi possível encontrar o cabeçalho na primeira linha'
           });
           return;
         }
@@ -76,8 +76,8 @@ export const PriceComparison: React.FC = () => {
         // Check for required columns in the values rather than keys
         const hasPriceColumn = hasPropertyWithValue(headerRow, 'Preço Unitário');
         const hasSupplierColumn = hasPropertyWithValue(headerRow, 'Fornecedor');
-        const hasNameColumn = hasPropertyWithValue(headerRow, 'Nome');
-
+        const hasNameColumn = hasPropertyWithValue(headerRow, 'Fornecedor: Não especificado');
+        console.log(hasPriceColumn, hasSupplierColumn, hasNameColumn);
         if (!hasPriceColumn || !hasSupplierColumn || !hasNameColumn) {
           toast({
             variant: 'destructive',
@@ -100,8 +100,8 @@ export const PriceComparison: React.FC = () => {
         // Find the keys for our required columns
         const priceKey = findKeyForValue(headerRow, 'Preço Unitário');
         const supplierKey = findKeyForValue(headerRow, 'Fornecedor');
-        const nameKey = findKeyForValue(headerRow, 'Nome');
-        
+        const nameKey = findKeyForValue(headerRow, 'Fornecedor: Não especificado');
+
         console.log('Column keys:', { priceKey, supplierKey, nameKey });
 
         if (!priceKey || !supplierKey || !nameKey) {
@@ -113,19 +113,19 @@ export const PriceComparison: React.FC = () => {
           return;
         }
 
-        // Extract the data starting from row 3 (index 2)
+        // Extract the data starting from row 2 (index 1), since header is now at index 0
         const extractedData: SupplierPrice[] = [];
-        
-        for (let i = 2; i < jsonData.length; i++) {
+
+        for (let i = 1; i < jsonData.length; i++) {
           const row = jsonData[i] as Record<string, any>;
-          
+
           // Skip rows without required data
           if (!row[priceKey] || !row[nameKey]) continue;
-          
+
           // Convert price string to number (handling comma as decimal separator)
           const priceStr = String(row[priceKey]).replace(',', '.');
           const price = parseFloat(priceStr);
-          
+
           if (!isNaN(price) && price > 0) {
             extractedData.push({
               productName: row[nameKey],
@@ -134,7 +134,7 @@ export const PriceComparison: React.FC = () => {
             });
           }
         }
-        
+
         if (extractedData.length === 0) {
           toast({
             variant: 'destructive',
@@ -147,10 +147,10 @@ export const PriceComparison: React.FC = () => {
         // Add to existing data
         setSupplierPrices(prev => [...prev, ...extractedData]);
         setUploadedFiles(prev => [...prev, file.name]);
-        
+
         // Update comparisons
         updateComparisons([...supplierPrices, ...extractedData]);
-        
+
         toast({
           title: 'Arquivo processado',
           description: `${file.name} foi processado com sucesso`
@@ -179,49 +179,48 @@ export const PriceComparison: React.FC = () => {
   const updateComparisons = (prices: SupplierPrice[]) => {
     // Group by product name
     const productMap = new Map<string, SupplierPrice[]>();
-    
+
     prices.forEach(price => {
       if (!productMap.has(price.productName)) {
         productMap.set(price.productName, []);
       }
       productMap.get(price.productName)?.push(price);
     });
-    
+
     // Create comparisons
     const newComparisons: ProductComparison[] = [];
     const bestPrices: {productName: string, price: number, supplier: string}[] = [];
-    
+
     productMap.forEach((prices, productName) => {
       // Find the best price
       let bestPrice = Infinity;
       let bestSupplier = '';
-      
+
       const suppliers = prices.map(price => {
         if (price.price < bestPrice) {
           bestPrice = price.price;
           bestSupplier = price.supplier;
         }
-        
         return {
           supplier: price.supplier,
           price: price.price
         };
       });
-      
+
       newComparisons.push({
         productName,
         suppliers,
         bestSupplier,
         bestPrice
       });
-      
+
       bestPrices.push({
         productName,
         price: bestPrice,
         supplier: bestSupplier
       });
     });
-    
+
     setComparisons(newComparisons);
     setBestPricesList(bestPrices);
   };
@@ -235,10 +234,10 @@ export const PriceComparison: React.FC = () => {
       });
       return;
     }
-    
+
     // Group products by supplier
     const supplierMap = new Map<string, {productName: string, price: number}[]>();
-    
+
     bestPricesList.forEach(item => {
       if (!supplierMap.has(item.supplier)) {
         supplierMap.set(item.supplier, []);
@@ -248,10 +247,10 @@ export const PriceComparison: React.FC = () => {
         price: item.price
       });
     });
-    
+
     // Create a workbook with a sheet for each supplier
     const workbook = XLSX.utils.book_new();
-    
+
     supplierMap.forEach((products, supplier) => {
       // Create worksheet data
       const wsData = products.map(product => ({
@@ -259,25 +258,25 @@ export const PriceComparison: React.FC = () => {
         'Preço Unitário': product.price,
         'Fornecedor': supplier
       }));
-      
+
       // Create worksheet and add to workbook
       const ws = XLSX.utils.json_to_sheet(wsData);
       XLSX.utils.book_append_sheet(workbook, ws, supplier.substring(0, 30)); // Limit sheet name length
     });
-    
+
     // Create a summary sheet with all best prices
     const summaryData = bestPricesList.map(item => ({
       'Nome do Produto': item.productName,
       'Preço Unitário': item.price,
       'Fornecedor': item.supplier
     }));
-    
+
     const summaryWs = XLSX.utils.json_to_sheet(summaryData);
     XLSX.utils.book_append_sheet(workbook, summaryWs, 'Resumo Melhores Preços');
-    
+
     // Generate Excel file and trigger download
     XLSX.writeFile(workbook, `Lista_Melhores_Preços_${new Date().toISOString().split('T')[0]}.xlsx`);
-    
+
     toast({
       title: 'Lista gerada com sucesso',
       description: 'A lista com os melhores preços foi gerada e está sendo baixada'
@@ -294,7 +293,7 @@ export const PriceComparison: React.FC = () => {
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Comparação de Preços entre Fornecedores</h1>
-      
+
       <Card>
         <CardHeader>
           <CardTitle className="flex justify-center">Upload de Arquivos Excel</CardTitle>
@@ -314,7 +313,7 @@ export const PriceComparison: React.FC = () => {
                 className="hidden"
               />
             </label>
-            
+
             {uploadedFiles.length > 0 && (
               <div className="w-full">
                 <h3 className="font-semibold mb-2">Arquivos processados:</h3>
@@ -323,8 +322,8 @@ export const PriceComparison: React.FC = () => {
                     <li key={index}>{fileName}</li>
                   ))}
                 </ul>
-                <Button 
-                  variant="destructive" 
+                <Button
+                  variant="destructive"
                   className="mt-4"
                   onClick={clearData}
                 >
@@ -335,13 +334,13 @@ export const PriceComparison: React.FC = () => {
           </div>
         </CardContent>
       </Card>
-      
+
       {comparisons.length > 0 && (
         <Card className="mt-6">
           <CardHeader>
             <CardTitle className="flex justify-between items-center">
               <span>Comparação de Preços</span>
-              <Button 
+              <Button
                 onClick={generateBestPricesList}
                 className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
               >
