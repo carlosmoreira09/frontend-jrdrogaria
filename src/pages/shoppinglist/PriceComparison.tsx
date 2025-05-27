@@ -44,7 +44,7 @@ export const PriceComparison: React.FC = () => {
         const jsonData = XLSX.utils.sheet_to_json(worksheet, { raw: true, header: 1, defval: '' });
 
         // Check if we have enough data
-        if (!jsonData || jsonData.length < 3) {
+        if (!jsonData || jsonData.length < 4) {
           toast({
             variant: 'destructive',
             title: 'Arquivo incompleto',
@@ -55,8 +55,6 @@ export const PriceComparison: React.FC = () => {
 
         // Check if the required columns exist in the header row (now at index 0)
         const headerRow = jsonData[0] as Record<string, any>;
-
-        console.log(headerRow);
         if (!headerRow) {
           toast({
             variant: 'destructive',
@@ -75,14 +73,14 @@ export const PriceComparison: React.FC = () => {
 
         // Check for required columns in the values rather than keys
         const hasPriceColumn = hasPropertyWithValue(headerRow, 'Preço Unitário');
-        const hasSupplierColumn = hasPropertyWithValue(headerRow, 'Fornecedor');
-        const hasNameColumn = hasPropertyWithValue(headerRow, 'Fornecedor: Não especificado');
-        console.log(hasPriceColumn, hasSupplierColumn, hasNameColumn);
-        if (!hasPriceColumn || !hasSupplierColumn || !hasNameColumn) {
+        const hasNameColumn = hasPropertyWithValue(headerRow, 'Nome: Lista de Compras');
+        
+        // We no longer check for supplier column in the header row since it's now fixed in cell B3
+        if (!hasPriceColumn || !hasNameColumn) {
           toast({
             variant: 'destructive',
             title: 'Erro no formato do arquivo',
-            description: 'O arquivo deve conter as colunas "Preço Unitário", "Fornecedor" e "Nome"'
+            description: 'O arquivo deve conter as colunas "Preço Unitário" e "Nome: Lista de Compras"'
           });
           return;
         }
@@ -99,12 +97,14 @@ export const PriceComparison: React.FC = () => {
 
         // Find the keys for our required columns
         const priceKey = findKeyForValue(headerRow, 'Preço Unitário');
-        const supplierKey = findKeyForValue(headerRow, 'Fornecedor');
-        const nameKey = findKeyForValue(headerRow, 'Fornecedor: Não especificado');
+        const nameKey = findKeyForValue(headerRow, 'Nome: Lista de Compras');
+        
+        // Get supplier from cell B3 (index 2 in the jsonData array, and index 1 for the B column)
+        const supplierRow = jsonData[1] as Record<string, any>;
+        const supplierKey = '1'; // Column B has index 1
+        const supplierName = supplierRow[supplierKey]
 
-        console.log('Column keys:', { priceKey, supplierKey, nameKey });
-
-        if (!priceKey || !supplierKey || !nameKey) {
+        if (!priceKey || !nameKey) {
           toast({
             variant: 'destructive',
             title: 'Erro interno',
@@ -113,10 +113,10 @@ export const PriceComparison: React.FC = () => {
           return;
         }
 
-        // Extract the data starting from row 2 (index 1), since header is now at index 0
+        // Extract the data starting from row 4 (index 3), since we now have 3 header rows
         const extractedData: SupplierPrice[] = [];
 
-        for (let i = 1; i < jsonData.length; i++) {
+        for (let i = 3; i < jsonData.length; i++) {
           const row = jsonData[i] as Record<string, any>;
 
           // Skip rows without required data
@@ -130,7 +130,7 @@ export const PriceComparison: React.FC = () => {
             extractedData.push({
               productName: row[nameKey],
               price: price,
-              supplier: row[supplierKey] || 'Desconhecido'
+              supplier: supplierName // Use the supplier from cell B3
             });
           }
         }
@@ -239,6 +239,7 @@ export const PriceComparison: React.FC = () => {
     const supplierMap = new Map<string, {productName: string, price: number}[]>();
 
     bestPricesList.forEach(item => {
+      // Only add the product to the supplier that offers the best price
       if (!supplierMap.has(item.supplier)) {
         supplierMap.set(item.supplier, []);
       }
@@ -251,24 +252,33 @@ export const PriceComparison: React.FC = () => {
     // Create a workbook with a sheet for each supplier
     const workbook = XLSX.utils.book_new();
 
+    // Helper function to sanitize sheet names
+    const sanitizeSheetName = (name: string): string => {
+      // Replace invalid characters with underscores
+      let sanitized = name.replace(/[:\\/?*\[\]]/g, '_');
+      // Limit length to 30 characters
+      return sanitized.substring(0, 30);
+    };
+
+    // Create a sheet for each supplier
     supplierMap.forEach((products, supplier) => {
       // Create worksheet data
       const wsData = products.map(product => ({
         'Nome do Produto': product.productName,
-        'Preço Unitário': product.price,
-        'Fornecedor': supplier
+        ['Preço Unitário']: product.price,
+        'Fornecedor': supplier // This is the supplier name
       }));
 
       // Create worksheet and add to workbook
       const ws = XLSX.utils.json_to_sheet(wsData);
-      XLSX.utils.book_append_sheet(workbook, ws, supplier.substring(0, 30)); // Limit sheet name length
+      XLSX.utils.book_append_sheet(workbook, ws, sanitizeSheetName(supplier)); // Use supplier name for sheet name
     });
 
     // Create a summary sheet with all best prices
     const summaryData = bestPricesList.map(item => ({
       'Nome do Produto': item.productName,
-      'Preço Unitário': item.price,
-      'Fornecedor': item.supplier
+      ['Preço Unitário']: item.price,
+      'Fornecedor': item.supplier // This is the supplier name
     }));
 
     const summaryWs = XLSX.utils.json_to_sheet(summaryData);

@@ -17,12 +17,13 @@ export async function exportLeadsToCSV(data: any[], supplierName: string = '') {
         
         // Add header information
         XLSX.utils.sheet_add_aoa(worksheet, [
+            [`Nome: Lista de Compras`],
             [`Fornecedor: ${supplierName || "Não especificado"}`],
             ["Data: " + new Date().toLocaleDateString('pt-BR')]
         ], { origin: "A1" });
         
         // Process and add each row of data
-        let rowIndex = 3; // Start after headers
+        let rowIndex = 4; // Start after headers
         
         data.forEach((row) => {
             // For each column in the row
@@ -35,7 +36,7 @@ export async function exportLeadsToCSV(data: any[], supplierName: string = '') {
                     let formula = value.f;
                     
                     // Replace {row} placeholder with actual row number
-                    formula = formula.replace(/\{row\}/g, (rowIndex + 1).toString());
+                    formula = formula.replace(/\{row}/g, (rowIndex + 1).toString());
                     
                     worksheet[cellRef] = { t: 'n', f: formula };
                 } else {
