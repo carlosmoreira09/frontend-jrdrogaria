@@ -10,6 +10,10 @@ interface SupplierPrice {
   productName: string;
   price: number;
   supplier: string;
+  stockJR?: number;
+  stockGS?: number;
+  stockBARAO?: number;
+  stockLB?: number;
 }
 
 interface ProductComparison {
@@ -26,7 +30,7 @@ export const PriceComparison: React.FC = () => {
   const [supplierPrices, setSupplierPrices] = useState<SupplierPrice[]>([]);
   const [comparisons, setComparisons] = useState<ProductComparison[]>([]);
   const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
-  const [bestPricesList, setBestPricesList] = useState<{productName: string, price: number, supplier: string}[]>([]);
+  const [bestPricesList, setBestPricesList] = useState<{productName: string, price: number, supplier: string, stockJR?: number, stockGS?: number, stockBARAO?: number, stockLB?: number}[]>([]);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -67,14 +71,14 @@ export const PriceComparison: React.FC = () => {
         // Helper function to check if a property with a specific value exists in the object
         const hasPropertyWithValue = (obj: Record<string, any>, value: string): boolean => {
           return Object.values(obj).some(val =>
-            typeof val === 'string' && val.includes(value)
+              typeof val === 'string' && val.includes(value)
           );
         };
 
         // Check for required columns in the values rather than keys
         const hasPriceColumn = hasPropertyWithValue(headerRow, 'Preço Unitário');
         const hasNameColumn = hasPropertyWithValue(headerRow, 'Nome: Lista de Compras');
-        
+
         // We no longer check for supplier column in the header row since it's now fixed in cell B3
         if (!hasPriceColumn || !hasNameColumn) {
           toast({
@@ -98,7 +102,7 @@ export const PriceComparison: React.FC = () => {
         // Find the keys for our required columns
         const priceKey = findKeyForValue(headerRow, 'Preço Unitário');
         const nameKey = findKeyForValue(headerRow, 'Nome: Lista de Compras');
-        
+
         // Get supplier from cell B3 (index 2 in the jsonData array, and index 1 for the B column)
         const supplierRow = jsonData[1] as Record<string, any>;
         const supplierKey = '1'; // Column B has index 1
@@ -126,11 +130,21 @@ export const PriceComparison: React.FC = () => {
           const priceStr = String(row[priceKey]).replace(',', '.');
           const price = parseFloat(priceStr);
 
+          // Extract stock information from columns D, E, F, G (indices 3, 4, 5, 6)
+          const stockJR = parseFloat(String(row['3'] || '0').replace(',', '.')) || 0;
+          const stockGS = parseFloat(String(row['4'] || '0').replace(',', '.')) || 0;
+          const stockBARAO = parseFloat(String(row['5'] || '0').replace(',', '.')) || 0;
+          const stockLB = parseFloat(String(row['6'] || '0').replace(',', '.')) || 0;
+
           if (!isNaN(price) && price > 0) {
             extractedData.push({
               productName: row[nameKey],
               price: price,
-              supplier: supplierName // Use the supplier from cell B3
+              supplier: supplierName, // Use the supplier from cell B3
+              stockJR,
+              stockGS,
+              stockBARAO,
+              stockLB
             });
           }
         }
@@ -189,12 +203,35 @@ export const PriceComparison: React.FC = () => {
 
     // Create comparisons
     const newComparisons: ProductComparison[] = [];
-    const bestPrices: {productName: string, price: number, supplier: string}[] = [];
+    const bestPrices: {productName: string, price: number, supplier: string, stockJR?: number, stockGS?: number, stockBARAO?: number, stockLB?: number}[] = [];
 
     productMap.forEach((prices, productName) => {
       // Find the best price
       let bestPrice = Infinity;
       let bestSupplier = '';
+      let stockInfo = {
+        stockJR: 0,
+        stockGS: 0,
+        stockBARAO: 0,
+        stockLB: 0
+      };
+
+      // Check if any of the uploaded prices have stock information
+      const priceWithStock = prices.find(p =>
+          p.stockJR !== undefined ||
+          p.stockGS !== undefined ||
+          p.stockBARAO !== undefined ||
+          p.stockLB !== undefined
+      );
+
+      if (priceWithStock) {
+        stockInfo = {
+          stockJR: priceWithStock.stockJR || 0,
+          stockGS: priceWithStock.stockGS || 0,
+          stockBARAO: priceWithStock.stockBARAO || 0,
+          stockLB: priceWithStock.stockLB || 0
+        };
+      }
 
       const suppliers = prices.map(price => {
         if (price.price < bestPrice) {
@@ -217,7 +254,8 @@ export const PriceComparison: React.FC = () => {
       bestPrices.push({
         productName,
         price: bestPrice,
-        supplier: bestSupplier
+        supplier: bestSupplier,
+        ...stockInfo
       });
     });
 
@@ -236,7 +274,7 @@ export const PriceComparison: React.FC = () => {
     }
 
     // Group products by supplier
-    const supplierMap = new Map<string, {productName: string, price: number}[]>();
+    const supplierMap = new Map<string, {productName: string, price: number, stockJR?: number, stockGS?: number, stockBARAO?: number, stockLB?: number}[]>();
 
     bestPricesList.forEach(item => {
       // Only add the product to the supplier that offers the best price
@@ -245,7 +283,11 @@ export const PriceComparison: React.FC = () => {
       }
       supplierMap.get(item.supplier)?.push({
         productName: item.productName,
-        price: item.price
+        price: item.price,
+        stockJR: item.stockJR,
+        stockGS: item.stockGS,
+        stockBARAO: item.stockBARAO,
+        stockLB: item.stockLB
       });
     });
 
@@ -255,33 +297,168 @@ export const PriceComparison: React.FC = () => {
     // Helper function to sanitize sheet names
     const sanitizeSheetName = (name: string): string => {
       // Replace invalid characters with underscores
-      let sanitized = name.replace(/[:\\/?*\[\]]/g, '_');
+      const sanitized = name.replace(/[:/?*[\]]/g, '_');
       // Limit length to 30 characters
       return sanitized.substring(0, 30);
     };
 
     // Create a sheet for each supplier
     supplierMap.forEach((products, supplier) => {
-      // Create worksheet data
-      const wsData = products.map(product => ({
+      // Prepare data for the worksheet
+      const data = products.map(product => ({
         'Nome do Produto': product.productName,
-        ['Preço Unitário']: product.price,
-        'Fornecedor': supplier // This is the supplier name
+        'Preço Unitário': product.price.toString().replace('.', ','), // Convert decimal point to comma
+        'Fornecedor': supplier,
+        'JR': product.stockJR || 0,
+        'GS': product.stockGS || 0,
+        'BARÃO': product.stockBARAO || 0,
+        'LB': product.stockLB || 0,
+        'Quantidade': 1,
+        'Total': { formula: 'PRODUCT(B{row},H{row})' }
       }));
 
-      // Create worksheet and add to workbook
-      const ws = XLSX.utils.json_to_sheet(wsData);
-      XLSX.utils.book_append_sheet(workbook, ws, sanitizeSheetName(supplier)); // Use supplier name for sheet name
+      // Add total row
+      data.push({
+        'Nome do Produto': 'TOTAL GERAL',
+        'Preço Unitário': '',
+        'Fornecedor': '',
+        'JR': Number(''),
+        'GS': Number(''),
+        'BARÃO': Number(''),
+        'LB': Number(''),
+        'Quantidade': 1,
+        'Total': { formula: `SUM(I2:I${data.length})` }
+      });
+
+      // Create worksheet
+      const ws = XLSX.utils.json_to_sheet([]);
+
+      // Add headers
+      const headers = Object.keys(data[0]);
+      XLSX.utils.sheet_add_aoa(ws, [headers], { origin: 'A1' });
+
+      // Process each row with formulas
+      let rowIndex = 1; // Start after headers
+      data.forEach(row => {
+        headers.forEach((header, colIdx) => {
+          const cellRef = XLSX.utils.encode_cell({r: rowIndex, c: colIdx});
+          const value = row[header];
+
+          // Handle formula objects
+          if (value && typeof value === 'object' && value.formula) {
+            let formula = value.formula;
+            // Replace {row} with actual row number
+            formula = formula.replace(/{row}/g, (rowIndex + 1).toString());
+            ws[cellRef] = { t: 'n', f: formula };
+          } else if (header === 'Preço Unitário' && value !== '') {
+            // Ensure price is treated as a number
+            ws[cellRef] = { t: 'n', v: parseFloat(value.replace(',', '.')) };
+          } else {
+            // Regular value
+            ws[cellRef] = { v: value };
+          }
+        });
+        rowIndex++;
+      });
+
+      // Set column widths
+      ws['!cols'] = [
+        { wch: 40 }, // Nome do Produto
+        { wch: 15 }, // Preço Unitário
+        { wch: 20 }, // Fornecedor
+        { wch: 10 }, // JR
+        { wch: 10 }, // GS
+        { wch: 10 }, // BARÃO
+        { wch: 10 }, // LB
+        { wch: 15 }, // Quantidade
+        { wch: 15 }  // Total
+      ];
+
+      // Set the range of cells
+      ws['!ref'] = XLSX.utils.encode_range({
+        s: { c: 0, r: 0 },
+        e: { c: headers.length - 1, r: rowIndex - 1 }
+      });
+
+      XLSX.utils.book_append_sheet(workbook, ws, sanitizeSheetName(supplier));
     });
 
-    // Create a summary sheet with all best prices
+    // Create summary sheet with all best prices
     const summaryData = bestPricesList.map(item => ({
       'Nome do Produto': item.productName,
-      ['Preço Unitário']: item.price,
-      'Fornecedor': item.supplier // This is the supplier name
+      'Preço Unitário': item.price.toString().replace('.', ','), // Convert decimal point to comma
+      'Fornecedor': item.supplier,
+      'JR': item.stockJR || 0,
+      'GS': item.stockGS || 0,
+      'BARÃO': item.stockBARAO || 0,
+      'LB': item.stockLB || 0,
+      'Quantidade': 1,
+      'Total': { formula: 'PRODUCT(B{row},H{row})' }
     }));
 
-    const summaryWs = XLSX.utils.json_to_sheet(summaryData);
+    // Add total row to summary
+    summaryData.push({
+      'Nome do Produto': 'TOTAL GERAL',
+      'Preço Unitário': '',
+      'Fornecedor': '',
+      'JR': Number(''),
+      'GS': Number(''),
+      'BARÃO': Number(''),
+      'LB': Number(''),
+      'Quantidade': 1,
+      'Total': { formula: `SUM(I2:I${summaryData.length})` }
+    });
+
+    // Create summary worksheet
+    const summaryWs = XLSX.utils.json_to_sheet([]);
+
+    // Add headers
+    const summaryHeaders = Object.keys(summaryData[0]);
+    XLSX.utils.sheet_add_aoa(summaryWs, [summaryHeaders], { origin: 'A1' });
+
+    // Process each row with formulas
+    let summaryRowIndex = 1; // Start after headers
+    summaryData.forEach(row => {
+      summaryHeaders.forEach((header, colIdx) => {
+        const cellRef = XLSX.utils.encode_cell({r: summaryRowIndex, c: colIdx});
+        const value = row[header];
+
+        // Handle formula objects
+        if (value && typeof value === 'object' && value.formula) {
+          let formula = value.formula;
+          // Replace {row} with actual row number
+          formula = formula.replace(/{row}/g, (summaryRowIndex + 1).toString());
+          summaryWs[cellRef] = { t: 'n', f: formula };
+        } else if (header === 'Preço Unitário' && value !== '') {
+          // Ensure price is treated as a number
+          summaryWs[cellRef] = { t: 'n', v: parseFloat(value.replace(',', '.')) };
+        } else {
+          // Regular value
+          summaryWs[cellRef] = { v: value };
+        }
+      });
+      summaryRowIndex++;
+    });
+
+    // Set column widths
+    summaryWs['!cols'] = [
+      { wch: 40 }, // Nome do Produto
+      { wch: 15 }, // Preço Unitário
+      { wch: 20 }, // Fornecedor
+      { wch: 10 }, // JR
+      { wch: 10 }, // GS
+      { wch: 10 }, // BARÃO
+      { wch: 10 }, // LB
+      { wch: 15 }, // Quantidade
+      { wch: 15 }  // Total
+    ];
+
+    // Set the range of cells
+    summaryWs['!ref'] = XLSX.utils.encode_range({
+      s: { c: 0, r: 0 },
+      e: { c: summaryHeaders.length - 1, r: summaryRowIndex - 1 }
+    });
+
     XLSX.utils.book_append_sheet(workbook, summaryWs, 'Resumo Melhores Preços');
 
     // Generate Excel file and trigger download
@@ -301,96 +478,96 @@ export const PriceComparison: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Comparação de Preços entre Fornecedores</h1>
+      <div className="container mx-auto p-4">
+        <h1 className="text-2xl font-bold mb-4">Comparação de Preços entre Fornecedores</h1>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex justify-center">Upload de Arquivos Excel</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col items-center gap-4">
-            <label htmlFor="file-upload" className="cursor-pointer">
-              <div className="flex items-center gap-2 border-2 border-dashed border-gray-300 p-4 rounded-md hover:bg-gray-50">
-                <Upload className="h-5 w-5" />
-                <span>Selecionar arquivo Excel</span>
-              </div>
-              <input
-                id="file-upload"
-                type="file"
-                accept=".xlsx, .xls"
-                onChange={handleFileUpload}
-                className="hidden"
-              />
-            </label>
-
-            {uploadedFiles.length > 0 && (
-              <div className="w-full">
-                <h3 className="font-semibold mb-2">Arquivos processados:</h3>
-                <ul className="list-disc pl-5">
-                  {uploadedFiles.map((fileName, index) => (
-                    <li key={index}>{fileName}</li>
-                  ))}
-                </ul>
-                <Button
-                  variant="destructive"
-                  className="mt-4"
-                  onClick={clearData}
-                >
-                  Limpar dados
-                </Button>
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {comparisons.length > 0 && (
-        <Card className="mt-6">
+        <Card>
           <CardHeader>
-            <CardTitle className="flex justify-between items-center">
-              <span>Comparação de Preços</span>
-              <Button
-                onClick={generateBestPricesList}
-                className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
-              >
-                <FileDown className="h-5 w-5" />
-                Gerar Lista de Melhores Preços
-              </Button>
-            </CardTitle>
+            <CardTitle className="flex justify-center">Upload de Arquivos Excel</CardTitle>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Produto</TableHead>
-                  <TableHead>Melhor Fornecedor</TableHead>
-                  <TableHead>Melhor Preço</TableHead>
-                  <TableHead>Todos os Fornecedores</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {comparisons.map((comparison, index) => (
-                  <TableRow key={index}>
-                    <TableCell>{comparison.productName}</TableCell>
-                    <TableCell className="font-medium">{comparison.bestSupplier}</TableCell>
-                    <TableCell className="font-medium">R$ {comparison.bestPrice.toFixed(2)}</TableCell>
-                    <TableCell>
-                      <ul className="list-disc pl-5">
-                        {comparison.suppliers.map((supplier, idx) => (
-                          <li key={idx} className={supplier.price === comparison.bestPrice ? "text-green-600 font-semibold" : ""}>
-                            {supplier.supplier}: R$ {supplier.price.toFixed(2)}
-                          </li>
-                        ))}
-                      </ul>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <div className="flex flex-col items-center gap-4">
+              <label htmlFor="file-upload" className="cursor-pointer">
+                <div className="flex items-center gap-2 border-2 border-dashed border-gray-300 p-4 rounded-md hover:bg-gray-50">
+                  <Upload className="h-5 w-5" />
+                  <span>Selecionar arquivo Excel</span>
+                </div>
+                <input
+                    id="file-upload"
+                    type="file"
+                    accept=".xlsx, .xls"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                />
+              </label>
+
+              {uploadedFiles.length > 0 && (
+                  <div className="w-full">
+                    <h3 className="font-semibold mb-2">Arquivos processados:</h3>
+                    <ul className="list-disc pl-5">
+                      {uploadedFiles.map((fileName, index) => (
+                          <li key={index}>{fileName}</li>
+                      ))}
+                    </ul>
+                    <Button
+                        variant="destructive"
+                        className="mt-4"
+                        onClick={clearData}
+                    >
+                      Limpar dados
+                    </Button>
+                  </div>
+              )}
+            </div>
           </CardContent>
         </Card>
-      )}
-    </div>
+
+        {comparisons.length > 0 && (
+            <Card className="mt-6">
+              <CardHeader>
+                <CardTitle className="flex justify-between items-center">
+                  <span>Comparação de Preços</span>
+                  <Button
+                      onClick={generateBestPricesList}
+                      className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
+                  >
+                    <FileDown className="h-5 w-5" />
+                    Gerar Lista de Melhores Preços
+                  </Button>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Produto</TableHead>
+                      <TableHead>Melhor Fornecedor</TableHead>
+                      <TableHead>Melhor Preço</TableHead>
+                      <TableHead>Todos os Fornecedores</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {comparisons.map((comparison, index) => (
+                        <TableRow key={index}>
+                          <TableCell>{comparison.productName}</TableCell>
+                          <TableCell className="font-medium">{comparison.bestSupplier}</TableCell>
+                          <TableCell className="font-medium">R$ {comparison.bestPrice.toFixed(2)}</TableCell>
+                          <TableCell>
+                            <ul className="list-disc pl-5">
+                              {comparison.suppliers.map((supplier, idx) => (
+                                  <li key={idx} className={supplier.price === comparison.bestPrice ? "text-green-600 font-semibold" : ""}>
+                                    {supplier.supplier}: R$ {supplier.price.toFixed(2)}
+                                  </li>
+                              ))}
+                            </ul>
+                          </TableCell>
+                        </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+        )}
+      </div>
   );
 };
