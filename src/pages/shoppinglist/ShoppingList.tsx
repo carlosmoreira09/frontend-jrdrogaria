@@ -125,19 +125,7 @@ const ShoppingList: React.FC = () => {
             Fornecedor: supplierName,
             ["Loja"]: tenantName + " Drogaria",
             ["Preço Unitário"]: '',
-            ["Quantidade"]: '',
-            ["Total"]: { f: 'PRODUCT(D{row},E{row})' },
         }))
-
-        // Add a row for the grand total at the end
-        exportData.push({
-            Nome: "TOTAL GERAL",
-            Fornecedor: "",
-            ["Loja"]: tenantName + " Drogaria",
-            ["Preço Unitário"]: "",
-            ["Quantidade"]: "",
-            ["Total"]: { f: `SUM(F4:F${exportData.length + 3})` },
-        })
 
         await exportLeadsToCSV(exportData, supplierName)
         setExportDialogOpen(false)
