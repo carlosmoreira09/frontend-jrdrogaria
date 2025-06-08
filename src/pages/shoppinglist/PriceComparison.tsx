@@ -1,10 +1,14 @@
-import React, { useState } from "react";
+import React, { useEffect, useState} from "react";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../components/ui/table";
 import { Upload, FileDown } from "lucide-react";
 import * as XLSX from 'xlsx';
 import { toast } from "../../hooks/use-toast";
+import { useParams} from "react-router-dom";
+import {IProductAndStock} from "../../types/types.ts";
+import {findOneShoppingList} from "../../service/shoppingListService.ts";
+import {useStore} from "../../hooks/store.tsx";
 
 interface SupplierPrice {
   productName: string;
@@ -29,8 +33,29 @@ interface ProductComparison {
 export const PriceComparison: React.FC = () => {
   const [supplierPrices, setSupplierPrices] = useState<SupplierPrice[]>([]);
   const [comparisons, setComparisons] = useState<ProductComparison[]>([]);
+  const [products,setProducts] = useState<IProductAndStock[]>([])
   const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
   const [bestPricesList, setBestPricesList] = useState<{productName: string, price: number, supplier: string, stockJR?: number, stockGS?: number, stockBARAO?: number, stockLB?: number}[]>([]);
+  const { store } = useStore()
+  const { id } = useParams();
+
+  const fetchList = async () => {
+    if(id) {
+      const response = await findOneShoppingList(Number(id), Number(store));
+      if(response && response.data) {
+      setProducts(response.data.products)
+      }
+    } else {
+      toast({
+        variant: 'destructive',
+        title: 'JR DROGARIA',
+        description: 'Erro ao Carregar ID da lista, volte na HOME'
+      });
+    }
+  }
+  useEffect(() => {
+    fetchList().then()
+  }, []);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -130,21 +155,12 @@ export const PriceComparison: React.FC = () => {
           const priceStr = String(row[priceKey]).replace(',', '.');
           const price = parseFloat(priceStr);
 
-          // Extract stock information from columns D, E, F, G (indices 3, 4, 5, 6)
-          const stockJR = parseFloat(String(row['3'] || '0').replace(',', '.')) || 0;
-          const stockGS = parseFloat(String(row['4'] || '0').replace(',', '.')) || 0;
-          const stockBARAO = parseFloat(String(row['5'] || '0').replace(',', '.')) || 0;
-          const stockLB = parseFloat(String(row['6'] || '0').replace(',', '.')) || 0;
 
           if (!isNaN(price) && price > 0) {
             extractedData.push({
               productName: row[nameKey],
               price: price,
               supplier: supplierName, // Use the supplier from cell B3
-              stockJR,
-              stockGS,
-              stockBARAO,
-              stockLB
             });
           }
         }
@@ -209,29 +225,6 @@ export const PriceComparison: React.FC = () => {
       // Find the best price
       let bestPrice = Infinity;
       let bestSupplier = '';
-      let stockInfo = {
-        stockJR: 0,
-        stockGS: 0,
-        stockBARAO: 0,
-        stockLB: 0
-      };
-
-      // Check if any of the uploaded prices have stock information
-      const priceWithStock = prices.find(p =>
-          p.stockJR !== undefined ||
-          p.stockGS !== undefined ||
-          p.stockBARAO !== undefined ||
-          p.stockLB !== undefined
-      );
-
-      if (priceWithStock) {
-        stockInfo = {
-          stockJR: priceWithStock.stockJR || 0,
-          stockGS: priceWithStock.stockGS || 0,
-          stockBARAO: priceWithStock.stockBARAO || 0,
-          stockLB: priceWithStock.stockLB || 0
-        };
-      }
 
       const suppliers = prices.map(price => {
         if (price.price < bestPrice) {
@@ -255,7 +248,6 @@ export const PriceComparison: React.FC = () => {
         productName,
         price: bestPrice,
         supplier: bestSupplier,
-        ...stockInfo
       });
     });
 
@@ -275,7 +267,6 @@ export const PriceComparison: React.FC = () => {
 
     // Group products by supplier
     const supplierMap = new Map<string, {productName: string, price: number, stockJR?: number, stockGS?: number, stockBARAO?: number, stockLB?: number}[]>();
-
     bestPricesList.forEach(item => {
       // Only add the product to the supplier that offers the best price
       if (!supplierMap.has(item.supplier)) {
@@ -284,10 +275,10 @@ export const PriceComparison: React.FC = () => {
       supplierMap.get(item.supplier)?.push({
         productName: item.productName,
         price: item.price,
-        stockJR: item.stockJR,
-        stockGS: item.stockGS,
-        stockBARAO: item.stockBARAO,
-        stockLB: item.stockLB
+        stockJR: products.find((product) => (product.product === item.productName))?.stockJR,
+        stockGS: products.find((product) => (product.product === item.productName))?.stockGS,
+        stockBARAO: products.find((product) => (product.product === item.productName))?.stockBARAO,
+        stockLB: products.find((product) => (product.product === item.productName))?.stockLB
       });
     });
 
@@ -313,7 +304,7 @@ export const PriceComparison: React.FC = () => {
         'GS': product.stockGS || 0,
         'BARÃO': product.stockBARAO || 0,
         'LB': product.stockLB || 0,
-        'Quantidade': 1,
+        'Quantidade': 0,
         'Total': { formula: 'PRODUCT(B{row},H{row})' }
       }));
 

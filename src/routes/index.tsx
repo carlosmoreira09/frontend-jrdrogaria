@@ -75,7 +75,7 @@ export const router = createBrowserRouter([
                 element:<ProtectedRoute role={ProfileRole.admin}><ShoppingList /></ProtectedRoute>
             },
             {
-                path: 'price-comparison',
+                path: 'price-comparison/:id',
                 element:<ProtectedRoute role={ProfileRole.admin}><PriceComparison /></ProtectedRoute>
             },
         ]

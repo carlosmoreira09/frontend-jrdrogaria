@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from "react"
 import Cards from "../components/Cards.tsx";
-import {BarChart3, Pill, ShoppingBag, Truck, Package} from "lucide-react";
+import { Pill, ShoppingBag, Truck, Package} from "lucide-react";
 import {useStore} from "../hooks/store.tsx";
 import {getTotalAmount} from "../service/generalService.ts";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/ui/card.tsx";
@@ -101,13 +101,6 @@ const Home: React.FC = () => {
                         >
                             <ShoppingBag className="mr-2 h-4 w-4" />
                             Nova Lista de Compras
-                        </Button>
-                        <Button 
-                            onClick={() => navigate('/shopping/price-comparison')}
-                            className="bg-green-700 text-white hover:bg-green-800"
-                        >
-                            <BarChart3 className="mr-2 h-4 w-4" />
-                            Comparar Preços
                         </Button>
                         <Button 
                             onClick={() => navigate('/product/home')}

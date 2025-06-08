@@ -124,27 +124,19 @@ const ShoppingList: React.FC = () => {
             Nome: product.product,
             Fornecedor: supplierName,
             ["Loja"]: tenantName + " Drogaria",
-            ["JR"]: product.stockJR,
-            ["GS"]: product.stockGS,
-            ["BARÃO"]: product.stockBARAO,
-            ["LB"]: product.stockLB,
             ["Preço Unitário"]: '',
             ["Quantidade"]: '',
-            ["Total"]: { f: 'PRODUCT(H{row},I{row})' },
+            ["Total"]: { f: 'PRODUCT(D{row},E{row})' },
         }))
 
         // Add a row for the grand total at the end
         exportData.push({
             Nome: "TOTAL GERAL",
             Fornecedor: "",
-            ["Loja"]: "",
-            ["JR"]: "",
-            ["GS"]: "",
-            ["BARÃO"]: "",
-            ["LB"]: "",
+            ["Loja"]: tenantName + " Drogaria",
             ["Preço Unitário"]: "",
             ["Quantidade"]: "",
-            ["Total"]: { f: `SUM(J4:J${exportData.length + 3})` },
+            ["Total"]: { f: `SUM(F4:F${exportData.length + 3})` },
         })
 
         await exportLeadsToCSV(exportData, supplierName)
@@ -306,7 +298,7 @@ const ShoppingList: React.FC = () => {
                     Exportar
                 </Button>
                 <Button
-                    onClick={() => navigate('/shopping/price-comparison')}
+                    onClick={() => navigate(`/shopping/price-comparison/${idList}`)}
                     className="flex items-center gap-2 cursor-pointer text-white bg-green-700 hover:bg-green-800 w-full sm:w-auto">
                     <BarChart2 className="h-5 w-5"/>
                     Comparar Preços
@@ -338,8 +330,8 @@ const ShoppingList: React.FC = () => {
                                                 <TableCell>{product.product}</TableCell>
                                                 <TableCell>
                                                     <Input 
-                                                        placeholder={product.stockJR.toString()}
-                                                        value={product.stockJR || ''}
+                                                        placeholder={product?.stockJR?.toString()}
+                                                        value={product?.stockJR || ''}
                                                         onChange={(e) => handleAddProduct(e, product.product, 'stockJR')} 
                                                         className="w-16" 
                                                         id="stockJR" 
@@ -349,8 +341,8 @@ const ShoppingList: React.FC = () => {
                                                 </TableCell>
                                                 <TableCell>
                                                     <Input 
-                                                        placeholder={product.stockGS.toString()}
-                                                        value={product.stockGS || ''}
+                                                        placeholder={product?.stockGS?.toString()}
+                                                        value={product?.stockGS || ''}
                                                         onChange={(e) => handleAddProduct(e, product.product, 'stockGS')} 
                                                         className="w-16" 
                                                         id="stockGS" 
@@ -360,8 +352,8 @@ const ShoppingList: React.FC = () => {
                                                 </TableCell>
                                                 <TableCell>
                                                     <Input 
-                                                        placeholder={product.stockBARAO.toString()}
-                                                        value={product.stockBARAO || ''}
+                                                        placeholder={product?.stockBARAO?.toString()}
+                                                        value={product?.stockBARAO || ''}
                                                         onChange={(e) => handleAddProduct(e, product.product, 'stockBARAO')} 
                                                         className="w-16" 
                                                         id="stockBARAO" 
@@ -371,7 +363,7 @@ const ShoppingList: React.FC = () => {
                                                 </TableCell>
                                                 <TableCell>
                                                     <Input 
-                                                        placeholder={product.stockLB.toString()}
+                                                        placeholder={product?.stockLB?.toString()}
                                                         value={product.stockLB || ''}
                                                         onChange={(e) => handleAddProduct(e, product.product, 'stockLB')} 
                                                         className="w-16" 
@@ -401,7 +393,7 @@ const ShoppingList: React.FC = () => {
                                             <div className="flex flex-col">
                                                 <Label htmlFor={`mobile-stockJR-${product.id}`} className="mb-1 text-sm">JR</Label>
                                                 <Input 
-                                                    placeholder={product.stockJR.toString()}
+                                                    placeholder={product?.stockJR?.toString()}
                                                     value={product.stockJR || ''}
                                                     onChange={(e) => handleAddProduct(e, product.product, 'stockJR')} 
                                                     className="w-full" 
@@ -413,7 +405,7 @@ const ShoppingList: React.FC = () => {
                                             <div className="flex flex-col">
                                                 <Label htmlFor={`mobile-stockGS-${product.id}`} className="mb-1 text-sm">GS</Label>
                                                 <Input 
-                                                    placeholder={product.stockGS.toString()}
+                                                    placeholder={product?.stockGS?.toString()}
                                                     value={product.stockGS || ''}
                                                     onChange={(e) => handleAddProduct(e, product.product, 'stockGS')} 
                                                     className="w-full" 
@@ -425,7 +417,7 @@ const ShoppingList: React.FC = () => {
                                             <div className="flex flex-col">
                                                 <Label htmlFor={`mobile-stockBARAO-${product.id}`} className="mb-1 text-sm">BARÃO</Label>
                                                 <Input 
-                                                    placeholder={product.stockBARAO.toString()}
+                                                    placeholder={product?.stockBARAO?.toString()}
                                                     value={product.stockBARAO || ''}
                                                     onChange={(e) => handleAddProduct(e, product.product, 'stockBARAO')} 
                                                     className="w-full" 
@@ -437,7 +429,7 @@ const ShoppingList: React.FC = () => {
                                             <div className="flex flex-col">
                                                 <Label htmlFor={`mobile-stockLB-${product.id}`} className="mb-1 text-sm">LB</Label>
                                                 <Input 
-                                                    placeholder={product.stockLB.toString()}
+                                                    placeholder={product?.stockLB?.toString()}
                                                     value={product.stockLB || ''}
                                                     onChange={(e) => handleAddProduct(e, product.product, 'stockLB')} 
                                                     className="w-full" 

@@ -17,6 +17,21 @@ export const listShoppingLists = async (id_store: number): Promise<GeneralRespon
         }
     }
 };
+export const findOneShoppingList = async (id_list: number, id_store: number) => {
+    try {
+
+        const response = await apiClient.get(`/shopping/${id_list}`, {
+            headers: {
+                'x-tenant-id': id_store
+            }
+        });
+        return response.data;
+    } catch (error) {
+        if(isAxiosError(error)) {
+            return error.response?.data
+        }
+    }
+};
 
 export const createShoppingList = async (newList: IShoppingList, id_store: number) => {
     try {

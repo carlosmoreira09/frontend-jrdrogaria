@@ -1,10 +1,5 @@
 import {ProfileRole} from "./ProfileRole.ts";
 
-export interface User {
-    id: number
-    username: string,
-    password: string
-}
 
 export interface Product {
     id?: number,
@@ -14,10 +9,10 @@ export interface Product {
 export interface IProductAndStock {
     id?: number
     product?: string
-    stockJR: number | string
-    stockGS: number | string
-    stockBARAO: number | string
-    stockLB: number | string
+    stockJR?: number
+    stockGS?: number
+    stockBARAO?: number
+    stockLB?: number
 }
 
 export interface IShoppingList {
