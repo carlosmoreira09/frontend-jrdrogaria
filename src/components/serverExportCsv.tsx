@@ -62,23 +62,6 @@ export async function exportLeadsToCSV(data: any[], supplierName: string = '') {
             { wch: 15 }, // Total
         ];
         
-        // Style the total row
-        const lastRowIdx = rowIndex - 1;
-        const totalCellRef = XLSX.utils.encode_cell({r: lastRowIdx, c: 0});
-        worksheet[totalCellRef] = { 
-            v: "TOTAL GERAL", 
-            s: { font: { bold: true, color: { rgb: "000000" } } } 
-        };
-        
-        // Style the total formula cell
-        const totalFormulaCellRef = XLSX.utils.encode_cell({r: lastRowIdx, c: headers.length - 1});
-        if (worksheet[totalFormulaCellRef]) {
-            worksheet[totalFormulaCellRef].s = { 
-                font: { bold: true, color: { rgb: "000000" } },
-                fill: { fgColor: { rgb: "FFFF00" } } // Yellow background
-            };
-        }
-        
         // Set the range of cells in the worksheet
         worksheet['!ref'] = XLSX.utils.encode_range({
             s: { c: 0, r: 0 },
