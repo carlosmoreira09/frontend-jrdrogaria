@@ -83,7 +83,8 @@ export const PriceComparison: React.FC = () => {
         }
 
         // Check if the required columns exist in the header row (now at index 0)
-        const headerRow = jsonData[0] as Record<string, any>;
+        const headerRow = jsonData[4] as Record<string, any>;
+        console.log(headerRow)
         if (!headerRow) {
           toast({
             variant: 'destructive',
@@ -102,14 +103,14 @@ export const PriceComparison: React.FC = () => {
 
         // Check for required columns in the values rather than keys
         const hasPriceColumn = hasPropertyWithValue(headerRow, 'Preço Unitário');
-        const hasNameColumn = hasPropertyWithValue(headerRow, 'Nome: Lista de Compras');
+        const hasProductColumn = hasPropertyWithValue(headerRow, 'Produto');
 
         // We no longer check for supplier column in the header row since it's now fixed in cell B3
-        if (!hasPriceColumn || !hasNameColumn) {
+        if (!hasPriceColumn || !hasProductColumn) {
           toast({
             variant: 'destructive',
             title: 'Erro no formato do arquivo',
-            description: 'O arquivo deve conter as colunas "Preço Unitário" e "Nome: Lista de Compras"'
+            description: 'O arquivo deve conter as colunas "Preço Unitário" e "Produto"'
           });
           return;
         }
@@ -126,14 +127,14 @@ export const PriceComparison: React.FC = () => {
 
         // Find the keys for our required columns
         const priceKey = findKeyForValue(headerRow, 'Preço Unitário');
-        const nameKey = findKeyForValue(headerRow, 'Nome: Lista de Compras');
+        const productKey = findKeyForValue(headerRow, 'Produto');
 
-        // Get supplier from cell B3 (index 2 in the jsonData array, and index 1 for the B column)
+        // Get supplier from cell B2 (index 1 in the jsonData array, and index 1 for the B column)
         const supplierRow = jsonData[1] as Record<string, any>;
         const supplierKey = '1'; // Column B has index 1
         const supplierName = supplierRow[supplierKey]
 
-        if (!priceKey || !nameKey) {
+        if (!priceKey || !productKey) {
           toast({
             variant: 'destructive',
             title: 'Erro interno',
@@ -142,14 +143,14 @@ export const PriceComparison: React.FC = () => {
           return;
         }
 
-        // Extract the data starting from row 4 (index 3), since we now have 3 header rows
+        // Extract the data starting from row 6 (index 5), since we now have 5 header rows for supplier format
         const extractedData: SupplierPrice[] = [];
 
-        for (let i = 3; i < jsonData.length; i++) {
+        for (let i = 5; i < jsonData.length; i++) {
           const row = jsonData[i] as Record<string, any>;
 
           // Skip rows without required data
-          if (!row[priceKey] || !row[nameKey]) continue;
+          if (!row[priceKey] || !row[productKey]) continue;
 
           // Convert price string to number (handling comma as decimal separator)
           const priceStr = String(row[priceKey]).replace(',', '.');
@@ -158,9 +159,9 @@ export const PriceComparison: React.FC = () => {
 
           if (!isNaN(price) && price > 0) {
             extractedData.push({
-              productName: row[nameKey],
+              productName: row[productKey],
               price: price,
-              supplier: supplierName, // Use the supplier from cell B3
+              supplier: supplierName, // Use the supplier from cell B2
             });
           }
         }

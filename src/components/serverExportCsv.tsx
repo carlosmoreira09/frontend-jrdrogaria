@@ -1,87 +1,155 @@
 import * as XLSX from "xlsx"
+import { IProductAndStock } from "../types/types"
+
+export type ExportType = 'supplier' | 'best-prices';
+
+interface ExportOptions {
+    type: ExportType;
+    supplierName?: string;
+    tenantName?: string;
+}
 
 /**
- * Função de servidor para exportar dados para CSV
- * Útil para conjuntos de dados grandes que podem ser melhor processados no servidor
+ * Função para exportar dados para Excel com diferentes formatos
+ * - supplier: Para enviar aos fornecedores (com Preço Unitário, sem estoque)
+ * - best-prices: Para análise interna (com estoque, sem Preço Unitário)
  */
-export async function exportLeadsToCSV(data: any[], supplierName: string = '') {
+export async function exportLeadsToCSV(
+    data: IProductAndStock[], 
+    options: ExportOptions
+) {
     try {
         const workbook = XLSX.utils.book_new()
         
-        // Convert your data to array of arrays if needed
-        const headers = Object.keys(data[0] || {});
-
-        // Create worksheet with empty cells
-        const ws_data = [headers];
-        const worksheet = XLSX.utils.aoa_to_sheet(ws_data);
+        let exportData: any[] = [];
+        let headers: string[] = [];
         
-        // Add header information
-        XLSX.utils.sheet_add_aoa(worksheet, [
-            [`Nome: Lista de Compras`],
-            [`Fornecedor: ${supplierName || "Não especificado"}`],
-            ["Data: " + new Date().toLocaleDateString('pt-BR')]
-        ], { origin: "A1" });
+        // Sort data alphabetically by product name for both export types
+        const sortedData = [...data].sort((a, b) => 
+            (a.product || '').localeCompare(b.product || '', 'pt-BR')
+        );
         
-        // Process and add each row of data
-        let rowIndex = 4; // Start after headers
-        
-        data.forEach((row) => {
-            // For each column in the row
-            headers.forEach((header, colIdx) => {
-                const cellRef = XLSX.utils.encode_cell({r: rowIndex, c: colIdx});
-                const value = row[header];
-                
-                // Check if the value is a formula object
-                if (value && typeof value === 'object' && value.f) {
-                    let formula = value.f;
-                    
-                    // Replace {row} placeholder with actual row number
-                    formula = formula.replace(/\{row}/g, (rowIndex + 1).toString());
-                    
-                    worksheet[cellRef] = { t: 'n', f: formula };
-                } else {
-                    // Regular value
-                    worksheet[cellRef] = { v: value };
-                }
-            });
+        if (options.type === 'supplier') {
+            // Export format for suppliers - include Preço Unitário column, exclude stock
+            headers = ['Produto', 'Fornecedor', 'Loja', 'Preço Unitário'];
             
-            rowIndex++;
-        });
+            exportData = sortedData.map((product) => ({
+                'Produto': product.product || '',
+                'Fornecedor': options.supplierName || '',
+                'Loja': options.tenantName ? `${options.tenantName} Drogaria` : 'Drogaria',
+                'Preço Unitário': '' // Empty for supplier to fill
+            }));
+        } else if (options.type === 'best-prices') {
+            // Export format for best prices analysis - include stock, exclude Preço Unitário
+            headers = ['Produto', 'JR', 'GS', 'BARÃO', 'LB', 'Total'];
+            
+            exportData = sortedData.map((product) => ({
+                'Produto': product.product || '',
+                'JR': product.stockJR || 0,
+                'GS': product.stockGS || 0,
+                'BARÃO': product.stockBARAO || 0,
+                'LB': product.stockLB || 0,
+                'Total': (product.stockJR || 0) + (product.stockGS || 0) + (product.stockBARAO || 0) + (product.stockLB || 0)
+            }));
+        }
+
+        // Create worksheet with headers
+        const worksheet = XLSX.utils.aoa_to_sheet([]);
         
-        // Set column widths
-        worksheet['!cols'] = [
-            { wch: 40 }, // Nome
-            { wch: 20 }, // Fornecedor
-            { wch: 20 }, // Loja
-            { wch: 10 }, // JR
-            { wch: 10 }, // GS
-            { wch: 10 }, // BARÃO
-            { wch: 10 }, // LB
-            { wch: 15 }, // Preço Unitário
-            { wch: 15 }, // Quantidade
-            { wch: 15 }, // Total
-        ];
+        // Add header information in the format expected by PriceComparison
+        if (options.type === 'supplier') {
+            // Format compatible with PriceComparison component
+            XLSX.utils.sheet_add_aoa(worksheet, [
+                [`Lista de Compras - ${options.tenantName || 'Drogaria'}`], // Row 1: Title
+                [`Fornecedor: ${options.supplierName || "A definir"}`],      // Row 2: Supplier info
+                [`Data: ${new Date().toLocaleDateString('pt-BR')}`],         // Row 3: Date
+                [''],                                                        // Row 4: Empty row
+                headers                                                      // Row 5: Column headers
+            ], { origin: "A1" });
+            
+            // Add the actual data starting from row 6
+            exportData.forEach((row, index) => {
+                const rowData = headers.map(header => row[header]);
+                XLSX.utils.sheet_add_aoa(worksheet, [rowData], { origin: `A${6 + index}` });
+            });
+        } else {
+            // Best prices format
+            XLSX.utils.sheet_add_aoa(worksheet, [
+                [`Análise de Melhores Preços - ${options.tenantName || 'Drogaria'}`],
+                [`Data: ${new Date().toLocaleDateString('pt-BR')}`],
+                [''],
+                headers
+            ], { origin: "A1" });
+            
+            // Add the actual data starting from row 5
+            exportData.forEach((row, index) => {
+                const rowData = headers.map(header => row[header]);
+                XLSX.utils.sheet_add_aoa(worksheet, [rowData], { origin: `A${5 + index}` });
+            });
+        }
+        
+        // Set column widths based on export type
+        if (options.type === 'supplier') {
+            worksheet['!cols'] = [
+                { wch: 50 }, // Produto
+                { wch: 25 }, // Fornecedor
+                { wch: 20 }, // Loja
+                { wch: 20 }, // Preço Unitário
+            ];
+        } else {
+            worksheet['!cols'] = [
+                { wch: 50 }, // Produto
+                { wch: 12 }, // JR
+                { wch: 12 }, // GS
+                { wch: 12 }, // BARÃO
+                { wch: 12 }, // LB
+                { wch: 12 }, // Total
+            ];
+        }
         
         // Set the range of cells in the worksheet
+        const totalRows = options.type === 'supplier' ? 5 + exportData.length : 4 + exportData.length;
         worksheet['!ref'] = XLSX.utils.encode_range({
             s: { c: 0, r: 0 },
-            e: { c: headers.length - 1, r: rowIndex - 1 }
+            e: { c: headers.length - 1, r: totalRows }
         });
         
-        XLSX.utils.book_append_sheet(workbook, worksheet, "Products")
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Lista de Compras")
 
         const date = new Date()
         const formattedDate = date.toISOString().split("T")[0] // YYYY-MM-DD
-        const supplierText = supplierName ? `_${supplierName.replace(/\s+/g, '_')}` : ''
-        const filename = `LISTA_DE_COMPRAS_${supplierText}_${formattedDate}.xlsx`
+        
+        let filename: string;
+        if (options.type === 'supplier') {
+            const supplierText = options.supplierName ? `_${options.supplierName.replace(/\s+/g, '_')}` : ''
+            filename = `LISTA_COMPRAS_FORNECEDOR${supplierText}_${formattedDate}.xlsx`
+        } else {
+            filename = `ANALISE_MELHORES_PRECOS_${formattedDate}.xlsx`
+        }
 
-        // Salvar o arquivo
+        // Save the file
         XLSX.writeFile(workbook, filename)
 
-        // Retornar o caminho relativo para download
-        return `/exports/${filename}`
+        return filename
     } catch (error) {
-        console.error("Erro ao exportar XLSX no servidor:", error)
-        throw new Error("Falha ao exportar dados para XLSX")
+        console.error("Erro ao exportar Excel:", error)
+        throw new Error("Falha ao exportar dados para Excel")
     }
+}
+
+// Legacy function for backward compatibility - defaults to supplier export
+export async function exportToSupplier(data: IProductAndStock[], supplierName: string, tenantName?: string) {
+    return exportLeadsToCSV(data, {
+        type: 'supplier',
+        supplierName,
+        tenantName
+    });
+}
+
+// Function for best prices export
+export async function exportBestPrices(data: IProductAndStock[], tenantName?: string) {
+    return exportLeadsToCSV(data, {
+        type: 'best-prices',
+        tenantName
+    });
 }

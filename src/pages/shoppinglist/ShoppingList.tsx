@@ -10,7 +10,7 @@ import AutocompleteFilter from "../../components/ProductFilter";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "../../components/ui/table";
 import {Download, MessageSquare, Trash2, BarChart2, SaveIcon, AlertCircle, CheckCircle2} from "lucide-react";
 import {createShoppingList, updateShoppingList} from "../../service/shoppingListService";
-import {exportLeadsToCSV} from "../../components/serverExportCsv";
+import {exportLeadsToCSV, exportBestPrices} from "../../components/serverExportCsv";
 import {listSuppliers} from "../../service/supplierService";
 import {
   Dialog,
@@ -264,15 +264,6 @@ const ShoppingList: React.FC = () => {
     };
 
     const handleExport = async () => {
-        if (!selectedSupplier) {
-            toast({
-                variant: 'destructive',
-                title: 'Fornecedor não selecionado',
-                description: 'Selecione um fornecedor para exportar.'
-            });
-            return;
-        }
-
         try {
             setIsLoading(true);
             
@@ -284,12 +275,19 @@ const ShoppingList: React.FC = () => {
             }
 
             const supplier = suppliers.find(s => s.id?.toString() === selectedSupplier);
-            await exportLeadsToCSV(lowStockProducts, supplier?.supplier_name || 'Fornecedor');
+            
+            // Export for supplier - includes Preço Unitário column, excludes stock
+            await exportLeadsToCSV(lowStockProducts, {
+                type: 'supplier',
+                supplierName: supplier?.supplier_name || 'A definir',
+                tenantName: tenantName
+            });
             
             setExportDialogOpen(false);
+            setSelectedSupplier(""); // Reset supplier selection
             toast({
                 title: 'Exportação concluída',
-                description: 'Lista exportada com sucesso!'
+                description: 'Lista exportada com sucesso! O arquivo inclui a coluna "Preço Unitário" para preencher.'
             });
         } catch (error) {
             toast({
@@ -358,6 +356,44 @@ const ShoppingList: React.FC = () => {
         
         setHasUnsavedChanges(true);
     }, []);
+
+    const handleBestPricesExport = async () => {
+        if (!lowStockProducts.length) {
+            toast({
+                variant: 'destructive',
+                title: 'Lista vazia',
+                description: 'Adicione produtos à lista antes de exportar.'
+            });
+            return;
+        }
+
+        try {
+            setIsLoading(true);
+            
+            // Save before export
+            if (hasUnsavedChanges) {
+                await saveToServer(shoppingListData);
+                setHasUnsavedChanges(false);
+                setLastSaved(new Date());
+            }
+
+            // Export best prices analysis - includes stock columns, excludes Preço Unitário
+            await exportBestPrices(lowStockProducts, tenantName);
+            
+            toast({
+                title: 'Análise exportada',
+                description: 'Análise de melhores preços exportada com sucesso! Produtos organizados em ordem alfabética.'
+            });
+        } catch (error) {
+            toast({
+                variant: 'destructive',
+                title: 'Erro na exportação',
+                description: 'Não foi possível exportar a análise.'
+            });
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     // Save status indicator
     const SaveStatus = () => {
@@ -441,7 +477,16 @@ const ShoppingList: React.FC = () => {
                         variant="outline"
                     >
                         <Download className="h-5 w-5"/>
-                        Exportar Lista
+                        Exportar para Fornecedor
+                    </Button>
+                    <Button
+                        onClick={handleBestPricesExport}
+                        disabled={lowStockProducts.length === 0 || isLoading}
+                        className="flex items-center justify-center gap-2 w-full sm:flex-1"
+                        variant="outline"
+                    >
+                        <Download className="h-5 w-5"/>
+                        Exportar Análise de Estoque
                     </Button>
                     <Button
                         onClick={() => navigate(`/shopping/price-comparison/${idList}`)}
@@ -652,16 +697,16 @@ const ShoppingList: React.FC = () => {
                         <DialogHeader>
                             <DialogTitle>Exportar Lista de Compras</DialogTitle>
                             <DialogDescription>
-                                Selecione o fornecedor para exportar a lista.
+                                Selecione um fornecedor (opcional) para exportar a lista. Se não selecionar, será exportada uma lista genérica.
                             </DialogDescription>
                         </DialogHeader>
                         <div className="py-4">
                             <Label htmlFor="supplier-select" className="text-sm font-medium">
-                                Fornecedor
+                                Fornecedor (Opcional)
                             </Label>
                             <Select value={selectedSupplier} onValueChange={setSelectedSupplier}>
                                 <SelectTrigger className="w-full mt-2">
-                                    <SelectValue placeholder="Selecione um fornecedor" />
+                                    <SelectValue placeholder="Selecione um fornecedor (opcional)" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     {suppliers.map((supplier) => (
@@ -682,7 +727,7 @@ const ShoppingList: React.FC = () => {
                             </Button>
                             <Button 
                                 onClick={handleExport}
-                                disabled={!selectedSupplier || isLoading}
+                                disabled={isLoading}
                                 className="w-full sm:w-auto"
                             >
                                 {isLoading ? (
