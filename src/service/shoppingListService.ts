@@ -33,7 +33,7 @@ export const findOneShoppingList = async (id_list: number, id_store: number) => 
     }
 };
 
-export const createShoppingList = async (newList: IShoppingList, id_store: number) => {
+export const createShoppingList = async (newList: IShoppingList, id_store: number | undefined) => {
     try {
         const response = await apiClient.post('/shopping', newList,
             {
@@ -48,9 +48,9 @@ export const createShoppingList = async (newList: IShoppingList, id_store: numbe
         }
     }
 }
-export const updateShoppingList = async (newList: IShoppingList, id_store: number): Promise<GeneralResponse | undefined> => {
+export const updateShoppingList = async (id:number, newList: IShoppingList, id_store: number | undefined): Promise<GeneralResponse | undefined> => {
     try {
-        const response = await apiClient.put<GeneralResponse>(`/shopping/${newList.id}`, newList,
+        const response = await apiClient.put<GeneralResponse>(`/shopping/${id}`, newList,
             {
                 headers: {
                     'x-tenant-id': id_store
