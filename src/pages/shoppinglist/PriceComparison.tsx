@@ -84,7 +84,6 @@ export const PriceComparison: React.FC = () => {
 
         // Check if the required columns exist in the header row (now at index 0)
         const headerRow = jsonData[4] as Record<string, any>;
-        console.log(headerRow)
         if (!headerRow) {
           toast({
             variant: 'destructive',
@@ -104,13 +103,14 @@ export const PriceComparison: React.FC = () => {
         // Check for required columns in the values rather than keys
         const hasPriceColumn = hasPropertyWithValue(headerRow, 'Preço Unitário');
         const hasProductColumn = hasPropertyWithValue(headerRow, 'Produto');
+        const hasSupplierColumn = hasPropertyWithValue(headerRow, 'Fornecedor');
 
         // We no longer check for supplier column in the header row since it's now fixed in cell B3
-        if (!hasPriceColumn || !hasProductColumn) {
+        if (!hasPriceColumn || !hasProductColumn || !hasSupplierColumn) {
           toast({
             variant: 'destructive',
             title: 'Erro no formato do arquivo',
-            description: 'O arquivo deve conter as colunas "Preço Unitário" e "Produto"'
+            description: 'O arquivo deve conter as colunas  "Produto(A)" e "Fornecedor(B) e "Preço Unitário(C)"'
           });
           return;
         }
@@ -130,7 +130,7 @@ export const PriceComparison: React.FC = () => {
         const productKey = findKeyForValue(headerRow, 'Produto');
 
         // Get supplier from cell B2 (index 1 in the jsonData array, and index 1 for the B column)
-        const supplierRow = jsonData[1] as Record<string, any>;
+        const supplierRow = jsonData[7] as Record<string, any>;
         const supplierKey = '1'; // Column B has index 1
         const supplierName = supplierRow[supplierKey]
 
