@@ -31,11 +31,10 @@ export async function exportLeadsToCSV(
         
         if (options.type === 'supplier') {
             // Export format for suppliers - include Preço Unitário column, exclude stock
-            headers = ['Produto', 'Fornecedor', 'Loja', 'Preço Unitário'];
+            headers = ['Produto', 'Loja', 'Preço Unitário'];
             
             exportData = sortedData.map((product) => ({
                 'Produto': product.product || '',
-                'Fornecedor': options.supplierName || '',
                 'Loja': options.tenantName ? `${options.tenantName} Drogaria` : 'Drogaria',
                 'Preço Unitário': '' // Empty for supplier to fill
             }));
@@ -92,7 +91,6 @@ export async function exportLeadsToCSV(
         if (options.type === 'supplier') {
             worksheet['!cols'] = [
                 { wch: 50 }, // Produto
-                { wch: 25 }, // Fornecedor
                 { wch: 20 }, // Loja
                 { wch: 20 }, // Preço Unitário
             ];

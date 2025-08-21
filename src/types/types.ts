@@ -19,6 +19,7 @@ export interface IShoppingList {
     id?: number
     list_name: string
     products: IProductAndStock[]
+    created_at?: string;
 }
 
 export interface Supplier  {

@@ -103,14 +103,13 @@ export const PriceComparison: React.FC = () => {
         // Check for required columns in the values rather than keys
         const hasPriceColumn = hasPropertyWithValue(headerRow, 'Preço Unitário');
         const hasProductColumn = hasPropertyWithValue(headerRow, 'Produto');
-        const hasSupplierColumn = hasPropertyWithValue(headerRow, 'Fornecedor');
 
         // We no longer check for supplier column in the header row since it's now fixed in cell B3
-        if (!hasPriceColumn || !hasProductColumn || !hasSupplierColumn) {
+        if (!hasPriceColumn || !hasProductColumn) {
           toast({
             variant: 'destructive',
             title: 'Erro no formato do arquivo',
-            description: 'O arquivo deve conter as colunas  "Produto(A)" e "Fornecedor(B) e "Preço Unitário(C)"'
+            description: 'O arquivo deve conter as colunas  "Produto(A)" e "Preço Unitário(C)"'
           });
           return;
         }
@@ -130,10 +129,11 @@ export const PriceComparison: React.FC = () => {
         const productKey = findKeyForValue(headerRow, 'Produto');
 
         // Get supplier from cell B2 (index 1 in the jsonData array, and index 1 for the B column)
-        const supplierRow = jsonData[7] as Record<string, any>;
-        const supplierKey = '1'; // Column B has index 1
+        const supplierRow = jsonData[1] as Record<string, any>;
+        const supplierKey = '0';
+          const supplierKey2 = '1';
         const supplierName = supplierRow[supplierKey]
-
+          const supplierName2 = supplierRow[supplierKey2]
         if (!priceKey || !productKey) {
           toast({
             variant: 'destructive',
@@ -161,7 +161,7 @@ export const PriceComparison: React.FC = () => {
             extractedData.push({
               productName: row[productKey],
               price: price,
-              supplier: supplierName, // Use the supplier from cell B2
+              supplier: supplierName.trim().split(':')[1] || supplierName2, // Use the supplier from cell B2
             });
           }
         }

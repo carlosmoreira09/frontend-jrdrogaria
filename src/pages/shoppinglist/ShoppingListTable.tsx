@@ -67,10 +67,10 @@ const ShoppingListTable:React.FC<ShoppingListTableProps> = ({ items, onDelete }:
         }
     }
 
-    const formatListDate = (listName: string) => {
+    const formatListDate = (listName: string | undefined) => {
         try {
             // Extract date part from list name (format: LISTA_DE_COMPRAS_YYYY-MM-DD)
-            const datePart = listName.split('_')[3];
+            const datePart = listName?.split('T')[0];
             if (!datePart) return 'Data inválida';
             
             // Parse the date string to a Date object
@@ -99,7 +99,7 @@ const ShoppingListTable:React.FC<ShoppingListTableProps> = ({ items, onDelete }:
                     <TableBody>
                         {items.map((item) => (
                             <TableRow onClick={() => handleRowClick(item)} className="cursor-pointer hover:bg-muted"  key={item.id}>
-                                <TableCell>{formatListDate(item.list_name)}</TableCell>
+                                <TableCell>{formatListDate(item.created_at)}</TableCell>
                                 <TableCell>{item.products.length}</TableCell>
                                 <TableCell>
                                     <BadgeX 

@@ -178,7 +178,7 @@ const ShoppingList: React.FC = () => {
 
     useEffect(() => {
         fetchList().then()
-    }, [store]);
+    }, [fetchList, store]);
 
     const fetchProducts = async () => {
         try {
@@ -192,7 +192,7 @@ const ShoppingList: React.FC = () => {
             toast({
                 variant: 'destructive',
                 title: 'JR Drogaria',
-                description: 'Erro ao listar produtos. Tente recarregar a página.'
+                description: 'Erro ao listar produtos. Tente recarregar a página.' + error,
             })
         }
     }
@@ -209,7 +209,7 @@ const ShoppingList: React.FC = () => {
             toast({
                 variant: 'destructive',
                 title: 'JR Drogaria',
-                description: 'Erro ao listar fornecedores'
+                description: 'Erro ao listar fornecedores' + error,
             })
         }
     }
@@ -293,7 +293,7 @@ const ShoppingList: React.FC = () => {
             toast({
                 variant: 'destructive',
                 title: 'Erro na exportação',
-                description: 'Não foi possível exportar a lista.'
+                description: 'Não foi possível exportar a lista.' + error,
             });
         } finally {
             setIsLoading(false);
@@ -324,7 +324,7 @@ const ShoppingList: React.FC = () => {
             toast({
                 variant: 'destructive',
                 title: 'Erro ao salvar',
-                description: 'Não foi possível salvar a lista. Dados mantidos localmente.'
+                description: 'Não foi possível salvar a lista. Dados mantidos localmente.' + error,
             });
         } finally {
             setIsLoading(false);
@@ -388,7 +388,7 @@ const ShoppingList: React.FC = () => {
             toast({
                 variant: 'destructive',
                 title: 'Erro na exportação',
-                description: 'Não foi possível exportar a análise.'
+                description: 'Não foi possível exportar a análise.' + error,
             });
         } finally {
             setIsLoading(false);
