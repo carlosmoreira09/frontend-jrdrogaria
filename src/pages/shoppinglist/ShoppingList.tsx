@@ -178,7 +178,7 @@ const ShoppingList: React.FC = () => {
 
     useEffect(() => {
         fetchList().then()
-    }, [fetchList, store]);
+    }, [store]);
 
     const fetchProducts = async () => {
         try {
