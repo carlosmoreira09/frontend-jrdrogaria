@@ -1,3 +1,5 @@
+
+
 import React, { useEffect, useState} from "react";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
@@ -175,12 +177,21 @@ export const PriceComparison: React.FC = () => {
           return;
         }
 
-        // Add to existing data
-        setSupplierPrices(prev => [...prev, ...extractedData]);
+        // Sort extracted data alphabetically before adding
+        const sortedExtractedData = extractedData.sort((a, b) => 
+          a.productName.toLowerCase().localeCompare(b.productName.toLowerCase(), 'pt-BR')
+        );
+
+        // Add to existing data and sort the combined list
+        const newSupplierPrices = [...supplierPrices, ...sortedExtractedData].sort((a, b) => 
+          a.productName.toLowerCase().localeCompare(b.productName.toLowerCase(), 'pt-BR')
+        );
+        
+        setSupplierPrices(newSupplierPrices);
         setUploadedFiles(prev => [...prev, file.name]);
 
-        // Update comparisons
-        updateComparisons([...supplierPrices, ...extractedData]);
+        // Update comparisons with sorted data
+        updateComparisons(newSupplierPrices);
 
         toast({
           title: 'Arquivo processado',
@@ -222,21 +233,31 @@ export const PriceComparison: React.FC = () => {
     const newComparisons: ProductComparison[] = [];
     const bestPrices: {productName: string, price: number, supplier: string, stockJR?: number, stockGS?: number, stockBARAO?: number, stockLB?: number}[] = [];
 
-    productMap.forEach((prices, productName) => {
+    // Sort product names alphabetically
+    const sortedProductNames = Array.from(productMap.keys()).sort((a, b) => 
+      a.toLowerCase().localeCompare(b.toLowerCase(), 'pt-BR')
+    );
+
+    sortedProductNames.forEach(productName => {
+      const prices = productMap.get(productName)!;
+      
       // Find the best price
       let bestPrice = Infinity;
       let bestSupplier = '';
 
-      const suppliers = prices.map(price => {
-        if (price.price < bestPrice) {
-          bestPrice = price.price;
-          bestSupplier = price.supplier;
-        }
-        return {
-          supplier: price.supplier,
-          price: price.price
-        };
-      });
+      // Sort suppliers alphabetically for consistent display
+      const suppliers = prices
+        .map(price => {
+          if (price.price < bestPrice) {
+            bestPrice = price.price;
+            bestSupplier = price.supplier;
+          }
+          return {
+            supplier: price.supplier,
+            price: price.price
+          };
+        })
+        .sort((a, b) => a.supplier.toLowerCase().localeCompare(b.supplier.toLowerCase(), 'pt-BR'));
 
       newComparisons.push({
         productName,
@@ -252,8 +273,17 @@ export const PriceComparison: React.FC = () => {
       });
     });
 
-    setComparisons(newComparisons);
-    setBestPricesList(bestPrices);
+    // Sort final lists alphabetically by product name
+    const sortedComparisons = newComparisons.sort((a, b) => 
+      a.productName.toLowerCase().localeCompare(b.productName.toLowerCase(), 'pt-BR')
+    );
+    
+    const sortedBestPrices = bestPrices.sort((a, b) => 
+      a.productName.toLowerCase().localeCompare(b.productName.toLowerCase(), 'pt-BR')
+    );
+
+    setComparisons(sortedComparisons);
+    setBestPricesList(sortedBestPrices);
   };
 
   const generateBestPricesList = () => {
@@ -264,6 +294,12 @@ export const PriceComparison: React.FC = () => {
         description: 'Faça o upload de arquivos Excel para gerar a lista'
       });
       return;
+    }
+
+    // Validate alphabetical order before export
+    const isOrderValid = validateListsOrder();
+    if (!isOrderValid) {
+      console.warn('⚠️ Algumas listas não estão em ordem alfabética, mas a exportação continuará com ordenação automática');
     }
 
     // Group products by supplier
@@ -294,10 +330,20 @@ export const PriceComparison: React.FC = () => {
       return sanitized.substring(0, 30);
     };
 
-    // Create a sheet for each supplier
-    supplierMap.forEach((products, supplier) => {
+    // Sort suppliers alphabetically and create a sheet for each supplier
+    const sortedSuppliers = Array.from(supplierMap.keys()).sort((a, b) => 
+      a.toLowerCase().localeCompare(b.toLowerCase(), 'pt-BR')
+    );
+
+    sortedSuppliers.forEach(supplier => {
+      const products = supplierMap.get(supplier)!;
+      // Sort products alphabetically by name before creating the worksheet
+      const sortedProducts = products.sort((a, b) => 
+        a.productName.toLowerCase().localeCompare(b.productName.toLowerCase(), 'pt-BR')
+      );
+
       // Prepare data for the worksheet
-      const data = products.map(product => ({
+      const data = sortedProducts.map(product => ({
         'Nome do Produto': product.productName,
         'Preço Unitário': product.price.toString().replace('.', ','), // Convert decimal point to comma
         'Fornecedor': supplier,
@@ -379,7 +425,12 @@ export const PriceComparison: React.FC = () => {
     });
 
     // Create summary sheet with all best prices
-    const summaryData = bestPricesList.map(item => ({
+    // Sort bestPricesList alphabetically before creating summary
+    const sortedBestPricesList = [...bestPricesList].sort((a, b) => 
+      a.productName.toLowerCase().localeCompare(b.productName.toLowerCase(), 'pt-BR')
+    );
+
+    const summaryData = sortedBestPricesList.map(item => ({
       'Nome do Produto': item.productName,
       'Preço Unitário': item.price.toString().replace('.', ','), // Convert decimal point to comma
       'Fornecedor': item.supplier,
@@ -461,10 +512,71 @@ export const PriceComparison: React.FC = () => {
     // Generate Excel file and trigger download
     XLSX.writeFile(workbook, `Lista_Melhores_Preços_${new Date().toISOString().split('T')[0]}.xlsx`);
 
+    // Final validation log
+    console.log('📊 Exportação do Excel concluída com as seguintes organizações:');
+    console.log(`📋 Fornecedores ordenados alfabeticamente: ${sortedSuppliers.length} fornecedores`);
+    console.log(`📦 Produtos ordenados alfabeticamente em cada aba`);
+    console.log(`📈 Aba resumo com ${sortedBestPricesList.length} produtos em ordem alfabética`);
+    console.log('✅ Todas as listas foram exportadas em ordem alfabética crescente');
+
     toast({
       title: 'Lista gerada com sucesso',
-      description: 'A lista com os melhores preços foi gerada e está sendo baixada'
+      description: 'A lista com os melhores preços foi gerada e está sendo baixada (produtos organizados em ordem alfabética)'
     });
+  };
+
+  // Utility function to validate if a list is sorted alphabetically
+  const validateAlphabeticalOrder = (list: any[], propertyName: string): boolean => {
+    if (list.length <= 1) return true;
+    
+    for (let i = 1; i < list.length; i++) {
+      const current = list[i][propertyName]?.toLowerCase() || '';
+      const previous = list[i - 1][propertyName]?.toLowerCase() || '';
+      
+      if (current.localeCompare(previous, 'pt-BR') < 0) {
+        console.warn(`Lista não está em ordem alfabética: "${previous}" vem antes de "${current}"`);
+        return false;
+      }
+    }
+    return true;
+  };
+
+  // Function to validate all lists before Excel export
+  const validateListsOrder = (): boolean => {
+    console.log('🔍 Validando ordem alfabética das listas...');
+    
+    const validations = [
+      {
+        name: 'Preços dos Fornecedores',
+        list: supplierPrices,
+        property: 'productName',
+        isValid: validateAlphabeticalOrder(supplierPrices, 'productName')
+      },
+      {
+        name: 'Comparações',
+        list: comparisons,
+        property: 'productName',
+        isValid: validateAlphabeticalOrder(comparisons, 'productName')
+      },
+      {
+        name: 'Melhores Preços',
+        list: bestPricesList,
+        property: 'productName',
+        isValid: validateAlphabeticalOrder(bestPricesList, 'productName')
+      }
+    ];
+
+    let allValid = true;
+    validations.forEach(validation => {
+      if (validation.isValid) {
+        console.log(`✅ ${validation.name}: Lista organizada em ordem alfabética (${validation.list.length} itens)`);
+      } else {
+        console.error(`❌ ${validation.name}: Lista NÃO está em ordem alfabética`);
+        allValid = false;
+      }
+    });
+
+    return allValid;
   };
 
   const clearData = () => {
