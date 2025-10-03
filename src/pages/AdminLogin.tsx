@@ -67,7 +67,6 @@ export default function AdminLogin() {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
-
   return (
 
       <div className="min-h-screen flex flex-col items-center justify-center light:bg-gray-100 dark:bg-black">
