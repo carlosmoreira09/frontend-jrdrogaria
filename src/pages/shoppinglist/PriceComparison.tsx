@@ -1,6 +1,6 @@
 
 
-import React, { useEffect, useState} from "react";
+import React, { useEffect, useRef, useState} from "react";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../components/ui/table";
@@ -40,6 +40,7 @@ export const PriceComparison: React.FC = () => {
   const [bestPricesList, setBestPricesList] = useState<{productName: string, price: number, supplier: string, stockJR?: number, stockGS?: number, stockBARAO?: number, stockLB?: number}[]>([]);
   const { store } = useStore()
   const { id } = useParams();
+  const hasFetchedRef = useRef(false);
 
   const fetchList = async () => {
     if(id) {
@@ -56,8 +57,28 @@ export const PriceComparison: React.FC = () => {
     }
   }
   useEffect(() => {
-    fetchList().then()
-  }, []);
+    // Prevent double fetch in development (React StrictMode)
+    if (hasFetchedRef.current) return;
+    
+    const controller = new AbortController();
+    
+    const loadList = async () => {
+      try {
+        hasFetchedRef.current = true;
+        await fetchList();
+      } catch (error) {
+        if (error instanceof Error && error.name !== 'AbortError') {
+          console.error('Error fetching list:', error);
+        }
+      }
+    };
+    
+    loadList();
+    
+    return () => {
+      controller.abort();
+    };
+  }, []); // No dependencies to prevent re-fetching
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;

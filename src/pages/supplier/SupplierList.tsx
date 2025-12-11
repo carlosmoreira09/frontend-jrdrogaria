@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import ProductStats from "../product/ProductStats.tsx";
 import {useStore} from "../../hooks/store.tsx";
 import SupplierTable from "./SupplierTable.tsx";
@@ -15,6 +15,7 @@ const ShoppingList: React.FC = () => {
     const navigate = useNavigate()
     const [suppliers,setSuppliers] = useState<Supplier[]>([])
     const totalProducts = suppliers.length
+    const hasFetchedRef = useRef(false)
     const fetchSuppliers = async () => {
         if (store) {
            const result = await listSuppliers()
@@ -24,8 +25,33 @@ const ShoppingList: React.FC = () => {
         }
     }
     useEffect(() => {
-        fetchSuppliers().then()
-    }, [store]);
+        // Prevent double fetch in development (React StrictMode)
+        if (!store) return;
+        if (hasFetchedRef.current) return;
+        
+        const controller = new AbortController();
+        
+        const loadSuppliers = async () => {
+            try {
+                hasFetchedRef.current = true;
+                await fetchSuppliers();
+            } catch (error) {
+                if (error instanceof Error && error.name !== 'AbortError') {
+                    console.error('Error fetching suppliers:', error);
+                }
+            }
+        };
+        
+        loadSuppliers();
+        
+        return () => {
+            controller.abort();
+            // Reset flag on cleanup to allow refetch if component remounts
+            if (process.env.NODE_ENV !== 'development') {
+                hasFetchedRef.current = false;
+            }
+        };
+    }, [store]); // Keep store dependency but control with ref
 
     const handleDelete = async (id: number | undefined) => {
         if(store) {

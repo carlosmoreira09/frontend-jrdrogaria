@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react"
+import React, {useEffect, useRef, useState} from "react"
 import Cards from "../components/Cards.tsx";
 import { Pill, ShoppingBag, Truck, Package} from "lucide-react";
 import {useStore} from "../hooks/store.tsx";
@@ -22,33 +22,60 @@ const Home: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true)
     const [shoppingList, setShoppingList] = useState<IShoppingList[]>([])
     const navigate = useNavigate()
+    const hasFetchedRef = useRef(false)
     
     const fetchTotals = async () => {
         if(store) {
-            setIsLoading(true)
             const result = await getTotalAmount(store)
             if(result?.data) {
                 setTotals(result.data)
             }
-            setIsLoading(false)
         }
     }
     
     const fetchShoppingList = async () => {
         if(store) {
-            setIsLoading(true)
             const result = await listShoppingLists(store)
             if(result?.data) {
                 setShoppingList(result.data)
             }
-            setIsLoading(false)
         }
     }
     
     useEffect(() => {
-        fetchTotals().then()
-        fetchShoppingList().then()
-    }, [store]);
+        // Prevent double fetch in development (React StrictMode)
+        if (!store) return;
+        if (hasFetchedRef.current) return;
+        
+        const controller = new AbortController();
+        
+        const fetchData = async () => {
+            setIsLoading(true);
+            try {
+                hasFetchedRef.current = true;
+                await Promise.all([
+                    fetchTotals(),
+                    fetchShoppingList()
+                ]);
+            } catch (error) {
+                if (error instanceof Error && error.name !== 'AbortError') {
+                    console.error('Error fetching data:', error);
+                }
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        
+        fetchData();
+        
+        return () => {
+            controller.abort();
+            // Reset flag on cleanup to allow refetch if component remounts
+            if (process.env.NODE_ENV !== 'development') {
+                hasFetchedRef.current = false;
+            }
+        };
+    }, [store]); // Keep store dependency but control with ref
 
     // Handler to refresh data after list deletion
     const handleListDeleted = () => {

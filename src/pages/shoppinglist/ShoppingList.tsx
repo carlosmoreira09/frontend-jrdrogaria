@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useCallback, useMemo} from "react"
+import React, {useEffect, useRef, useState, useCallback, useMemo} from "react"
 import { Button } from "../../components/ui/button"
 import { Label } from "../../components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card"
@@ -67,6 +67,27 @@ const ShoppingList: React.FC = () => {
         onConfirm: () => void;
     }>({ open: false, title: '', description: '', onConfirm: () => {} })
     
+    // New state for quantity modal
+    const [quantityModal, setQuantityModal] = useState<{
+        open: boolean;
+        productName?: string;
+        quantities: {
+            stockJR: number;
+            stockGS: number;
+            stockBARAO: number;
+            stockLB: number;
+        }
+    }>({ 
+        open: false, 
+        productName: '',
+        quantities: {
+            stockJR: 0,
+            stockGS: 0,
+            stockBARAO: 0,
+            stockLB: 0
+        }
+    })
+    
     const [idList, setIdList] = useState<number>()
     const [isUpdate, setIsUpdate] = useState<boolean>(false)
     const [isLoading, setIsLoading] = useState(false)
@@ -77,6 +98,8 @@ const ShoppingList: React.FC = () => {
     const { store, tenantName } = useStore()
     const location = useLocation()
     const navigate = useNavigate();
+    const hasFetchedListRef = useRef(false)
+    const hasFetchedDataRef = useRef(false)
 
     // Local storage backup for data persistence
     const [localStorageData, setLocalStorageData] = useLocalStorage<ShoppingListData | null>(
@@ -177,8 +200,28 @@ const ShoppingList: React.FC = () => {
     }
 
     useEffect(() => {
-        fetchList().then()
-    }, [store]);
+        // Prevent double fetch in development (React StrictMode)
+        if (hasFetchedListRef.current) return;
+        
+        const controller = new AbortController();
+        
+        const loadList = async () => {
+            try {
+                hasFetchedListRef.current = true;
+                await fetchList();
+            } catch (error) {
+                if (error instanceof Error && error.name !== 'AbortError') {
+                    console.error('Error loading list:', error);
+                }
+            }
+        };
+        
+        loadList();
+        
+        return () => {
+            controller.abort();
+        };
+    }, []); // Remove store dependency
 
     const fetchProducts = async () => {
         try {
@@ -215,25 +258,97 @@ const ShoppingList: React.FC = () => {
     }
 
     useEffect(() => {
-        fetchProducts().then()
-        fetchSuppliers().then()
-    }, [store]);
+        // Prevent double fetch in development (React StrictMode)
+        if (hasFetchedDataRef.current) return;
+        
+        const controller = new AbortController();
+        
+        const loadData = async () => {
+            try {
+                hasFetchedDataRef.current = true;
+                await Promise.all([
+                    fetchProducts(),
+                    fetchSuppliers()
+                ]);
+            } catch (error) {
+                if (error instanceof Error && error.name !== 'AbortError') {
+                    console.error('Error fetching data:', error);
+                }
+            }
+        };
+        
+        loadData();
+        
+        return () => {
+            controller.abort();
+        };
+    }, []); // Remove store dependency
 
     const handleProductSelect = useCallback((name_product: string | undefined) => {
         const product = products.find((products) => products.product_name === name_product)
         if(product && !lowStockProducts.some((i) => i.product === product.product_name)) {
+            // Open modal instead of adding directly
+            setQuantityModal({
+                open: true,
+                productName: product.product_name,
+                quantities: {
+                    stockJR: 0,
+                    stockGS: 0,
+                    stockBARAO: 0,
+                    stockLB: 0
+                }
+            });
+        } else if (product && lowStockProducts.some((i) => i.product === product.product_name)) {
+            toast({
+                variant: 'destructive',
+                title: 'Produto já adicionado',
+                description: `${product.product_name} já está na lista.`
+            });
+        }
+    }, [products, lowStockProducts]);
+    
+    const handleConfirmAddProduct = useCallback(() => {
+        if (quantityModal.productName) {
             const updatedProducts = [...lowStockProducts, { 
-                product: product.product_name, 
-                stockJR: 0, 
-                stockGS: 0, 
-                stockBARAO: 0, 
-                stockLB: 0 
+                product: quantityModal.productName, 
+                stockJR: quantityModal.quantities.stockJR, 
+                stockGS: quantityModal.quantities.stockGS, 
+                stockBARAO: quantityModal.quantities.stockBARAO, 
+                stockLB: quantityModal.quantities.stockLB 
             }].sort((a, b) => (a.product || '').localeCompare(b.product || ''));
             
             setLowStockProducts(updatedProducts);
             setHasUnsavedChanges(true);
+            
+            // Close modal and reset
+            setQuantityModal({ 
+                open: false, 
+                productName: '',
+                quantities: {
+                    stockJR: 0,
+                    stockGS: 0,
+                    stockBARAO: 0,
+                    stockLB: 0
+                }
+            });
+            
+            toast({
+                title: 'Produto adicionado',
+                description: `${quantityModal.productName} foi adicionado à lista.`
+            });
         }
-    }, [products, lowStockProducts]);
+    }, [quantityModal, lowStockProducts]);
+    
+    const handleQuantityChange = (field: 'stockJR' | 'stockGS' | 'stockBARAO' | 'stockLB', value: string) => {
+        const numValue = parseInt(value) || 0;
+        setQuantityModal(prev => ({
+            ...prev,
+            quantities: {
+                ...prev.quantities,
+                [field]: numValue
+            }
+        }));
+    };
 
     const removeItem = useCallback((productName?: string) => {
         setConfirmationDialog({
@@ -757,6 +872,169 @@ const ShoppingList: React.FC = () => {
                     confirmText="Remover"
                     cancelText="Cancelar"
                 />
+                
+                {/* Quantity Modal */}
+                <Dialog open={quantityModal.open} onOpenChange={(open) => {
+                    if (!open) {
+                        // Reset modal when closing
+                        setQuantityModal({ 
+                            open: false, 
+                            productName: '',
+                            quantities: {
+                                stockJR: 0,
+                                stockGS: 0,
+                                stockBARAO: 0,
+                                stockLB: 0
+                            }
+                        });
+                    }
+                }}>
+                    <DialogContent className="w-[95vw] max-w-[500px] max-h-[90vh] overflow-y-auto">
+                        <DialogHeader>
+                            <DialogTitle className="text-lg md:text-xl">Adicionar Quantidades</DialogTitle>
+                            <DialogDescription>
+                                <span className="font-semibold text-sm md:text-base text-gray-800 break-words">{quantityModal.productName}</span>
+                                <br className="hidden sm:block" />
+                                <span className="text-xs md:text-sm">Informe as quantidades para cada loja:</span>
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 py-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="modal-stockJR" className="text-sm font-medium flex items-center justify-between">
+                                    JR
+                                    <span className="text-xs text-gray-500 font-normal sm:hidden">Quantidade</span>
+                                </Label>
+                                <Input 
+                                    value={quantityModal.quantities.stockJR || ''}
+                                    onChange={(e) => handleQuantityChange('stockJR', e.target.value)} 
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            e.preventDefault();
+                                            handleConfirmAddProduct();
+                                        }
+                                    }}
+                                    className="w-full text-center text-lg sm:text-base h-12 sm:h-10" 
+                                    id="modal-stockJR" 
+                                    type="number"
+                                    min="0"
+                                    inputMode="numeric"
+                                    placeholder="0"
+                                    autoFocus
+                                /> 
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="modal-stockGS" className="text-sm font-medium flex items-center justify-between">
+                                    GS
+                                    <span className="text-xs text-gray-500 font-normal sm:hidden">Quantidade</span>
+                                </Label>
+                                <Input 
+                                    value={quantityModal.quantities.stockGS || ''}
+                                    onChange={(e) => handleQuantityChange('stockGS', e.target.value)} 
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            e.preventDefault();
+                                            handleConfirmAddProduct();
+                                        }
+                                    }}
+                                    className="w-full text-center text-lg sm:text-base h-12 sm:h-10" 
+                                    id="modal-stockGS" 
+                                    type="number"
+                                    min="0"
+                                    inputMode="numeric"
+                                    placeholder="0"
+                                /> 
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="modal-stockBARAO" className="text-sm font-medium flex items-center justify-between">
+                                    BARÃO
+                                    <span className="text-xs text-gray-500 font-normal sm:hidden">Quantidade</span>
+                                </Label>
+                                <Input 
+                                    value={quantityModal.quantities.stockBARAO || ''}
+                                    onChange={(e) => handleQuantityChange('stockBARAO', e.target.value)} 
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            e.preventDefault();
+                                            handleConfirmAddProduct();
+                                        }
+                                    }}
+                                    className="w-full text-center text-lg sm:text-base h-12 sm:h-10" 
+                                    id="modal-stockBARAO" 
+                                    type="number"
+                                    min="0"
+                                    inputMode="numeric"
+                                    placeholder="0"
+                                /> 
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="modal-stockLB" className="text-sm font-medium flex items-center justify-between">
+                                    LB
+                                    <span className="text-xs text-gray-500 font-normal sm:hidden">Quantidade</span>
+                                </Label>
+                                <Input 
+                                    value={quantityModal.quantities.stockLB || ''}
+                                    onChange={(e) => handleQuantityChange('stockLB', e.target.value)} 
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            e.preventDefault();
+                                            handleConfirmAddProduct();
+                                        }
+                                    }}
+                                    className="w-full text-center text-lg sm:text-base h-12 sm:h-10" 
+                                    id="modal-stockLB" 
+                                    type="number"
+                                    min="0"
+                                    inputMode="numeric"
+                                    placeholder="0"
+                                /> 
+                            </div>
+                        </div>
+                        <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2 mt-4">
+                            <Button 
+                                variant="outline" 
+                                onClick={() => setQuantityModal({ 
+                                    open: false, 
+                                    productName: '',
+                                    quantities: {
+                                        stockJR: 0,
+                                        stockGS: 0,
+                                        stockBARAO: 0,
+                                        stockLB: 0
+                                    }
+                                })}
+                                className="w-full sm:w-auto h-11 sm:h-10"
+                            >
+                                Cancelar
+                            </Button>
+                            <Button 
+                                variant="outline"
+                                onClick={() => {
+                                    // Add product with zero quantities
+                                    setQuantityModal(prev => ({
+                                        ...prev,
+                                        quantities: {
+                                            stockJR: 0,
+                                            stockGS: 0,
+                                            stockBARAO: 0,
+                                            stockLB: 0
+                                        }
+                                    }));
+                                    handleConfirmAddProduct();
+                                }}
+                                className="w-full sm:w-auto h-11 sm:h-10"
+                            >
+                                <span className="hidden sm:inline">Adicionar sem Qtd</span>
+                                <span className="sm:hidden">Sem Quantidade</span>
+                            </Button>
+                            <Button 
+                                onClick={handleConfirmAddProduct}
+                                className="w-full sm:w-auto bg-green-700 hover:bg-green-800 h-11 sm:h-10"
+                            >
+                                Adicionar Produto
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </div>
         </ErrorBoundary>
     )
