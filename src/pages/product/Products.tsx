@@ -11,7 +11,12 @@ import ProductExcelUpload from "../../components/ProductExcelUpload.tsx";
 const ProductsPage: React.FC = () => {
     const [products, setProducts] = useState<Product[]>([])
     const [product, setProduct] = useState<string>("")
+    const [filterName, setFilterName] = useState<string>("")
     const totalProducts = products.length
+    
+    const filteredProducts = products.filter((p) =>
+        p?.product_name?.toLowerCase().includes(filterName.toLowerCase())
+    )
     const { toast } = useToast()
     const hasFetchedRef = useRef(false)
 
@@ -106,8 +111,22 @@ const ProductsPage: React.FC = () => {
                     <AddProduct submitProduct={handleSubmit} setProduct={setProduct} product={product} />
                     <ProductExcelUpload onUploadComplete={fetchProducts} />
                 </div>
+                <div className="flex items-center gap-2">
+                    <input
+                        type="text"
+                        placeholder="Filtrar por nome..."
+                        value={filterName}
+                        onChange={(e) => setFilterName(e.target.value)}
+                        className="flex h-10 w-full max-w-sm rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    />
+                    {filterName && (
+                        <span className="text-sm text-muted-foreground">
+                            {filteredProducts.length} de {totalProducts} produtos
+                        </span>
+                    )}
+                </div>
                 <div>
-                    <ProductTable deleteProduct={handleDelete} products={products} />
+                    <ProductTable deleteProduct={handleDelete} products={filteredProducts} />
                 </div>
             </div>
         </div>
