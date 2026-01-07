@@ -3,7 +3,7 @@ import {Button} from "../../components/ui/button.tsx";
 import {PhoneCall} from "lucide-react";
 
 export const Contact:React.FC = () => {
-    const whatsappNumber = "5522998987184"; // Format: country code + number
+    const whatsappNumber = "5522999799945"; // Format: country code + number
     const whatsappMessage = encodeURIComponent("Olá! Gostaria de fazer um pedido.");
     const whatsappLink = `https://wa.me/${whatsappNumber}?text=${whatsappMessage}`;
 
