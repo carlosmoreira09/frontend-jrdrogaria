@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useToast } from "../../hooks/use-toast.ts";
-import { Product } from "../../types/types.ts";
-import { createProduct, deleteProduct, listProducts } from "../../service/productService.ts";
-import ProductExcelUpload from "../../components/ProductExcelUpload.tsx";
-import { Button } from "../../components/ui/button.tsx";
+import { useToast } from "../../hooks/use-toast";
+import { Product } from "../../types/types";
+import { createProduct, deleteProduct, listProducts } from "../../service/productService";
+import ProductExcelUpload from "../../components/ProductExcelUpload";
+import { Button } from "../../components/ui/button";
 import {
   Search,
   Plus,
@@ -13,7 +13,7 @@ import {
   X,
 } from "lucide-react";
 
-const ProductsPage: React.FC = () => {
+const ProductsV2: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [newProductName, setNewProductName] = useState("");
   const [filterName, setFilterName] = useState("");
@@ -113,7 +113,7 @@ const ProductsPage: React.FC = () => {
   }
 
   return (
-    <div className="p-4 space-y-4 max-w-2xl md:max-w-4xl lg:max-w-8xl mx-auto">
+    <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -257,4 +257,4 @@ const ProductsPage: React.FC = () => {
   );
 };
 
-export default ProductsPage;
+export default ProductsV2;
