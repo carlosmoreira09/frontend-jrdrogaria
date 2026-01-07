@@ -17,7 +17,7 @@ adminClient.interceptors.response.use(
 );
 
 export const apiClient = axios.create({
-    baseURL: 'http://localhost:3000/api/v1',
+    baseURL: 'https://jrdrogaria.com.br/api/v1',
 });
 
 apiClient.interceptors.request.use(
