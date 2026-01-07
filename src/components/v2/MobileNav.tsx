@@ -3,15 +3,13 @@ import { NavLink, useLocation } from "react-router-dom";
 import {
   Home,
   FileText,
-  ShoppingCart,
   Package,
-  Truck,
   Menu,
   X,
   ChevronRight,
   BarChart3,
-  ClipboardList,
 } from "lucide-react";
+import logo from "../../assets/app-logo.jpeg";
 
 interface NavItem {
   path: string;
@@ -22,11 +20,8 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { path: "/v2", label: "Início", icon: <Home className="h-5 w-5" /> },
-  { path: "/quotation", label: "Cotações", icon: <FileText className="h-5 w-5" /> },
-  { path: "/orders", label: "Pedidos", icon: <ShoppingCart className="h-5 w-5" /> },
-  { path: "/product/home", label: "Produtos", icon: <Package className="h-5 w-5" /> },
-  { path: "/supplier/home", label: "Fornecedores", icon: <Truck className="h-5 w-5" /> },
-  { path: "/shopping/home", label: "Listas", icon: <ClipboardList className="h-5 w-5" /> },
+  { path: "/v2/quotation", label: "Cotações", icon: <FileText className="h-5 w-5" /> },
+  { path: "/v2/products", label: "Produtos", icon: <Package className="h-5 w-5" /> },
 ];
 
 const MobileNav: React.FC = () => {
@@ -41,19 +36,24 @@ const MobileNav: React.FC = () => {
   return (
     <>
       {/* Top Header Bar */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-emerald-600 text-white safe-area-top">
-        <div className="flex items-center justify-between px-4 h-14">
-          <button
-            onClick={() => setIsOpen(true)}
-            className="p-2 -ml-2 rounded-lg hover:bg-emerald-700 active:bg-emerald-800 transition-colors"
-            aria-label="Abrir menu"
-          >
-            <Menu className="h-6 w-6" />
-          </button>
-          
-          <h1 className="text-lg font-semibold">Sistema de Cotação</h1>
-          
-          <div className="w-10" /> {/* Spacer for centering */}
+      <header className="bg-gradient-to-r from-emerald-600 to-emerald-700 text-white shadow-lg">
+        <div className="flex justify-between items-center max-w-4xl mx-auto px-4 py-4">
+          <div className="flex">
+            <button
+                onClick={() => setIsOpen(true)}
+                className="p-2 -ml-2 rounded-lg hover:bg-emerald-700 active:bg-emerald-800 transition-colors"
+                aria-label="Abrir menu"
+            >
+              <Menu className="h-6 w-6" />
+            </button>
+          </div>
+          <div className="flex items-center gap-3">
+            <img src={logo} alt="JR Drogaria" className="h-12 w-12 rounded-full object-cover border-2 border-white/30" />
+            <div>
+              <h1 className="text-xl font-bold">JR Drogaria</h1>
+              <p className="text-emerald-100 text-sm">Sistema de Cotações</p>
+            </div>
+          </div>
         </div>
       </header>
 
@@ -78,8 +78,8 @@ const MobileNav: React.FC = () => {
               <BarChart3 className="h-5 w-5" />
             </div>
             <div>
-              <p className="font-semibold">Cotação v2</p>
-              <p className="text-xs text-emerald-100">Mobile First</p>
+              <p className="font-semibold">JR Drogaria</p>
+              <p className="text-xs text-emerald-100">Sistema de Cotação</p>
             </div>
           </div>
           <button
@@ -123,7 +123,7 @@ const MobileNav: React.FC = () => {
         {/* Footer */}
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t bg-gray-50 safe-area-bottom">
           <p className="text-xs text-gray-500 text-center">
-            Sistema de Cotação v2.0
+            JR Drogaria - Sistema de Cotação v2.0
           </p>
         </div>
       </nav>

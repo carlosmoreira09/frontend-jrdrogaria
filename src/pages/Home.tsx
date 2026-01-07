@@ -1,6 +1,6 @@
 import React, {useEffect, useRef, useState} from "react"
 import Cards from "../components/Cards.tsx";
-import { Pill, ShoppingBag, Truck, Package} from "lucide-react";
+import { Pill, ShoppingBag, Truck, Package, Sparkles } from "lucide-react";
 import {useStore} from "../hooks/store.tsx";
 import {getTotalAmount} from "../service/generalService.ts";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/ui/card.tsx";
@@ -85,6 +85,28 @@ const Home: React.FC = () => {
 
     return (
         <div className="flex flex-col space-y-8 p-4">
+            {/* Banner V2 */}
+            <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-xl p-4 shadow-lg">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="flex items-center gap-3 text-white">
+                        <div className="p-2 bg-white/20 rounded-lg">
+                            <Sparkles className="h-6 w-6" />
+                        </div>
+                        <div>
+                            <h2 className="font-bold text-lg">Nova Interface Mobile v2</h2>
+                            <p className="text-emerald-100 text-sm">Experimente o novo sistema otimizado para celular!</p>
+                        </div>
+                    </div>
+                    <Button 
+                        onClick={() => navigate('/v2')}
+                        className="bg-white text-emerald-600 hover:bg-emerald-50 font-semibold shadow-md"
+                    >
+                        <Sparkles className="mr-2 h-4 w-4" />
+                        Testar Agora
+                    </Button>
+                </div>
+            </div>
+
             <div className="flex items-center justify-between">
                 <h1 className="text-3xl font-bold text-green-800">Dashboard JR Drogaria</h1>
                 <div className="text-sm text-gray-500">

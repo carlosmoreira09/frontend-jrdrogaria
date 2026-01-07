@@ -1,9 +1,22 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { SupplierPricePayload } from "../../types/supplierPrice";
-import { usePublicQuotation, useSaveSupplierPrices } from "../../hooks/usePublicQuotation";
-import { Loader2, AlertCircle, Save, Send, CheckCircle, Package, Search } from "lucide-react";
+import { Loader2, AlertCircle, Send, Package, Search, User, Phone, CreditCard } from "lucide-react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import apiClient from "../../lib/interceptor";
 import logo from "../../assets/app-logo.jpeg";
+
+interface SupplierPricePayload {
+  productId: number;
+  unitPrice?: number;
+  available?: boolean;
+  observation?: string;
+}
+
+interface SupplierData {
+  supplierName: string;
+  whatsAppNumber: string;
+  paymentTerm: string;
+}
 
 export const HeaderQuotation = () => (
   <header className="bg-gradient-to-r from-emerald-600 to-emerald-700 text-white shadow-lg">
@@ -19,25 +32,36 @@ export const HeaderQuotation = () => (
   </header>
 );
 
-const SupplierQuotationForm: React.FC = () => {
-  const { token = "" } = useParams();
+const AnonymousSupplierForm: React.FC = () => {
+  const { id = "" } = useParams();
   const navigate = useNavigate();
-  const { data: supplierQuotation, isLoading, isError, error } = usePublicQuotation(token);
-  const saveMutation = useSaveSupplierPrices();
   const [prices, setPrices] = useState<Record<number, SupplierPricePayload>>({});
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [searchFilter, setSearchFilter] = useState("");
+  const [supplierData, setSupplierData] = useState<SupplierData>({
+    supplierName: "",
+    whatsAppNumber: "",
+    paymentTerm: "",
+  });
 
-  // Extract quotation data from supplier quotation response
-  const quotation = supplierQuotation?.quotationRequest;
+  // Fetch quotation
+  const { data: quotation, isLoading, isError, error } = useQuery({
+    queryKey: ["anonymous-quotation", id],
+    queryFn: async () => {
+      const { data } = await apiClient.get(`/public/quotation-open/${id}`);
+      return data.data;
+    },
+    enabled: !!id,
+  });
+
   const items = quotation?.items || [];
-  
+
   // Filter items by search term
   const filteredItems = items.filter((item: any) => {
     const productName = item.product?.product_name || item.productName || "";
     return productName.toLowerCase().includes(searchFilter.toLowerCase());
   });
 
+  // Initialize prices
   useEffect(() => {
     if (items.length > 0) {
       const initial: Record<number, SupplierPricePayload> = {};
@@ -62,21 +86,27 @@ const SupplierQuotationForm: React.FC = () => {
     }));
   };
 
-  const submit = (finalSubmit: boolean) => {
-    setSuccessMessage(null);
-    const payload = Object.values(prices);
-    saveMutation.mutate(
-      { token, prices: payload, finalSubmit },
-      {
-        onSuccess: () => {
-          if (finalSubmit) {
-            navigate("/supplier-quote/success");
-          } else {
-            setSuccessMessage("Rascunho salvo com sucesso!");
-          }
-        },
-      }
-    );
+  // Submit mutation
+  const submitMutation = useMutation({
+    mutationFn: async () => {
+      const payload = {
+        supplier: supplierData,
+        prices: Object.values(prices),
+      };
+      const { data } = await apiClient.post(`/public/quotation-open/${id}/submit`, payload);
+      return data;
+    },
+    onSuccess: () => {
+      navigate("/supplier-quote/success");
+    },
+  });
+
+  const handleSubmit = () => {
+    if (!supplierData.supplierName.trim()) {
+      alert("Por favor, informe o nome do fornecedor");
+      return;
+    }
+    submitMutation.mutate();
   };
 
   if (isLoading) {
@@ -102,7 +132,7 @@ const SupplierQuotationForm: React.FC = () => {
         <div className="flex flex-col items-center justify-center text-center p-4" style={{ minHeight: 'calc(100vh - 80px)' }}>
           <div className="bg-white rounded-xl shadow-lg p-8 max-w-md">
             <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-red-600">Link inválido ou expirado</h2>
+            <h2 className="text-xl font-semibold text-red-600">Cotação não encontrada</h2>
             <p className="text-gray-500 mt-2">{(error as Error)?.message || "Verifique o link e tente novamente."}</p>
           </div>
         </div>
@@ -110,7 +140,7 @@ const SupplierQuotationForm: React.FC = () => {
     );
   }
 
-  if (!supplierQuotation) return null;
+  if (!quotation) return null;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-emerald-50/30 to-gray-100"
@@ -126,11 +156,8 @@ const SupplierQuotationForm: React.FC = () => {
                 <Package className="h-5 w-5 text-emerald-600" />
                 <h2 className="text-lg font-semibold text-gray-900">{quotation?.name}</h2>
               </div>
-              <p className="text-sm text-gray-500 mt-1">
-                Fornecedor: <span className="font-medium text-gray-700">{supplierQuotation.supplier?.supplier_name}</span>
-              </p>
               {quotation?.deadline && (
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-500 mt-1">
                   Prazo: <span className="font-medium text-gray-700">{new Date(quotation.deadline).toLocaleDateString()}</span>
                 </p>
               )}
@@ -141,17 +168,58 @@ const SupplierQuotationForm: React.FC = () => {
           </div>
         </div>
 
-        {successMessage && (
-          <div className="flex items-center gap-2 p-4 bg-emerald-50 border border-emerald-200 rounded-xl">
-            <CheckCircle className="h-5 w-5 text-emerald-600" />
-            <span className="text-sm text-emerald-700 font-medium">{successMessage}</span>
+        {/* Supplier Data Form */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 space-y-4">
+          <h3 className="text-sm font-medium text-gray-700 uppercase tracking-wide">Dados do Fornecedor</h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">
+                <User className="inline h-3 w-3 mr-1" />
+                Nome / Empresa *
+              </label>
+              <input
+                type="text"
+                value={supplierData.supplierName}
+                onChange={(e) => setSupplierData({ ...supplierData, supplierName: e.target.value })}
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                placeholder="Nome do fornecedor"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">
+                <Phone className="inline h-3 w-3 mr-1" />
+                WhatsApp
+              </label>
+              <input
+                type="text"
+                value={supplierData.whatsAppNumber}
+                onChange={(e) => setSupplierData({ ...supplierData, whatsAppNumber: e.target.value })}
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                placeholder="(00) 00000-0000"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">
+                <CreditCard className="inline h-3 w-3 mr-1" />
+                Prazo de Pagamento
+              </label>
+              <input
+                type="text"
+                value={supplierData.paymentTerm}
+                onChange={(e) => setSupplierData({ ...supplierData, paymentTerm: e.target.value })}
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                placeholder="Ex: 30 dias"
+              />
+            </div>
           </div>
-        )}
-        {saveMutation.isError && (
+        </div>
+
+        {submitMutation.isError && (
           <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-xl">
             <AlertCircle className="h-5 w-5 text-red-600" />
             <span className="text-sm text-red-600">
-              {(saveMutation.error as Error)?.message || "Erro ao salvar preços"}
+              {(submitMutation.error as Error)?.message || "Erro ao enviar cotação"}
             </span>
           </div>
         )}
@@ -176,7 +244,7 @@ const SupplierQuotationForm: React.FC = () => {
           </div>
 
           {/* Compact Product Cards */}
-          <div className="space-y-2 max-h-[60vh] overflow-y-auto pr-1">
+          <div className="space-y-2 max-h-[50vh] overflow-y-auto pr-1">
             {filteredItems.map((item: any) => {
               const productId = item.product?.id || item.productId;
               const productName = item.product?.product_name || item.productName || `Produto ${productId}`;
@@ -237,26 +305,14 @@ const SupplierQuotationForm: React.FC = () => {
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row gap-3 pt-4">
+        {/* Action Button */}
+        <div className="pt-4">
           <button
-            disabled={saveMutation.isPending}
-            onClick={() => submit(false)}
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium rounded-xl border-2 border-gray-200 text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-300 transition-all disabled:opacity-50"
+            disabled={submitMutation.isPending || !supplierData.supplierName.trim()}
+            onClick={handleSubmit}
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg shadow-emerald-600/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {saveMutation.isPending ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Save className="h-4 w-4" />
-            )}
-            Salvar rascunho
-          </button>
-          <button
-            disabled={saveMutation.isPending}
-            onClick={() => submit(true)}
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg shadow-emerald-600/20 transition-all disabled:opacity-50"
-          >
-            {saveMutation.isPending ? (
+            {submitMutation.isPending ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
               <Send className="h-4 w-4" />
@@ -269,4 +325,4 @@ const SupplierQuotationForm: React.FC = () => {
   );
 };
 
-export default SupplierQuotationForm;
+export default AnonymousSupplierForm;

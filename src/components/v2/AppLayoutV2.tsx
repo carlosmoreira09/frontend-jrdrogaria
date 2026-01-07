@@ -9,7 +9,7 @@ const AppLayoutV2: React.FC = () => {
       <MobileNav />
       
       {/* Main content area */}
-      <main className="pt-14 pb-20 md:pb-4 px-4 md:px-6 lg:px-8 max-w-7xl mx-auto">
+      <main className="pb-20 md:pb-4 px-4 md:px-6 lg:px-8 max-w-7xl mx-auto " style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 4.5rem)' }}>
         <Outlet />
       </main>
       

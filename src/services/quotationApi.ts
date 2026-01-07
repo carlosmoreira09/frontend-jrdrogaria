@@ -46,4 +46,10 @@ export const quotationApi = {
     });
     return response.data;
   },
+  exportBestPrices: async (id: number) => {
+    const response = await apiClient.get(`/quotations/${id}/export-orders`, {
+      responseType: 'blob',
+    });
+    return response.data;
+  },
 };

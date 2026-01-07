@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { quotationApi } from "../../services/quotationApi";
-import { PriceComparison, SupplierTotal } from "../../types/quotation";
+import { quotationApi } from "../../services/quotationApi.ts";
+import { PriceComparison, SupplierTotal } from "../../types/quotation.ts";
 import {
   Loader2,
   AlertCircle,
@@ -13,7 +13,9 @@ import {
   Users,
   DollarSign,
   Download,
+  ShoppingCart,
 } from "lucide-react";
+import { useGenerateOrders } from "../../hooks/useOrders";
 
 const formatCurrency = (value: number | null) => {
   if (value === null) return "-";
@@ -30,6 +32,8 @@ const PriceComparisonView: React.FC = () => {
 
   const [showOnlyBest, setShowOnlyBest] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [isExportingOrders, setIsExportingOrders] = useState(false);
+  const generateOrdersMutation = useGenerateOrders();
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["quotation-comparison", quotationId],
@@ -53,7 +57,7 @@ const PriceComparisonView: React.FC = () => {
         <p className="text-red-600 font-medium">Erro ao carregar comparação</p>
         <p className="text-sm text-gray-500 mt-1">{(error as Error)?.message || "Tente novamente"}</p>
         <button
-          onClick={() => navigate(`/quotation/${quotationId}`)}
+          onClick={() => navigate(`/v2/quotation/${quotationId}`)}
           className="mt-4 flex items-center gap-2 px-3 py-2 text-sm rounded bg-emerald-600 text-white hover:bg-emerald-700"
         >
           <ArrowLeft className="h-4 w-4" />
@@ -87,6 +91,35 @@ const PriceComparisonView: React.FC = () => {
     }
   };
 
+  const handleExportOrders = async () => {
+    setIsExportingOrders(true);
+    try {
+      const blob = await quotationApi.exportBestPrices(quotationId);
+      const url = window.URL.createObjectURL(new Blob([blob]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `pedidos_${data.quotationName.replace(/\s+/g, "_")}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Erro ao exportar pedidos:", err);
+    } finally {
+      setIsExportingOrders(false);
+    }
+  };
+
+  const handleGenerateOrders = () => {
+    if (confirm("Deseja gerar pedidos de compra com os melhores preços?")) {
+      generateOrdersMutation.mutate(quotationId, {
+        onSuccess: () => {
+          navigate("/v2/orders");
+        },
+      });
+    }
+  };
+
   return (
     <div className="p-4 space-y-6">
       {/* Header */}
@@ -96,7 +129,7 @@ const PriceComparisonView: React.FC = () => {
           <p className="text-sm text-gray-600">{data.quotationName}</p>
         </div>
         <button
-          onClick={() => navigate(`/quotation/${quotationId}`)}
+          onClick={() => navigate(`/v2/quotation/${quotationId}`)}
           className="flex items-center gap-2 px-3 py-2 text-sm rounded border border-gray-300 hover:bg-gray-50"
         >
           <ArrowLeft className="h-4 w-4" />
@@ -258,25 +291,49 @@ const PriceComparisonView: React.FC = () => {
       </div>
 
       {/* Actions */}
-      <div className="flex justify-center gap-3">
+      <div className="flex flex-wrap justify-center gap-3">
         <button
-          onClick={() => navigate(`/quotation/${quotationId}`)}
+          onClick={() => navigate(`/v2/quotation/${quotationId}`)}
           className="flex items-center gap-2 px-4 py-2 text-sm rounded border border-gray-300 hover:bg-gray-50"
         >
           <ArrowLeft className="h-4 w-4" />
-          Voltar para Cotação
+          Voltar
         </button>
         <button
           onClick={handleExport}
           disabled={isExporting}
-          className="flex items-center gap-2 px-4 py-2 text-sm rounded bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-2 text-sm rounded border border-gray-300 hover:bg-gray-50 disabled:opacity-50"
         >
           {isExporting ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
             <Download className="h-4 w-4" />
           )}
-          {isExporting ? "Exportando..." : "Exportar Excel"}
+          {isExporting ? "Exportando..." : "Exportar Completo"}
+        </button>
+        <button
+          onClick={handleExportOrders}
+          disabled={isExportingOrders}
+          className="flex items-center gap-2 px-4 py-2 text-sm rounded border border-gray-300 hover:bg-gray-50 disabled:opacity-50"
+        >
+          {isExportingOrders ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Download className="h-4 w-4" />
+          )}
+          {isExportingOrders ? "Exportando..." : "Exportar Pedidos"}
+        </button>
+        <button
+          onClick={handleGenerateOrders}
+          disabled={generateOrdersMutation.isPending}
+          className="flex items-center gap-2 px-4 py-2 text-sm rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
+        >
+          {generateOrdersMutation.isPending ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <ShoppingCart className="h-4 w-4" />
+          )}
+          {generateOrdersMutation.isPending ? "Gerando..." : "Gerar Pedidos"}
         </button>
       </div>
     </div>

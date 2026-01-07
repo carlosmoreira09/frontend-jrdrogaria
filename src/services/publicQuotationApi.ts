@@ -1,10 +1,10 @@
 import apiClient from '../lib/interceptor';
 import { SupplierPricePayload } from '../types/supplierPrice';
-import { QuotationRequest } from '../types/quotation';
+import { SupplierQuotation } from '../types/quotation';
 
 export const publicQuotationApi = {
   getByToken: async (token: string) => {
-    const { data } = await apiClient.get<{ data: QuotationRequest }>(`/public/quotation/${token}`);
+    const { data } = await apiClient.get<{ data: SupplierQuotation }>(`/public/quotation/${token}`);
     return data.data;
   },
   savePrices: async (token: string, prices: SupplierPricePayload[], submit = false) => {

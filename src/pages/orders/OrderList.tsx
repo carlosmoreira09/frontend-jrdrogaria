@@ -95,7 +95,7 @@ const OrderList: React.FC = () => {
             Gere pedidos a partir da comparação de preços
           </p>
           <button
-            onClick={() => navigate("/quotation")}
+            onClick={() => navigate("/v2/quotation")}
             className="mt-4 px-3 py-2 text-sm rounded bg-emerald-600 text-white hover:bg-emerald-700"
           >
             Ver cotações
@@ -153,7 +153,7 @@ const OrderList: React.FC = () => {
               </div>
               <div className="flex gap-2">
                 <button
-                  onClick={() => navigate(`/orders/${order.id}`)}
+                  onClick={() => navigate(`/v2/orders/${order.id}`)}
                   className="flex items-center gap-1 px-2 py-1 text-sm rounded border border-gray-300 hover:bg-gray-50"
                 >
                   <Eye className="h-4 w-4" />

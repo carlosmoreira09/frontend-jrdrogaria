@@ -11,8 +11,13 @@ export const apiClient = axios.create({
 apiClient.interceptors.request.use(
     (config) => {
         const token = Cookies.get('token');
+        const tenant = Cookies.get('tenant');
         if (token) {
             config.headers['Authorization'] = `Bearer ${token}`;
+        }
+        console.log(tenant)
+        if (tenant) {
+            config.headers['x-tenant-id'] = tenant;
         }
         return config;
     },

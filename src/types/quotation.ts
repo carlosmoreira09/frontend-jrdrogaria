@@ -14,6 +14,10 @@ export interface QuotationItem {
   productName?: string;
   quantities: PharmacyQuantities;
   totalQuantity?: number;
+  product?: {
+    id: number;
+    product_name: string;
+  };
 }
 
 export interface QuotationRequest {
@@ -36,6 +40,7 @@ export interface SupplierQuotation {
     id: number;
     supplier_name: string;
   };
+  quotationRequest?: QuotationRequest;
 }
 
 export interface CreateQuotationPayload {

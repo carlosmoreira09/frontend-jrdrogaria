@@ -166,7 +166,7 @@ const HomeV2: React.FC = () => {
   }
 
   return (
-    <div className="py-4 space-y-6">
+    <div className="py-4 space-y-6 ">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -174,7 +174,7 @@ const HomeV2: React.FC = () => {
           <p className="text-sm text-gray-500">Visão geral do sistema</p>
         </div>
         <button
-          onClick={() => navigate("/quotation/create")}
+          onClick={() => navigate("/v2/quotation/create")}
           className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 text-white rounded-xl font-medium shadow-lg shadow-emerald-200 active:scale-[0.98] transition-transform"
         >
           <Plus className="h-5 w-5" />
@@ -190,7 +190,7 @@ const HomeV2: React.FC = () => {
           subtitle={`${openQuotations} abertas`}
           icon={<FileText className="h-5 w-5" />}
           color="emerald"
-          onClick={() => navigate("/quotation")}
+          onClick={() => navigate("/v2/quotation")}
         />
         <MetricCard
           title="Pedidos"
@@ -198,21 +198,21 @@ const HomeV2: React.FC = () => {
           subtitle={`${pendingOrders} pendentes`}
           icon={<ShoppingCart className="h-5 w-5" />}
           color="blue"
-          onClick={() => navigate("/orders")}
+          onClick={() => navigate("/v2/orders")}
         />
         <MetricCard
           title="Produtos"
           value={totals?.data?.totalProducts || 0}
           icon={<Package className="h-5 w-5" />}
           color="amber"
-          onClick={() => navigate("/product/home")}
+          onClick={() => navigate("/v2/products")}
         />
         <MetricCard
           title="Fornecedores"
           value={totals?.data?.totalSupplier || 0}
           icon={<Truck className="h-5 w-5" />}
           color="purple"
-          onClick={() => navigate("/supplier/home")}
+          onClick={() => navigate("/v2/supplier/home")}
         />
       </div>
 
@@ -239,19 +239,19 @@ const HomeV2: React.FC = () => {
             title="Nova Cotação"
             description="Crie uma nova solicitação de cotação"
             icon={<FileText className="h-5 w-5" />}
-            onClick={() => navigate("/quotation/create")}
+            onClick={() => navigate("/v2/quotation/create")}
           />
           <QuickAction
             title="Comparar Preços"
             description="Analise e compare preços dos fornecedores"
             icon={<BarChart3 className="h-5 w-5" />}
-            onClick={() => navigate("/quotation")}
+            onClick={() => navigate("/v2/quotation")}
           />
           <QuickAction
             title="Ver Pedidos"
             description="Acompanhe seus pedidos de compra"
             icon={<ShoppingCart className="h-5 w-5" />}
-            onClick={() => navigate("/orders")}
+            onClick={() => navigate("/v2/orders")}
           />
         </div>
       </div>
