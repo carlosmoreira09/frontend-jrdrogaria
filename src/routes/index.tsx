@@ -10,6 +10,16 @@ import AdminLogin from "../pages/AdminLogin";
 import {ProtectedRoute} from "./ProtectedRoute/ProtectedRoute";
 import {ProfileRole} from "../types/ProfileRole";
 import {PriceComparison} from "../pages/shoppinglist/PriceComparison";
+import QuotationList from "../pages/quotation/QuotationList";
+import CreateQuotation from "../pages/quotation/CreateQuotation";
+import QuotationDetails from "../pages/quotation/QuotationDetails";
+import PriceComparisonView from "../pages/quotation/PriceComparisonView";
+import SupplierQuotationForm from "../pages/public/SupplierQuotationForm";
+import SupplierSuccess from "../pages/public/SupplierSuccess";
+import OrderList from "../pages/orders/OrderList";
+import OrderDetails from "../pages/orders/OrderDetails";
+import AppLayoutV2 from "../components/v2/AppLayoutV2";
+import HomeV2 from "../pages/v2/HomeV2";
 
 export const router = createBrowserRouter([
     {
@@ -79,6 +89,39 @@ export const router = createBrowserRouter([
                 element:<ProtectedRoute role={ProfileRole.admin}><PriceComparison /></ProtectedRoute>
             },
         ]
+    },
+    {
+        path: 'quotation',
+        element: <AppLayout />,
+        children: [
+            { index: true, element: <ProtectedRoute role={ProfileRole.admin}><QuotationList /></ProtectedRoute> },
+            { path: 'create', element: <ProtectedRoute role={ProfileRole.admin}><CreateQuotation /></ProtectedRoute> },
+            { path: ':id', element: <ProtectedRoute role={ProfileRole.admin}><QuotationDetails /></ProtectedRoute> },
+            { path: ':id/comparison', element: <ProtectedRoute role={ProfileRole.admin}><PriceComparisonView /></ProtectedRoute> },
+        ]
+    },
+    {
+        path: 'orders',
+        element: <AppLayout />,
+        children: [
+            { index: true, element: <ProtectedRoute role={ProfileRole.admin}><OrderList /></ProtectedRoute> },
+            { path: ':id', element: <ProtectedRoute role={ProfileRole.admin}><OrderDetails /></ProtectedRoute> },
+        ]
+    },
+    {
+        path: 'v2',
+        element: <AppLayoutV2 />,
+        children: [
+            { index: true, element: <ProtectedRoute role={ProfileRole.admin}><HomeV2 /></ProtectedRoute> },
+        ]
+    },
+    {
+        path: 'supplier-quote/:token',
+        element: <SupplierQuotationForm />
+    },
+    {
+        path: 'supplier-quote/success',
+        element: <SupplierSuccess />
     },
 ], {
     future: {
