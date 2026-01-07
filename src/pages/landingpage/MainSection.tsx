@@ -5,7 +5,7 @@ import logoImage from "../../assets/logo.jpeg";
 
 export const MainSection:React.FC = () => {
 
-    const whatsappNumber = "5522998987184"; // Format: country code + number
+    const whatsappNumber = "5522999799945"; // Format: country code + number
     const whatsappMessage = encodeURIComponent("Olá! Gostaria de fazer um pedido.");
     const whatsappLink = `https://wa.me/${whatsappNumber}?text=${whatsappMessage}`;
 
