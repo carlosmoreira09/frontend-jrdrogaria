@@ -152,7 +152,7 @@ const OrderDetails: React.FC = () => {
             {isExporting ? "Exportando..." : "Exportar Excel"}
           </button>
           <button
-            onClick={() => navigate("/orders")}
+            onClick={() => navigate("v2/orders")}
             className="flex items-center gap-2 px-3 py-2 text-sm rounded border border-gray-300 hover:bg-gray-50"
           >
             <ArrowLeft className="h-4 w-4" />
