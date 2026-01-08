@@ -6,6 +6,7 @@ import { Toaster, toast } from 'react-hot-toast';
 import {useStore} from "../hooks/store.tsx";
 import  logoLogin  from "../assets/logo.jpeg"
 import {ArrowLeft} from "lucide-react";
+
 export default function AdminLogin() {
   const navigate = useNavigate();
   const auth = useStore();

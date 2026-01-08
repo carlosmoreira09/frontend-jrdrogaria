@@ -4,6 +4,10 @@ import {ProfileRole} from "./ProfileRole.ts";
 export interface Product {
     id?: number,
     product_name?: string,
+    sku: string;
+    category: string;
+    unit: string;
+    is_active: boolean;
 }
 
 export interface IProductAndStock {
@@ -27,6 +31,12 @@ export interface Supplier  {
     supplier_name: string;
     whatsAppNumber: string;
     payment_term: string;
+    cnpj?: string;
+    contactName?: string;
+    contactPhone?: string;
+    status?: boolean;
+    created_at?: string;
+    updated_at?: string;
 }
 
 export interface GeneralResponse {
