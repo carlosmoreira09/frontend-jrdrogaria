@@ -16,7 +16,7 @@ export const listProducts = async (): Promise<GeneralResponse | undefined> => {
     }
 };
 
-export const createProduct = async (product: Product): Promise<GeneralResponse | undefined> => {
+export const createProduct = async (product: Partial<Product>): Promise<GeneralResponse | undefined> => {
     try {
         const response = await apiClient.post<GeneralResponse>('/products', product)
         return response.data

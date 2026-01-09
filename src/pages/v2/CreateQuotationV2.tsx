@@ -109,12 +109,12 @@ const CreateQuotationV2: React.FC = () => {
     setForm((prev) => ({
       ...prev,
       items: [
-        ...prev.items,
         {
           productId: product.id!,
           productName: product.product_name || "",
           quantities: { JR: 0, GS: 0, BARAO: 0, LB: 0 },
         },
+        ...prev.items,
       ],
     }));
     setSearchTerm("");

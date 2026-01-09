@@ -42,7 +42,7 @@ const AdminLoginPage: React.FC = () => {
           <div className="mx-auto w-12 h-12 bg-emerald-500 rounded-full flex items-center justify-center mb-4">
             <Shield className="h-6 w-6 text-white" />
           </div>
-          <CardTitle className="text-2xl">Admin BetterPrice</CardTitle>
+          <CardTitle className="text-2xl">Admin CotaRodar</CardTitle>
           <CardDescription>Acesso restrito para administradores</CardDescription>
         </CardHeader>
         <CardContent>
@@ -60,7 +60,7 @@ const AdminLoginPage: React.FC = () => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@betterprice.com.br"
+                placeholder="admin@cotarodar.com"
                 required
               />
             </div>

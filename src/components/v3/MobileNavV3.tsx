@@ -17,6 +17,7 @@ import {
   ShoppingCart,
   LogOut,
   Store,
+  Crown,
 } from "lucide-react";
 import { useTenantStore } from "../../context/TenantStoreContext";
 import {
@@ -35,11 +36,12 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { path: "/v3", label: "Início", icon: <Home className="h-5 w-5" /> },
-  { path: "/v3/quotations", label: "Cotações", icon: <FileText className="h-5 w-5" /> },
-  { path: "/v3/products", label: "Produtos", icon: <Package className="h-5 w-5" /> },
-  { path: "/v3/suppliers", label: "Fornecedores", icon: <Users className="h-5 w-5" /> },
-  { path: "/v3/orders", label: "Pedidos", icon: <ShoppingCart className="h-5 w-5" /> },
+  { path: "/v3/app", label: "Início", icon: <Home className="h-5 w-5" /> },
+  { path: "/v3/app/quotations", label: "Cotações", icon: <FileText className="h-5 w-5" /> },
+  { path: "/v3/app/products", label: "Produtos", icon: <Package className="h-5 w-5" /> },
+  { path: "/v3/app/suppliers", label: "Fornecedores", icon: <Users className="h-5 w-5" /> },
+  { path: "/v3/app/orders", label: "Pedidos", icon: <ShoppingCart className="h-5 w-5" /> },
+  { path: "/v3/app/subscription", label: "Assinatura", icon: <Crown className="h-5 w-5" /> },
 ];
 
 const MobileNavV3: React.FC = () => {
@@ -48,7 +50,7 @@ const MobileNavV3: React.FC = () => {
   const { tenantName, stores, currentStore, setCurrentStore, logout } = useTenantStore();
 
   const isActive = (path: string) => {
-    if (path === "/v3") return location.pathname === "/v3";
+    if (path === "/v3/app") return location.pathname === "/v3/app";
     return location.pathname.startsWith(path);
   };
 
@@ -75,8 +77,8 @@ const MobileNavV3: React.FC = () => {
           
           <div className="flex items-center gap-3">
             <div className="text-right hidden sm:block">
-              <h1 className="text-lg font-bold">{tenantName || 'Sistema'}</h1>
-              <p className="text-emerald-100 text-xs">Sistema de Cotações</p>
+              <h1 className="text-lg font-bold">{tenantName || 'CotaRodar'}</h1>
+              <p className="text-emerald-100 text-xs">CotaRodar.com</p>
             </div>
           </div>
 
@@ -164,7 +166,7 @@ const MobileNavV3: React.FC = () => {
             <span className="font-medium">Sair</span>
           </button>
           <p className="text-xs text-gray-500 text-center mt-2">
-            Sistema de Cotação v3.0
+            CotaRodar.com v3.0
           </p>
         </div>
       </nav>

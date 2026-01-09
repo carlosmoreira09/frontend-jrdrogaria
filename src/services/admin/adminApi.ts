@@ -1,5 +1,6 @@
 import {adminClient} from "../../lib/interceptor.ts";
 
+
 export const adminAuthApi = {
   login: async (email: string, password: string) => {
     const response = await adminClient.post('/auth/login', { email, password });
@@ -42,6 +43,10 @@ export const adminTenantsApi = {
   },
   updatePlan: async (id: number, plan: string, reason?: string) => {
     const response = await adminClient.put(`/tenants/${id}/plan`, { plan, reason });
+    return response.data;
+  },
+  resetOwnerPassword: async (id: number, newPassword: string) => {
+    const response = await adminClient.post(`/tenants/${id}/reset-password`, { newPassword });
     return response.data;
   },
 };

@@ -65,7 +65,7 @@ const StoreProvider = ({ children }: Props) => {
     const [store, setStore] = useState<number | undefined>(undefined)
     const login = async (username: string, password: string) => {
         const result = await loginService(username,password)
-
+        console.log(result)
         if(result  && result?.token) {
             const decoded: ITokenPayload = jwtDecode(result.token)
             saveStorage(decoded, result.token, decoded.tenantId)

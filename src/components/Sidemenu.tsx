@@ -159,7 +159,7 @@ const SidebarMenu: React.FC = () => {
 
     useEffect(() => {
         if(selectStore) {
-           const result = storeOptions.find((store) => store.id == parseInt(selectStore))
+           const result = storeOptions.find((s) => s.id == parseInt(selectStore))
             if(result){
                 store.setStore(result.id)
                 store.setTenantName(result.name)

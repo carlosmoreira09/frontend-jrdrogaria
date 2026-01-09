@@ -87,14 +87,14 @@ const QuotationDetailsV2: React.FC = () => {
   };
 
   const copyGenericLink = () => {
-    const url = `${window.location.origin}/quote-open/${quotationId}`;
+    const url = `${window.location.origin}/quote-open/${quotation?.id || quotationId}`;
     navigator.clipboard.writeText(url);
     setCopiedGenericLink(true);
     setTimeout(() => setCopiedGenericLink(false), 2000);
   };
 
   const shareGenericLink = async () => {
-    const url = `${window.location.origin}/quote-open/${quotationId}`;
+    const url = `${window.location.origin}/quote-open/${quotation?.id || quotationId}`;
     if (navigator.share) {
       try {
         await navigator.share({
@@ -321,9 +321,9 @@ const QuotationDetailsV2: React.FC = () => {
                       variant="outline"
                       size="sm"
                       className="flex-1"
-                      onClick={() => copyToClipboard(sq.accessToken)}
+                      onClick={() => copyToClipboard(sq.token_hash || sq.accessToken || '')}
                     >
-                      {copiedToken === sq.accessToken ? (
+                      {copiedToken === (sq.token_hash || sq.accessToken) ? (
                         <>
                           <Check className="h-4 w-4 mr-1 text-emerald-600" />
                           Copiado!
@@ -338,7 +338,7 @@ const QuotationDetailsV2: React.FC = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => shareLink(sq.accessToken, sq.supplier?.supplier_name || "Fornecedor")}
+                      onClick={() => shareLink(sq.token_hash || sq.accessToken || '', sq.supplier?.supplier_name || "Fornecedor")}
                     >
                       <Share className="h-4 w-4" />
                     </Button>
@@ -372,11 +372,24 @@ const QuotationDetailsV2: React.FC = () => {
                   {item?.product?.product_name || `Produto #${item?.product?.id}`}
                 </p>
                 <div className="flex gap-3 text-[14px] text-gray-500">
-                  <span>JR: {item.quantities.JR}</span>
-                  <span>GS: {item.quantities.GS}</span>
-                  <span>BARÃO: {item.quantities.BARAO}</span>
-                  <span>LB: {item.quantities.LB}</span>
-                  <span className="font-medium text-gray-700 text-[14px]">Total: {item.totalQuantity}</span>
+                  {(item.qty_jr != null || item.qty_gs != null || item.qty_barao != null || item.qty_lb != null) ? (
+                    <>
+                      <span>JR: {item.qty_jr || 0}</span>
+                      <span>GS: {item.qty_gs || 0}</span>
+                      <span>BR: {item.qty_barao || 0}</span>
+                      <span>LB: {item.qty_lb || 0}</span>
+                    </>
+                  ) : item.quantities ? (
+                    <>
+                      <span>JR: {item.quantities.JR || 0}</span>
+                      <span>GS: {item.quantities.GS || 0}</span>
+                      <span>BR: {item.quantities.BARAO || 0}</span>
+                      <span>LB: {item.quantities.LB || 0}</span>
+                    </>
+                  ) : null}
+                  <span className="font-medium text-gray-700 text-[14px]">
+                    Total: {item.totalQuantity ?? item.quantity ?? 0}
+                  </span>
                 </div>
               </div>
             ))}

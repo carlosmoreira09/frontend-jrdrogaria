@@ -85,7 +85,7 @@ const AdminLayout: React.FC = () => {
               <Shield className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h1 className="font-bold text-lg">BetterPrice</h1>
+              <h1 className="font-bold text-lg">CotaRodar</h1>
               <p className="text-xs text-gray-500">Admin Panel</p>
             </div>
           </div>

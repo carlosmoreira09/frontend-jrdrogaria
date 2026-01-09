@@ -5,7 +5,8 @@ import SupplierList from "../pages/supplier/SupplierList";
 import AppLayout from "../pages/AppLayout";
 import ProductsPage from "../pages/product/Products";
 import ShoppingList from "../pages/shoppinglist/ShoppingList";
-import LandingPage from "../pages/LandingPage";
+import LandingPageLegacy from "../pages/landingpage/LandingPageLegacy";
+import CotaRodarLanding from "../pages/landingpage/CotaRodarLanding";
 import {ProtectedRoute} from "./ProtectedRoute/ProtectedRoute";
 import {ProfileRole} from "../types/ProfileRole";
 import {PriceComparison} from "../pages/shoppinglist/PriceComparison";
@@ -29,6 +30,8 @@ import ProductsV3 from "../pages/v3/ProductsV3";
 import SuppliersV3 from "../pages/v3/SuppliersV3";
 import QuotationsV3 from "../pages/v3/QuotationsV3";
 import OrdersV3 from "../pages/v3/OrdersV3";
+import SubscriptionPage from "../pages/v3/SubscriptionPage";
+import TenantLogin from "../pages/v3/TenantLogin";
 
 import AdminLayout from "../components/admin/AdminLayout";
 import AdminDashboard from "../pages/admin/AdminDashboard";
@@ -36,17 +39,26 @@ import AdminTenants from "../pages/admin/AdminTenants";
 import AdminTenantDetail from "../pages/admin/AdminTenantDetail";
 import AdminAuditLogs from "../pages/admin/AdminAuditLogs";
 import AdminLoginPage from "../pages/admin/AdminLogin";
+import AdminCreateTenant from "../pages/admin/AdminCreateTenant";
 import { AdminAuthProvider } from "../context/AdminAuthContext";
 import AdminLoginLegacy from "../pages/AdminLogin";
+import Error401 from "../pages/Error401";
 
 export const router = createBrowserRouter([
+    // =============================================
+    // LEGACY Routes (JR Drogaria) - Mantido para produção atual
+    // =============================================
     {
         path: "/",
-        element: <LandingPage />
+        element: <LandingPageLegacy />
     },
     {
         path: 'login',
         element: <AdminLoginLegacy />
+    },
+    {
+        path: 'error-401',
+        element: <Error401 />
     },
     {
         path: 'home',
@@ -164,8 +176,19 @@ export const router = createBrowserRouter([
         path: 'quote-open/:id',
         element: <AnonymousSupplierForm />
     },
+    // =============================================
+    // CotaRodar v3 Routes - Nova plataforma SaaS
+    // =============================================
     {
         path: 'v3',
+        element: <CotaRodarLanding />
+    },
+    {
+        path: 'v3/login',
+        element: <TenantLogin />
+    },
+    {
+        path: 'v3/app',
         element: <AppLayoutV3 />,
         children: [
             { index: true, element: <HomeV3 /> },
@@ -173,6 +196,7 @@ export const router = createBrowserRouter([
             { path: 'suppliers', element: <SuppliersV3 /> },
             { path: 'quotations', element: <QuotationsV3 /> },
             { path: 'orders', element: <OrdersV3 /> },
+            { path: 'subscription', element: <SubscriptionPage /> },
         ]
     },
     {
@@ -185,6 +209,7 @@ export const router = createBrowserRouter([
         children: [
             { index: true, element: <AdminDashboard /> },
             { path: 'tenants', element: <AdminTenants /> },
+            { path: 'tenants/new', element: <AdminCreateTenant /> },
             { path: 'tenants/:id', element: <AdminTenantDetail /> },
             { path: 'audit-logs', element: <AdminAuditLogs /> },
         ]

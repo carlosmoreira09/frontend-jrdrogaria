@@ -49,6 +49,7 @@ export default function AdminLogin() {
       
       // Chamada para a API de autenticação
       const response = await auth.login(formData.email, formData.password);
+      console.log(response)
       if (response?.token) {
         // Armazenar o token nos cookies
         toast.success('Login realizado com sucesso!');

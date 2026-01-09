@@ -142,7 +142,7 @@ export const TenantStoreProvider: React.FC<Props> = ({ children }) => {
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
-    const response = await apiClientV3.post('/auth/login', { email, password });
+    const response = await apiClientV3.post('/auth/login', { user: email, password });
     
     if (response.data?.token) {
       const success = setAuthFromToken(response.data.token);
@@ -156,7 +156,7 @@ export const TenantStoreProvider: React.FC<Props> = ({ children }) => {
 
   const logout = useCallback(() => {
     clearAuth();
-    window.location.href = '/login';
+    window.location.href = '/v3/login';
   }, [clearAuth]);
 
   useEffect(() => {

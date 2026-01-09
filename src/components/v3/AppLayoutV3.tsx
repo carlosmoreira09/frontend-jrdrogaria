@@ -22,7 +22,7 @@ const AppLayoutV3: React.FC = () => {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/v3/login" replace />;
   }
 
   return (

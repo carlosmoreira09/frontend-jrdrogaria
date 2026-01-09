@@ -24,7 +24,9 @@ import {
   SelectValue,
 } from '../../components/ui/select';
 import { Textarea } from '../../components/ui/textarea';
-import { ArrowLeft, Building2, Users, Store, FileText, AlertTriangle } from 'lucide-react';
+import { Input } from '../../components/ui/input';
+import { Label } from '../../components/ui/label';
+import { ArrowLeft, Building2, Users, Store, FileText, AlertTriangle, Key } from 'lucide-react';
 
 interface TenantDetail {
   id: number;
@@ -47,8 +49,10 @@ const AdminTenantDetail: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [showPlanModal, setShowPlanModal] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [newStatus, setNewStatus] = useState('');
   const [newPlan, setNewPlan] = useState('');
+  const [newPassword, setNewPassword] = useState('');
   const [reason, setReason] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -103,6 +107,22 @@ const AdminTenantDetail: React.FC = () => {
       setReason('');
     } catch (error) {
       console.error('Error updating plan:', error);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handlePasswordReset = async () => {
+    if (!tenant || !newPassword || newPassword.length < 6) return;
+    setSaving(true);
+    try {
+      await adminTenantsApi.resetOwnerPassword(tenant.id, newPassword);
+      setShowPasswordModal(false);
+      setNewPassword('');
+      alert('Senha resetada com sucesso!');
+    } catch (error) {
+      console.error('Error resetting password:', error);
+      alert('Erro ao resetar senha');
     } finally {
       setSaving(false);
     }
@@ -232,6 +252,17 @@ const AdminTenantDetail: React.FC = () => {
               </div>
               <span className="font-semibold">{tenant.quotationCount}</span>
             </div>
+            <div className="pt-4 border-t">
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full text-amber-600 border-amber-300 hover:bg-amber-50"
+                onClick={() => setShowPasswordModal(true)}
+              >
+                <Key className="h-4 w-4 mr-2" />
+                Resetar Senha Owner
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -324,6 +355,42 @@ const AdminTenantDetail: React.FC = () => {
             </Button>
             <Button onClick={handlePlanChange} disabled={saving}>
               {saving ? 'Salvando...' : 'Confirmar'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showPasswordModal} onOpenChange={setShowPasswordModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Resetar Senha do Owner</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-700">
+              A nova senha será aplicada ao proprietário do tenant. Ele receberá instruções por email.
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="newPassword">Nova Senha</Label>
+              <Input
+                id="newPassword"
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Mínimo 6 caracteres"
+                minLength={6}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowPasswordModal(false)}>
+              Cancelar
+            </Button>
+            <Button 
+              onClick={handlePasswordReset} 
+              disabled={saving || newPassword.length < 6}
+              className="bg-amber-600 hover:bg-amber-700 text-white"
+            >
+              {saving ? 'Resetando...' : 'Resetar Senha'}
             </Button>
           </DialogFooter>
         </DialogContent>
