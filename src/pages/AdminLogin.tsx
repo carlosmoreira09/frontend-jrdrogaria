@@ -6,6 +6,7 @@ import { Toaster, toast } from 'react-hot-toast';
 import {useStore} from "../hooks/store.tsx";
 import  logoLogin  from "../assets/logo.jpeg"
 import {ArrowLeft} from "lucide-react";
+
 export default function AdminLogin() {
   const navigate = useNavigate();
   const auth = useStore();
@@ -48,6 +49,7 @@ export default function AdminLogin() {
       
       // Chamada para a API de autenticação
       const response = await auth.login(formData.email, formData.password);
+      console.log(response)
       if (response?.token) {
         // Armazenar o token nos cookies
         toast.success('Login realizado com sucesso!');

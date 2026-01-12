@@ -12,8 +12,13 @@ export interface QuotationItem {
   id?: number;
   productId: number;
   productName?: string;
-  quantities: PharmacyQuantities;
+  quantities?: PharmacyQuantities;
   totalQuantity?: number;
+  quantity?: number;
+  qty_jr?: number;
+  qty_gs?: number;
+  qty_barao?: number;
+  qty_lb?: number;
   product?: {
     id: number;
     product_name: string;
@@ -33,7 +38,8 @@ export interface QuotationRequest {
 
 export interface SupplierQuotation {
   id: number;
-  accessToken: string;
+  accessToken?: string;
+  token_hash?: string;
   status: SupplierQuotationStatus;
   submitted_at?: string;
   supplier?: {

@@ -16,7 +16,7 @@ export const listProducts = async (): Promise<GeneralResponse | undefined> => {
     }
 };
 
-export const createProduct = async (product: Product): Promise<GeneralResponse | undefined> => {
+export const createProduct = async (product: Partial<Product>): Promise<GeneralResponse | undefined> => {
     try {
         const response = await apiClient.post<GeneralResponse>('/products', product)
         return response.data
@@ -38,7 +38,7 @@ export const deleteProduct = async (id: number | undefined): Promise<GeneralResp
     }
 }
 
-export const createMultipleProducts = async (products: Product[]): Promise<GeneralResponse | undefined> => {
+export const createMultipleProducts = async (products: Partial<Product>[]): Promise<GeneralResponse | undefined> => {
     try {
         const response = await apiClient.post<GeneralResponse>('/products/multiple',  products )
         return response.data

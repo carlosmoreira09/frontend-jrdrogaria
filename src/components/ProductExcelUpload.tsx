@@ -23,7 +23,7 @@ interface ProductExcelUploadProps {
 const ProductExcelUpload: React.FC<ProductExcelUploadProps> = ({ onUploadComplete }) => {
     const [isUploading, setIsUploading] = useState(false);
     const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
-    const [validProducts, setValidProducts] = useState<Product[]>([]);
+    const [validProducts, setValidProducts] = useState<Partial<Product>[]>([]);
     const { store } = useStore();
     const { toast } = useToast();
 
@@ -53,7 +53,7 @@ const ProductExcelUpload: React.FC<ProductExcelUploadProps> = ({ onUploadComplet
                     }
 
                     // Extract products from the Excel data using the correct column key
-                    const products: Product[] = jsonData.map((row: any) => ({
+                    const products: Partial<Product>[] = jsonData.map((row: any) => ({
                         product_name: row['__EMPTY_3'] // Using the actual key from the Excel file
                     }));
 

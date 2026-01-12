@@ -156,6 +156,9 @@ const ShoppingList: React.FC = () => {
 
     // Server save function
     const saveToServer = async (data: ShoppingListData) => {
+        if (!store) {
+            throw new Error('Loja não selecionada');
+        }
         const shoppingList: IShoppingList = {
             id: data.id,
             list_name: `Lista_de_${tenantName}__${new Date().toLocaleDateString('pt-BR')}`,
@@ -163,12 +166,12 @@ const ShoppingList: React.FC = () => {
         };
 
         if (data.isUpdate && data.id) {
-            const result = await updateShoppingList(data.id, shoppingList, store || 0);
+            const result = await updateShoppingList(data.id, shoppingList, store);
             if (!result?.data) {
                 throw new Error('Failed to update shopping list');
             }
         } else {
-            const result = await createShoppingList(shoppingList, store || 0);
+            const result = await createShoppingList(shoppingList, store);
             if (!result?.data) {
                 throw new Error('Failed to create shopping list');
             }

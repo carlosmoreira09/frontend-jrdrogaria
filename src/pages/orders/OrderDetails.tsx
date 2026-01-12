@@ -105,6 +105,7 @@ const OrderDetails: React.FC = () => {
     GS: 0,
     BARAO: 0,
     LB: 0,
+    total: 0
   };
 
   order.items?.forEach((item) => {
@@ -112,6 +113,8 @@ const OrderDetails: React.FC = () => {
     totalByPharmacy.GS += item.quantities.GS * Number(item.unitPrice);
     totalByPharmacy.BARAO += item.quantities.BARAO * Number(item.unitPrice);
     totalByPharmacy.LB += item.quantities.LB * Number(item.unitPrice);
+    totalByPharmacy.total += (item.quantities.LB + totalByPharmacy.JR + totalByPharmacy.GS + totalByPharmacy.LB);
+
   });
 
   return (
@@ -213,11 +216,19 @@ const OrderDetails: React.FC = () => {
             </div>
           ))}
         </div>
-        <div className="mt-4 pt-4 border-t text-center">
-          <p className="text-sm text-gray-600">Total do Pedido</p>
-          <p className="text-2xl font-bold text-emerald-600">
-            {formatCurrency(order.totalValue)}
-          </p>
+        <div className="grid grid-cols-2 mt-4 pt-4 border-t text-center">
+          <div className="bg-gray-50 rounded p-3 text-center">
+            <p className="text-sm font-medium text-gray-600">Quantidade Total</p>
+            <p className="text-lg font-bold">
+              {totalByPharmacy['total']} itens
+            </p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-600">Total do Pedido</p>
+            <p className="text-2xl font-bold text-emerald-600">
+              {formatCurrency(order.totalValue)}
+            </p>
+          </div>
         </div>
       </div>
 
@@ -236,6 +247,7 @@ const OrderDetails: React.FC = () => {
                 <th className="text-center py-3 px-3 font-medium">GS</th>
                 <th className="text-center py-3 px-3 font-medium">BARÃO</th>
                 <th className="text-center py-3 px-3 font-medium">LB</th>
+                <th className="text-center py-3 px-3 font-medium">Quantidade Total</th>
                 <th className="text-center py-3 px-3 font-medium">Preço Unit.</th>
                 <th className="text-center py-3 px-3 font-medium">Subtotal</th>
               </tr>
@@ -250,6 +262,7 @@ const OrderDetails: React.FC = () => {
                   <td className="text-center py-3 px-3">{item.quantities.GS}</td>
                   <td className="text-center py-3 px-3">{item.quantities.BARAO}</td>
                   <td className="text-center py-3 px-3">{item.quantities.LB}</td>
+                  <td className="text-center py-3 px-3">{Number(item.quantities.LB + item.quantities.JR + item.quantities.GS + item.quantities.BARAO)}</td>
                   <td className="text-center py-3 px-3">
                     {formatCurrency(Number(item.unitPrice))}
                   </td>

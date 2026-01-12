@@ -23,6 +23,7 @@ const Home: React.FC = () => {
     const [shoppingList, setShoppingList] = useState<IShoppingList[]>([])
     const navigate = useNavigate()
     const hasFetchedRef = useRef(false)
+    const prevStoreRef = useRef<number | undefined>(undefined)
     
     const fetchTotals = async () => {
         if(store) {
@@ -43,16 +44,20 @@ const Home: React.FC = () => {
     }
     
     useEffect(() => {
-        // Prevent double fetch in development (React StrictMode)
+        // Prevent double fetch in development (React StrictMode),
+        // but refetch whenever the selected store changes.
         if (!store) return;
-        if (hasFetchedRef.current) return;
-        
+
+        const storeChanged = prevStoreRef.current !== store;
+        if (!storeChanged && hasFetchedRef.current) return;
+
         const controller = new AbortController();
-        
+
         const fetchData = async () => {
             setIsLoading(true);
             try {
                 hasFetchedRef.current = true;
+                prevStoreRef.current = store;
                 await Promise.all([
                     fetchTotals(),
                     fetchShoppingList()
@@ -65,9 +70,9 @@ const Home: React.FC = () => {
                 setIsLoading(false);
             }
         };
-        
+
         fetchData();
-        
+
         return () => {
             controller.abort();
             // Reset flag on cleanup to allow refetch if component remounts
@@ -75,7 +80,7 @@ const Home: React.FC = () => {
                 hasFetchedRef.current = false;
             }
         };
-    }, [store]); // Keep store dependency but control with ref
+    }, [store]); // Keep store dependency but allow refetch on store change
 
     // Handler to refresh data after list deletion
     const handleListDeleted = () => {

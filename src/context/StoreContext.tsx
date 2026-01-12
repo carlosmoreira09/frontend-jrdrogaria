@@ -25,7 +25,6 @@ export type Props = {
 export const StoreContext = createContext<StoreContext>({} as StoreContext);
 
 const saveStorage = (user: ITokenPayload, token: string, store?: number) => {
-   console.log(token)
     Cookies.set('token', token);
     Cookies.set('user', JSON.stringify(user));
     if(store) Cookies.set('tenant', store.toString());
@@ -62,10 +61,16 @@ const StoreProvider = ({ children }: Props) => {
     const [token, setToken] = useState('');
     const [userId, setUserId] = useState<number>();
     const [tenantName, setTenantName] = useState<string>();
-    const [store, setStore] = useState<number | undefined>(undefined)
+    const [store, setStoreState] = useState<number | undefined>(undefined)
+
+    const setStore = (newStore: number | undefined) => {
+       if(!newStore) return
+        setStoreState(newStore)
+        Cookies.set('tenant', newStore.toString())
+    }
     const login = async (username: string, password: string) => {
         const result = await loginService(username,password)
-
+        console.log(result)
         if(result  && result?.token) {
             const decoded: ITokenPayload = jwtDecode(result.token)
             saveStorage(decoded, result.token, decoded.tenantId)
@@ -83,6 +88,7 @@ const StoreProvider = ({ children }: Props) => {
     const logOut = () => {
         Cookies.remove("token");
         Cookies.remove("user");
+        Cookies.remove("tenant");
         setStore(undefined)
     };
 
