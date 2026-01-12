@@ -16,6 +16,15 @@ import {
   ShoppingCart,
 } from "lucide-react";
 import { useGenerateOrders } from "../../hooks/useOrders";
+import {Button} from "../../components/ui/button.tsx";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from "../../components/ui/dialog.tsx";
 
 const formatCurrency = (value: number | null) => {
   if (value === null) return "-";
@@ -33,6 +42,8 @@ const PriceComparisonView: React.FC = () => {
   const [showOnlyBest, setShowOnlyBest] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [isExportingOrders, setIsExportingOrders] = useState(false);
+  const [showOrderDialog, setShowOrderDialog] = useState(false);
+
   const generateOrdersMutation = useGenerateOrders();
 
   const { data, isLoading, isError, error } = useQuery({
@@ -68,9 +79,12 @@ const PriceComparisonView: React.FC = () => {
   }
 
   const suppliers = data.supplierTotals;
+  const sortedExtractedData = data.comparisons.sort((a, b) =>
+      b.productName.toLowerCase().localeCompare(a.productName.toLowerCase(), 'pt-BR')
+  );
   const comparisons = showOnlyBest
-    ? data.comparisons.filter((c) => c.bestPrice !== null)
-    : data.comparisons;
+    ? sortedExtractedData.filter((c) => c.bestPrice !== null)
+    : sortedExtractedData;
 
   const handleExport = async () => {
     setIsExporting(true);
@@ -111,14 +125,12 @@ const PriceComparisonView: React.FC = () => {
   };
 
   const handleGenerateOrders = () => {
-    if (confirm("Deseja gerar pedidos de compra com os melhores preços?")) {
-      generateOrdersMutation.mutate(quotationId, {
-        onSuccess: () => {
-          navigate("/v2/orders");
-        },
-      });
-    }
-  };
+    setShowOrderDialog(false);
+    generateOrdersMutation.mutate(quotationId, {
+      onSuccess: () => {
+        navigate("/v2/orders");
+      },
+    });  };
 
   return (
     <div className="p-4 space-y-6">
@@ -323,19 +335,53 @@ const PriceComparisonView: React.FC = () => {
           )}
           {isExportingOrders ? "Exportando..." : "Exportar Pedidos"}
         </button>
-        <button
-          onClick={handleGenerateOrders}
-          disabled={generateOrdersMutation.isPending}
-          className="flex items-center gap-2 px-4 py-2 text-sm rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
+        <Button
+            onClick={() => setShowOrderDialog(true)}
+            disabled={generateOrdersMutation.isPending}
+            className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white"
         >
           {generateOrdersMutation.isPending ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
-            <ShoppingCart className="h-4 w-4" />
+              <ShoppingCart className="h-4 w-4" />
           )}
           {generateOrdersMutation.isPending ? "Gerando..." : "Gerar Pedidos"}
-        </button>
+        </Button>
       </div>
+      {/* Dialog de Confirmação para Gerar Pedidos */}
+      <Dialog open={showOrderDialog} onOpenChange={setShowOrderDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirmar Geração de Pedidos</DialogTitle>
+            <DialogDescription>
+              Serão gerados pedidos de compra separados por <strong>loja</strong> e <strong>fornecedor</strong>,
+              utilizando os melhores preços identificados e as quantidades definidas para cada loja na cotação.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <p className="text-sm text-blue-800">
+                <strong>Cotação:</strong> {data.quotationName}
+              </p>
+              <p className="text-sm text-blue-800 mt-1">
+                <strong>Produtos:</strong> {data.totalProducts} itens
+              </p>
+              <p className="text-sm text-blue-800 mt-1">
+                <strong>Fornecedores com melhor preço:</strong> {suppliers.length}
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowOrderDialog(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleGenerateOrders} className="bg-green-600 hover:bg-green-700">
+              <ShoppingCart className="h-4 w-4 mr-2" />
+              Confirmar e Gerar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -110,6 +110,7 @@ const OrderList: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold">Pedidos de Compra</h1>
+          <p className="text-xs text-gray-600"> Total de {data.length} pedidos </p>
           <p className="text-sm text-gray-600">Gerencie seus pedidos de compra</p>
         </div>
         <button

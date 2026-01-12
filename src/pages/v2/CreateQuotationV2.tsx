@@ -100,9 +100,9 @@ const CreateQuotationV2: React.FC = () => {
   }, []);
 
   const filteredProducts = products.filter(
-    (p) =>
-      p.product_name?.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      !form.items.some((item) => item.productId === p.id)
+      (p) =>
+          p.product_name?.toLowerCase().includes(searchTerm.toLowerCase()) &&
+          !form.items.some((item) => item.productId === p.id)
   );
 
   const addProduct = (product: Product) => {
@@ -173,6 +173,7 @@ const CreateQuotationV2: React.FC = () => {
       onSuccess: () => {
         setSavedDraft(null);
         navigate("/v2/quotation");
+        clearDraft()
       },
     });
   };
