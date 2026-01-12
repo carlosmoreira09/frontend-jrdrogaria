@@ -27,6 +27,7 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "./ui/avatar.tsx";
+import Cookies from "js-cookie";
 
 type MenuItem = {
     id: string
@@ -153,6 +154,12 @@ const SidebarMenu: React.FC = () => {
         if (sidebarCollapsed) {
             setIsSidebarCollapsed(sidebarCollapsed === 'true');
         }
+
+        // Initialize selected store from cookie (keeps x-tenant-id in sync)
+        const tenantCookie = Cookies.get('tenant');
+        if (tenantCookie) {
+            setSelectedStore(tenantCookie);
+        }
         
         return () => clearInterval(timer)
     }, []);
@@ -166,7 +173,7 @@ const SidebarMenu: React.FC = () => {
                 setTitle(result.name)
             }
         }
-    }, [selectStore]);
+    }, [selectStore, store]);
 
     useEffect(() => {
         // Check if device is mobile/tablet
