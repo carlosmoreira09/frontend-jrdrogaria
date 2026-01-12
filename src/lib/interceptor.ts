@@ -1,20 +1,8 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-
-export const adminClient = axios.create({
-    baseURL: `${API_URL}/admin/v1`,
-    headers: {
-        'Content-Type': 'application/json',
-    },
-});
-adminClient.interceptors.request.use((config) => {
-    const token = localStorage.getItem('admin_token');
-    if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
+export const apiClient = axios.create({
+    baseURL: 'https://api.jrdrogaria.com.br/api/v1',
 });
 
 adminClient.interceptors.response.use(
