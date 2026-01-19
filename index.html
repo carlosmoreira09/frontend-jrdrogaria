@@ -1,14 +1,107 @@
 <!doctype html>
-<html lang="pt">
+<html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/src/assets/app-logo.jpeg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- SEO Meta Tags -->
+    <title>JR Drogaria - O Melhor Para Você | Farmácia e Drogaria</title>
+    <meta name="description" content="JR Drogaria - Sua farmácia de confiança com os melhores preços em medicamentos, produtos de higiene, beleza e saúde. Atendimento de qualidade e entrega rápida." />
+    <meta name="keywords" content="farmácia, drogaria, medicamentos, remédios, saúde, beleza, higiene, JR Drogaria, farmácia online, produtos farmacêuticos" />
+    <meta name="author" content="JR Drogaria" />
+    <meta name="robots" content="index, follow" />
+    <meta name="googlebot" content="index, follow" />
+    <link rel="canonical" href="https://jrdrogaria.com.br" />
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/jpeg" href="/favicon.jpeg" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#10B981" />
+    <meta name="msapplication-TileColor" content="#10B981" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://jrdrogaria.com.br" />
+    <meta property="og:title" content="JR Drogaria - O Melhor Para Você | Farmácia e Drogaria" />
+    <meta property="og:description" content="Sua farmácia de confiança com os melhores preços em medicamentos, produtos de higiene, beleza e saúde. Atendimento de qualidade e entrega rápida." />
+    <meta property="og:image" content="https://jrdrogaria.com.br/og-image.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content="pt_BR" />
+    <meta property="og:site_name" content="JR Drogaria" />
+    
+    <!-- Twitter Cards -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://jrdrogaria.com.br" />
+    <meta name="twitter:title" content="JR Drogaria - O Melhor Para Você | Farmácia e Drogaria" />
+    <meta name="twitter:description" content="Sua farmácia de confiança com os melhores preços em medicamentos, produtos de higiene, beleza e saúde." />
+    <meta name="twitter:image" content="https://jrdrogaria.com.br/og-image.jpg" />
+    
+    <!-- Geo Tags -->
+    <meta name="geo.region" content="BR" />
+    <meta name="geo.placename" content="Brasil" />
+    
+    <!-- Structured Data - Organization -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Pharmacy",
+      "name": "JR Drogaria",
+      "description": "Farmácia e drogaria com os melhores preços em medicamentos, produtos de higiene, beleza e saúde.",
+      "url": "https://jrdrogaria.com.br",
+      "logo": "https://jrdrogaria.com.br/logo.png",
+      "image": "https://jrdrogaria.com.br/og-image.jpg",
+      "priceRange": "$$",
+      "currenciesAccepted": "BRL",
+      "paymentAccepted": "Dinheiro, Cartão de Crédito, Cartão de Débito, PIX",
+      "areaServed": {
+        "@type": "Country",
+        "name": "Brasil"
+      },
+      "sameAs": [
+        "https://www.facebook.com/jrdrogaria",
+        "https://www.instagram.com/jrdrogaria"
+      ],
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "contactType": "customer service",
+        "availableLanguage": "Portuguese"
+      }
+    }
+    </script>
+    
+    <!-- Structured Data - WebSite -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "JR Drogaria",
+      "url": "https://jrdrogaria.com.br",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://jrdrogaria.com.br/busca?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+    
+    <!-- Preconnect for Performance -->
+    <link rel="preconnect" href="https://api.jrdrogaria.com.br" />
+    <link rel="dns-prefetch" href="https://api.jrdrogaria.com.br" />
+    
+    <!-- Styles -->
     <link href="./src/index.css" rel="stylesheet">
-
-    <title>JR Drogaria - O MELHOR PARA VOCÊ</title>
   </head>
   <body>
+    <noscript>
+      <div style="padding: 20px; text-align: center; font-family: Arial, sans-serif;">
+        <h1>JR Drogaria</h1>
+        <p>Para uma melhor experiência, por favor habilite o JavaScript no seu navegador.</p>
+      </div>
+    </noscript>
     <div id="root"></div>
     <script type="module" src="./src/main.tsx"></script>
     <script nomodule src="./src/main-legacy.js"></script>

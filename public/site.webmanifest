@@ -1,0 +1,29 @@
+{
+  "name": "JR Drogaria - O Melhor Para Você",
+  "short_name": "JR Drogaria",
+  "description": "Farmácia e drogaria com os melhores preços em medicamentos, produtos de higiene, beleza e saúde.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#10B981",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "pt-BR",
+  "icons": [
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["health", "shopping", "medical"],
+  "screenshots": [],
+  "prefer_related_applications": false
+}
