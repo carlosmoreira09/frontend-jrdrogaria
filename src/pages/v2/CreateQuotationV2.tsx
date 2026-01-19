@@ -24,6 +24,25 @@ interface QuotationDraft {
 
 const STORAGE_KEY = "quotation-draft-v2";
 
+// Generate suggested quotation name with current date
+const generateSuggestedName = () => {
+  const now = new Date();
+  const day = now.getDate().toString().padStart(2, '0');
+  const month = (now.getMonth() + 1).toString().padStart(2, '0');
+  const year = now.getFullYear();
+  return `Cotação ${day}/${month}/${year}`;
+};
+
+// Generate suggested deadline: today + 7 days in YYYY-MM-DD
+const generateSuggestedDeadline = () => {
+  const now = new Date();
+  now.setDate(now.getDate() + 7);
+  const year = now.getFullYear();
+  const month = (now.getMonth() + 1).toString().padStart(2, '0');
+  const day = now.getDate().toString().padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 const CreateQuotationV2: React.FC = () => {
   const navigate = useNavigate();
   const createMutation = useCreateQuotation();
@@ -32,6 +51,7 @@ const CreateQuotationV2: React.FC = () => {
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
+  const [filterItems, setFilterItems] = useState("");
   const searchRef = useRef<HTMLDivElement>(null);
   const hasRestoredRef = useRef(false);
 
@@ -42,8 +62,8 @@ const CreateQuotationV2: React.FC = () => {
       return savedDraft;
     }
     return {
-      name: "",
-      deadline: "",
+      name: generateSuggestedName(),
+      deadline: generateSuggestedDeadline(),
       items: [],
     };
   });
@@ -66,7 +86,7 @@ const CreateQuotationV2: React.FC = () => {
 
   const clearDraft = () => {
     setSavedDraft(null);
-    setForm({ name: "", deadline: "", items: [] });
+    setForm({ name: generateSuggestedName(), deadline: generateSuggestedDeadline(), items: [] });
     toast({
       title: "Rascunho limpo",
       description: "Os dados foram removidos.",
@@ -292,15 +312,29 @@ const CreateQuotationV2: React.FC = () => {
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <p className="text-sm font-semibold text-gray-700">
-              Itens ({form.items.length})
+              Itens ({filterItems ? form.items.filter(i => i.productName.toLowerCase().includes(filterItems.toLowerCase())).length + "/" : ""}{form.items.length})
             </p>
             <p className="text-xs text-gray-500">
               Total: {form.items.reduce((acc, i) => acc + getTotalQty(i), 0)} un.
             </p>
           </div>
 
+          {/* Buscar na lista */}
+          <div className="relative">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <input
+              type="text"
+              value={filterItems}
+              onChange={(e) => setFilterItems(e.target.value)}
+              placeholder="Filtrar produtos na lista..."
+              className="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+            />
+          </div>
+
           <div className="border rounded-lg overflow-hidden divide-y max-h-[50vh] overflow-y-auto">
-            {form.items.map((item) => (
+            {form.items
+              .filter((item) => item.productName.toLowerCase().includes(filterItems.toLowerCase()))
+              .map((item) => (
               <div key={item.productId} className="p-2 bg-white flex items-center gap-2">
                 <button
                   onClick={() => removeItem(item.productId)}

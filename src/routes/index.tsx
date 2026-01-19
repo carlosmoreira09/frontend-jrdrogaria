@@ -173,7 +173,7 @@ export const router = createBrowserRouter([
         element: <SupplierSuccess />
     },
     {
-        path: 'quote-open/:id',
+        path: 'quote-open/:token',
         element: <AnonymousSupplierForm />
     },
     // =============================================

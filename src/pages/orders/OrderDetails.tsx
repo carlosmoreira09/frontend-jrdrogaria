@@ -100,21 +100,14 @@ const OrderDetails: React.FC = () => {
     );
   }
 
-  const totalByPharmacy = {
-    JR: 0,
-    GS: 0,
-    BARAO: 0,
-    LB: 0,
-    total: 0
+  // Calculate totals
+  const orderSummary = {
+    totalItems: order.items?.length || 0,
+    totalUnits: 0,
   };
 
   order.items?.forEach((item) => {
-    totalByPharmacy.JR += item.quantities.JR * Number(item.unitPrice);
-    totalByPharmacy.GS += item.quantities.GS * Number(item.unitPrice);
-    totalByPharmacy.BARAO += item.quantities.BARAO * Number(item.unitPrice);
-    totalByPharmacy.LB += item.quantities.LB * Number(item.unitPrice);
-    totalByPharmacy.total += (item.quantities.LB + totalByPharmacy.JR + totalByPharmacy.GS + totalByPharmacy.LB);
-
+    orderSummary.totalUnits += item.orderQuantity ?? (item.quantities.JR + item.quantities.GS + item.quantities.BARAO + item.quantities.LB);
   });
 
   return (
@@ -155,7 +148,7 @@ const OrderDetails: React.FC = () => {
             {isExporting ? "Exportando..." : "Exportar Excel"}
           </button>
           <button
-            onClick={() => navigate("v2/orders")}
+            onClick={() => navigate("/v2/orders")}
             className="flex items-center gap-2 px-3 py-2 text-sm rounded border border-gray-300 hover:bg-gray-50"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -203,29 +196,21 @@ const OrderDetails: React.FC = () => {
         </div>
       )}
 
-      {/* Summary by Pharmacy */}
+      {/* Order Summary */}
       <div className="border rounded-lg p-4">
-        <h2 className="font-semibold text-gray-800 mb-3">Resumo por Farmácia</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {(["JR", "GS", "BARAO", "LB"] as const).map((pharmacy) => (
-            <div key={pharmacy} className="bg-gray-50 rounded p-3 text-center">
-              <p className="text-sm font-medium text-gray-600">{pharmacy}</p>
-              <p className="text-lg font-bold">
-                {formatCurrency(totalByPharmacy[pharmacy])}
-              </p>
-            </div>
-          ))}
-        </div>
-        <div className="grid grid-cols-2 mt-4 pt-4 border-t text-center">
+        <h2 className="font-semibold text-gray-800 mb-3">Resumo do Pedido</h2>
+        <div className="grid grid-cols-3 gap-3">
           <div className="bg-gray-50 rounded p-3 text-center">
-            <p className="text-sm font-medium text-gray-600">Quantidade Total</p>
-            <p className="text-lg font-bold">
-              {totalByPharmacy['total']} itens
-            </p>
+            <p className="text-sm font-medium text-gray-600">Produtos</p>
+            <p className="text-lg font-bold">{orderSummary.totalItems}</p>
           </div>
-          <div>
-            <p className="text-sm text-gray-600">Total do Pedido</p>
-            <p className="text-2xl font-bold text-emerald-600">
+          <div className="bg-gray-50 rounded p-3 text-center">
+            <p className="text-sm font-medium text-gray-600">Unidades</p>
+            <p className="text-lg font-bold">{orderSummary.totalUnits}</p>
+          </div>
+          <div className="bg-emerald-50 rounded p-3 text-center">
+            <p className="text-sm font-medium text-emerald-600">Total</p>
+            <p className="text-xl font-bold text-emerald-600">
               {formatCurrency(order.totalValue)}
             </p>
           </div>
@@ -243,11 +228,8 @@ const OrderDetails: React.FC = () => {
             <thead className="bg-gray-50">
               <tr>
                 <th className="text-left py-3 px-3 font-medium">Produto</th>
-                <th className="text-center py-3 px-3 font-medium">JR</th>
-                <th className="text-center py-3 px-3 font-medium">GS</th>
-                <th className="text-center py-3 px-3 font-medium">BARÃO</th>
-                <th className="text-center py-3 px-3 font-medium">LB</th>
-                <th className="text-center py-3 px-3 font-medium">Quantidade Total</th>
+                <th className="text-center py-3 px-3 font-medium">Quantidade</th>
+                <th className="text-center py-3 px-3 font-medium">Loja</th>
                 <th className="text-center py-3 px-3 font-medium">Preço Unit.</th>
                 <th className="text-center py-3 px-3 font-medium">Subtotal</th>
               </tr>
@@ -258,11 +240,18 @@ const OrderDetails: React.FC = () => {
                   <td className="py-3 px-3">
                     {item.product?.product_name || item.productName || `Produto ${item.productId}`}
                   </td>
-                  <td className="text-center py-3 px-3">{item.quantities.JR}</td>
-                  <td className="text-center py-3 px-3">{item.quantities.GS}</td>
-                  <td className="text-center py-3 px-3">{item.quantities.BARAO}</td>
-                  <td className="text-center py-3 px-3">{item.quantities.LB}</td>
-                  <td className="text-center py-3 px-3">{Number(item.quantities.LB + item.quantities.JR + item.quantities.GS + item.quantities.BARAO)}</td>
+                  <td className="text-center py-3 px-3 font-medium">
+                    {item.orderQuantity ?? (item.quantities.LB + item.quantities.JR + item.quantities.GS + item.quantities.BARAO)}
+                  </td>
+                  <td className="text-center py-3 px-3">
+                    {item.targetStore ? (
+                      <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+                        {item.targetStore}
+                      </span>
+                    ) : (
+                      <span className="text-gray-400 text-xs">Todas</span>
+                    )}
+                  </td>
                   <td className="text-center py-3 px-3">
                     {formatCurrency(Number(item.unitPrice))}
                   </td>
@@ -274,7 +263,7 @@ const OrderDetails: React.FC = () => {
             </tbody>
             <tfoot className="bg-emerald-50">
               <tr>
-                <td colSpan={6} className="py-3 px-3 text-right font-bold">
+                <td colSpan={4} className="py-3 px-3 text-right font-bold">
                   Total:
                 </td>
                 <td className="text-center py-3 px-3 font-bold text-emerald-600">

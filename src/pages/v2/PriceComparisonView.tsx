@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { quotationApi } from "../../services/quotationApi.ts";
 import { PriceComparison, SupplierTotal } from "../../types/quotation.ts";
+import { OrderItemConfig } from "../../types/order.ts";
 import {
   Loader2,
   AlertCircle,
@@ -14,6 +15,10 @@ import {
   DollarSign,
   Download,
   ShoppingCart,
+  Search,
+  Minus,
+  Plus,
+  Edit2,
 } from "lucide-react";
 import { useGenerateOrders } from "../../hooks/useOrders";
 import {Button} from "../../components/ui/button.tsx";
@@ -26,6 +31,9 @@ import {
   DialogTitle
 } from "../../components/ui/dialog.tsx";
 
+const STORES = ['JR', 'GS', 'BARAO', 'LB'] as const;
+type Store = typeof STORES[number];
+
 const formatCurrency = (value: number | null) => {
   if (value === null) return "-";
   return new Intl.NumberFormat("pt-BR", {
@@ -33,6 +41,16 @@ const formatCurrency = (value: number | null) => {
     currency: "BRL",
   }).format(value);
 };
+
+// Type for order item configuration in the dialog
+interface OrderItemState {
+  quantity: number;
+  supplierId: number;
+  supplierName: string;
+  unitPrice: number;
+  targetStore?: Store;
+  isEditing?: boolean;
+}
 
 const PriceComparisonView: React.FC = () => {
   const { id } = useParams();
@@ -43,6 +61,9 @@ const PriceComparisonView: React.FC = () => {
   const [isExporting, setIsExporting] = useState(false);
   const [isExportingOrders, setIsExportingOrders] = useState(false);
   const [showOrderDialog, setShowOrderDialog] = useState(false);
+  const [orderItems, setOrderItems] = useState<Record<number, OrderItemState>>({});
+  const [orderSearch, setOrderSearch] = useState("");
+  const [globalStore, setGlobalStore] = useState<Store | undefined>(undefined);
 
   const generateOrdersMutation = useGenerateOrders();
 
@@ -51,6 +72,36 @@ const PriceComparisonView: React.FC = () => {
     queryFn: () => quotationApi.getComparison(quotationId),
     enabled: !!quotationId,
   });
+
+  // Filter and sort products in order dialog (must be before early returns)
+  const filteredOrderProducts = useMemo(() => {
+    if (!data?.comparisons) return [];
+    return data.comparisons
+      .filter((comp: PriceComparison) =>
+        comp.productName.toLowerCase().includes(orderSearch.toLowerCase())
+      )
+      .sort((a: PriceComparison, b: PriceComparison) =>
+        a.productName.toLowerCase().localeCompare(b.productName.toLowerCase(), 'pt-BR')
+      );
+  }, [data?.comparisons, orderSearch]);
+
+  // Calculate order totals (must be before early returns)
+  const orderTotals = useMemo(() => {
+    if (!data?.comparisons) return { items: 0, units: 0, value: 0 };
+    let items = 0;
+    let units = 0;
+    let value = 0;
+    data.comparisons.forEach((comp: PriceComparison) => {
+      const item = orderItems[comp.productId];
+      const qty = item?.quantity || 0;
+      if (qty > 0 && item) {
+        items++;
+        units += qty;
+        value += qty * item.unitPrice;
+      }
+    });
+    return { items, units, value };
+  }, [data?.comparisons, orderItems]);
 
   if (isLoading) {
     return (
@@ -124,13 +175,125 @@ const PriceComparisonView: React.FC = () => {
     }
   };
 
+  // Initialize order items when opening dialog
+  const initializeOrderItems = () => {
+    if (data?.comparisons) {
+      const initial: Record<number, OrderItemState> = {};
+      data.comparisons.forEach((comp: PriceComparison) => {
+        initial[comp.productId] = {
+          quantity: comp.totalQuantity || 0,
+          supplierId: comp.bestPrice?.supplierId || 0,
+          supplierName: comp.bestPrice?.supplierName || '',
+          unitPrice: comp.bestPrice?.unitPrice || 0,
+          targetStore: undefined,
+          isEditing: false,
+        };
+      });
+      setOrderItems(initial);
+      setGlobalStore(undefined);
+    }
+    setShowOrderDialog(true);
+  };
+
+  const updateOrderQuantity = (productId: number, delta: number) => {
+    setOrderItems(prev => ({
+      ...prev,
+      [productId]: {
+        ...prev[productId],
+        quantity: Math.max(0, (prev[productId]?.quantity || 0) + delta)
+      }
+    }));
+  };
+
+  const setOrderQuantity = (productId: number, value: number) => {
+    setOrderItems(prev => ({
+      ...prev,
+      [productId]: {
+        ...prev[productId],
+        quantity: Math.max(0, value)
+      }
+    }));
+  };
+
+  const toggleEditItem = (productId: number) => {
+    setOrderItems(prev => ({
+      ...prev,
+      [productId]: {
+        ...prev[productId],
+        isEditing: !prev[productId]?.isEditing
+      }
+    }));
+  };
+
+  const updateItemSupplier = (productId: number, supplierId: number, supplierName: string, unitPrice: number) => {
+    setOrderItems(prev => ({
+      ...prev,
+      [productId]: {
+        ...prev[productId],
+        supplierId,
+        supplierName,
+        unitPrice,
+      }
+    }));
+  };
+
+  const updateItemPrice = (productId: number, unitPrice: number) => {
+    setOrderItems(prev => ({
+      ...prev,
+      [productId]: {
+        ...prev[productId],
+        unitPrice: Math.max(0, unitPrice),
+      }
+    }));
+  };
+
+  const updateItemStore = (productId: number, store: Store | undefined) => {
+    setOrderItems(prev => ({
+      ...prev,
+      [productId]: {
+        ...prev[productId],
+        targetStore: store,
+      }
+    }));
+  };
+
+  const applyGlobalStore = (store: Store | undefined) => {
+    setGlobalStore(store);
+    setOrderItems(prev => {
+      const updated = { ...prev };
+      Object.keys(updated).forEach(key => {
+        updated[Number(key)] = {
+          ...updated[Number(key)],
+          targetStore: store,
+        };
+      });
+      return updated;
+    });
+  };
+
   const handleGenerateOrders = () => {
     setShowOrderDialog(false);
-    generateOrdersMutation.mutate(quotationId, {
-      onSuccess: () => {
-        navigate("/v2/orders");
-      },
-    });  };
+    // Build orderItems array for the mutation
+    const items: OrderItemConfig[] = Object.entries(orderItems)
+      .filter(([, item]) => item.quantity > 0 && item.supplierId > 0)
+      .map(([productId, item]) => ({
+        productId: Number(productId),
+        quantity: item.quantity,
+        supplierId: item.supplierId,
+        supplierName: item.supplierName,
+        unitPrice: item.unitPrice,
+        targetStore: item.targetStore,
+      }));
+
+    generateOrdersMutation.mutate(
+      { quotationId, orderItems: items },
+      {
+        onSuccess: () => {
+          navigate("/v2/orders");
+        },
+      }
+    );
+  };
 
   return (
     <div className="p-4 space-y-6">
@@ -336,7 +499,7 @@ const PriceComparisonView: React.FC = () => {
           {isExportingOrders ? "Exportando..." : "Exportar Pedidos"}
         </button>
         <Button
-            onClick={() => setShowOrderDialog(true)}
+            onClick={initializeOrderItems}
             disabled={generateOrdersMutation.isPending}
             className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white"
         >
@@ -348,36 +511,210 @@ const PriceComparisonView: React.FC = () => {
           {generateOrdersMutation.isPending ? "Gerando..." : "Gerar Pedidos"}
         </Button>
       </div>
-      {/* Dialog de Confirmação para Gerar Pedidos */}
+      {/* Dialog para Definir Quantidades do Pedido */}
       <Dialog open={showOrderDialog} onOpenChange={setShowOrderDialog}>
-        <DialogContent>
+        <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col">
           <DialogHeader>
-            <DialogTitle>Confirmar Geração de Pedidos</DialogTitle>
+            <DialogTitle>Configurar Pedido</DialogTitle>
             <DialogDescription>
-              Serão gerados pedidos de compra separados por <strong>loja</strong> e <strong>fornecedor</strong>,
-              utilizando os melhores preços identificados e as quantidades definidas para cada loja na cotação.
+              Defina a quantidade, fornecedor e loja de destino para cada produto.
             </DialogDescription>
           </DialogHeader>
-          <div className="py-4">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <p className="text-sm text-blue-800">
-                <strong>Cotação:</strong> {data.quotationName}
-              </p>
-              <p className="text-sm text-blue-800 mt-1">
-                <strong>Produtos:</strong> {data.totalProducts} itens
-              </p>
-              <p className="text-sm text-blue-800 mt-1">
-                <strong>Fornecedores com melhor preço:</strong> {suppliers.length}
-              </p>
+          
+          {/* Summary */}
+          <div className="grid grid-cols-3 gap-2 py-2">
+            <div className="bg-gray-50 rounded-lg p-2 text-center">
+              <p className="text-xs text-gray-500">Produtos</p>
+              <p className="text-lg font-bold text-gray-900">{orderTotals.items}</p>
+            </div>
+            <div className="bg-gray-50 rounded-lg p-2 text-center">
+              <p className="text-xs text-gray-500">Unidades</p>
+              <p className="text-lg font-bold text-gray-900">{orderTotals.units}</p>
+            </div>
+            <div className="bg-emerald-50 rounded-lg p-2 text-center">
+              <p className="text-xs text-emerald-600">Total Estimado</p>
+              <p className="text-lg font-bold text-emerald-600">{formatCurrency(orderTotals.value)}</p>
             </div>
           </div>
-          <DialogFooter>
+
+          {/* Global Store Selection */}
+          <div className="flex items-center gap-2 p-2 bg-blue-50 rounded-lg">
+            <span className="text-xs font-medium text-blue-700">Loja para todos:</span>
+            <select
+              value={globalStore || ''}
+              onChange={(e) => applyGlobalStore(e.target.value as Store || undefined)}
+              className="text-xs border border-blue-200 rounded px-2 py-1 bg-white"
+            >
+              <option value="">Todas as lojas</option>
+              {STORES.map(store => (
+                <option key={store} value={store}>{store}</option>
+              ))}
+            </select>
+            <span className="text-[10px] text-blue-600 ml-2">
+              (deixe vazio para gerar mesma quantidade para todas)
+            </span>
+          </div>
+
+          {/* Search */}
+          <div className="relative">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <input
+              type="text"
+              value={orderSearch}
+              onChange={(e) => setOrderSearch(e.target.value)}
+              placeholder="Buscar produto..."
+              className="w-full pl-8 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+            />
+          </div>
+
+          {/* Product List */}
+          <div className="flex-1 overflow-y-auto min-h-0 max-h-[40vh] border rounded-lg divide-y">
+            {filteredOrderProducts.map((comp: PriceComparison) => {
+              const item = orderItems[comp.productId];
+              const isEditing = item?.isEditing;
+              
+              return (
+                <div key={comp.productId} className="p-3 space-y-2">
+                  {/* Main Row */}
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900 truncate">{comp.productName}</p>
+                      <div className="flex items-center gap-2 text-xs text-gray-500">
+                        <span className={item?.supplierId !== comp.bestPrice?.supplierId ? 'text-orange-600' : ''}>
+                          {item?.supplierName || 'Sem fornecedor'}
+                        </span>
+                        <span>•</span>
+                        <span>{formatCurrency(item?.unitPrice || 0)}/un</span>
+                        {item?.targetStore && (
+                          <>
+                            <span>•</span>
+                            <span className="text-blue-600 font-medium">{item.targetStore}</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {/* Edit Button */}
+                    <button
+                      onClick={() => toggleEditItem(comp.productId)}
+                      className={`p-1.5 rounded-md transition-colors ${isEditing ? 'bg-emerald-100 text-emerald-600' : 'hover:bg-gray-100 text-gray-400'}`}
+                      title="Editar fornecedor/preço"
+                    >
+                      <Edit2 className="h-4 w-4" />
+                    </button>
+                    
+                    {/* Quantity Controls */}
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => updateOrderQuantity(comp.productId, -1)}
+                        className="p-1.5 rounded-md hover:bg-gray-100 text-gray-500 disabled:opacity-30"
+                        disabled={!item?.quantity}
+                      >
+                        <Minus className="h-4 w-4" />
+                      </button>
+                      <input
+                        type="number"
+                        min="0"
+                        value={item?.quantity || 0}
+                        onChange={(e) => setOrderQuantity(comp.productId, parseInt(e.target.value) || 0)}
+                        className="w-16 text-center border border-gray-200 rounded-md py-1 text-sm focus:ring-1 focus:ring-emerald-500"
+                      />
+                      <button
+                        onClick={() => updateOrderQuantity(comp.productId, 1)}
+                        className="p-1.5 rounded-md hover:bg-gray-100 text-gray-500"
+                      >
+                        <Plus className="h-4 w-4" />
+                      </button>
+                    </div>
+
+                    {/* Subtotal */}
+                    <div className="w-24 text-right">
+                      <p className="text-sm font-medium text-emerald-600">
+                        {item?.quantity && item?.unitPrice
+                          ? formatCurrency(item.quantity * item.unitPrice)
+                          : "-"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Edit Panel */}
+                  {isEditing && (
+                    <div className="bg-gray-50 rounded-lg p-3 space-y-3">
+                      {/* Supplier Selection */}
+                      <div>
+                        <label className="block text-xs font-medium text-gray-600 mb-1">Fornecedor</label>
+                        <div className="flex flex-wrap gap-1">
+                          {comp.prices.filter(p => p.available).map(price => (
+                            <button
+                              key={price.supplierId}
+                              onClick={() => updateItemSupplier(comp.productId, price.supplierId, price.supplierName, price.unitPrice ?? 0)}
+                              className={`px-2 py-1 text-xs rounded-full transition-colors ${
+                                item?.supplierId === price.supplierId
+                                  ? 'bg-emerald-600 text-white'
+                                  : 'bg-white border border-gray-300 hover:border-emerald-500'
+                              }`}
+                            >
+                              {price.supplierName} - {formatCurrency(price.unitPrice)}
+                              {price.supplierId === comp.bestPrice?.supplierId && (
+                                <Trophy className="h-3 w-3 inline ml-1" />
+                              )}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Custom Price */}
+                      <div className="flex items-center gap-3">
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Preço Unitário</label>
+                          <input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={item?.unitPrice || 0}
+                            onChange={(e) => updateItemPrice(comp.productId, parseFloat(e.target.value) || 0)}
+                            className="w-24 border border-gray-300 rounded px-2 py-1 text-sm"
+                          />
+                        </div>
+                        
+                        {/* Store Selection */}
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Loja</label>
+                          <select
+                            value={item?.targetStore || ''}
+                            onChange={(e) => updateItemStore(comp.productId, e.target.value as Store || undefined)}
+                            className="border border-gray-300 rounded px-2 py-1 text-sm"
+                          >
+                            <option value="">Todas</option>
+                            {STORES.map(store => (
+                              <option key={store} value={store}>{store}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+            {filteredOrderProducts.length === 0 && (
+              <div className="p-6 text-center text-gray-500 text-sm">
+                Nenhum produto encontrado
+              </div>
+            )}
+          </div>
+
+          <DialogFooter className="pt-2">
             <Button variant="outline" onClick={() => setShowOrderDialog(false)}>
               Cancelar
             </Button>
-            <Button onClick={handleGenerateOrders} className="bg-green-600 hover:bg-green-700">
+            <Button 
+              onClick={handleGenerateOrders} 
+              className="bg-green-600 text-white hover:bg-green-700"
+              disabled={orderTotals.items === 0}
+            >
               <ShoppingCart className="h-4 w-4 mr-2" />
-              Confirmar e Gerar
+              Gerar {orderTotals.items} Pedido{orderTotals.items !== 1 ? "s" : ""}
             </Button>
           </DialogFooter>
         </DialogContent>

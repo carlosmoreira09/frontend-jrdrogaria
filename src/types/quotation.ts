@@ -30,6 +30,7 @@ export interface QuotationRequest {
   name: string;
   status: QuotationStatus;
   deadline?: string;
+  public_token?: string;
   items?: QuotationItem[];
   supplierQuotations?: SupplierQuotation[];
   created_at?: string;

@@ -18,6 +18,13 @@ interface SupplierData {
   paymentTerm: string;
 }
 
+// Helper to extract product name from item
+const getProductName = (item: any): string => 
+  item.product?.product_name || item.productName || "";
+
+const getProductId = (item: any): number => 
+  item.product?.id || item.productId;
+
 export const HeaderQuotation = () => (
   <header className="bg-gradient-to-r from-emerald-600 to-emerald-700 text-white shadow-lg">
     <div className="max-w-4xl mx-auto px-4 py-4">
@@ -33,7 +40,7 @@ export const HeaderQuotation = () => (
 );
 
 const AnonymousSupplierForm: React.FC = () => {
-  const { id = "" } = useParams();
+  const { token = "" } = useParams();
   const navigate = useNavigate();
   const [prices, setPrices] = useState<Record<number, SupplierPricePayload>>({});
   const [searchFilter, setSearchFilter] = useState("");
@@ -45,28 +52,27 @@ const AnonymousSupplierForm: React.FC = () => {
 
   // Fetch quotation
   const { data: quotation, isLoading, isError, error } = useQuery({
-    queryKey: ["anonymous-quotation", id],
+    queryKey: ["anonymous-quotation", token],
     queryFn: async () => {
-      const { data } = await apiClient.get(`/public/quotation-open/${id}`);
+      const { data } = await apiClient.get(`/public/quotation-open/${token}`);
       return data.data;
     },
-    enabled: !!id,
+    enabled: !!token,
   });
 
   const items = quotation?.items || [];
 
-  // Filter items by search term
-  const filteredItems = items.filter((item: any) => {
-    const productName = item.product?.product_name || item.productName || "";
-    return productName.toLowerCase().includes(searchFilter.toLowerCase());
-  });
+  // Filter and sort items by product name
+  const filteredItems = items
+    .filter((item: any) => getProductName(item).toLowerCase().includes(searchFilter.toLowerCase()))
+    .sort((a: any, b: any) => getProductName(a).toLowerCase().localeCompare(getProductName(b).toLowerCase(), 'pt-BR'));
 
   // Initialize prices
   useEffect(() => {
     if (items.length > 0) {
       const initial: Record<number, SupplierPricePayload> = {};
       items.forEach((item: any) => {
-        const productId = item.product?.id || item.productId;
+        const productId = getProductId(item);
         if (productId) {
           initial[productId] = { productId, available: true };
         }
@@ -93,7 +99,7 @@ const AnonymousSupplierForm: React.FC = () => {
         supplier: supplierData,
         prices: Object.values(prices),
       };
-      const { data } = await apiClient.post(`/public/quotation-open/${id}/submit`, payload);
+      const { data } = await apiClient.post(`/public/quotation-open/${token}/submit`, payload);
       return data;
     },
     onSuccess: () => {
@@ -227,7 +233,7 @@ const AnonymousSupplierForm: React.FC = () => {
         {/* Products List */}
         <div className="space-y-3">
           <div className="flex items-center justify-between gap-3">
-            <h3 className="text-sm font-medium text-gray-700 uppercase tracking-wide">Produtos para cotar</h3>
+            <h3 className="text-sm font-medium text-gray-700 uppercase tracking-wide">Produtos para cotar a</h3>
             <span className="text-xs text-gray-500">{filteredItems.length} de {items.length}</span>
           </div>
           
@@ -246,8 +252,8 @@ const AnonymousSupplierForm: React.FC = () => {
           {/* Compact Product Cards */}
           <div className="space-y-2 max-h-[50vh] overflow-y-auto pr-1">
             {filteredItems.map((item: any) => {
-              const productId = item.product?.id || item.productId;
-              const productName = item.product?.product_name || item.productName || `Produto ${productId}`;
+              const productId = getProductId(item);
+              const productName = getProductName(item) || `Produto ${productId}`;
               const isAvailable = prices[productId]?.available ?? true;
               return (
                 <div 
@@ -269,11 +275,6 @@ const AnonymousSupplierForm: React.FC = () => {
                       {/* Product Info */}
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-gray-900 truncate">{productName}</p>
-                        <p className="text-xs text-gray-500">
-                          Qtd: {item.totalQuantity ?? "-"} 
-                          <span className="text-gray-300 mx-1">|</span>
-                          JR:{item.quantities?.JR || 0} GS:{item.quantities?.GS || 0} BR:{item.quantities?.BARAO || 0} LB:{item.quantities?.LB || 0}
-                        </p>
                       </div>
                       
                       {/* Price Input */}

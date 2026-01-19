@@ -11,6 +11,8 @@ export interface PurchaseOrderItem {
     product_name: string;
   };
   quantities: PharmacyQuantities;
+  orderQuantity?: number;
+  targetStore?: string;
   unitPrice: number;
   subtotal: number;
 }
@@ -47,4 +49,13 @@ export interface UpdateOrderItemsPayload {
     productId: number;
     quantities: PharmacyQuantities;
   }[];
+}
+
+export interface OrderItemConfig {
+  productId: number;
+  quantity: number;
+  supplierId: number;
+  supplierName: string;
+  unitPrice: number;
+  targetStore?: string;
 }

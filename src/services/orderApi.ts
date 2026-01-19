@@ -3,6 +3,7 @@ import {
   CreateOrderPayload,
   PurchaseOrder,
   UpdateOrderItemsPayload,
+  OrderItemConfig,
 } from "../types/order";
 
 export const orderApi = {
@@ -18,9 +19,10 @@ export const orderApi = {
     const { data } = await apiClient.post("/orders", payload);
     return data;
   },
-  generateFromBestPrices: async (quotationId: number) => {
+  generateFromBestPrices: async (quotationId: number, orderItems?: OrderItemConfig[]) => {
     const { data } = await apiClient.post<{ data: PurchaseOrder[] }>(
-      `/orders/generate/${quotationId}`
+      `/orders/generate/${quotationId}`,
+      { orderItems }
     );
     return data.data;
   },

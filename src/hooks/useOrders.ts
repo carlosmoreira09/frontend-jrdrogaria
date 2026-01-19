@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { orderApi } from "../services/orderApi";
-import { CreateOrderPayload, UpdateOrderItemsPayload } from "../types/order";
+import { CreateOrderPayload, UpdateOrderItemsPayload, OrderItemConfig } from "../types/order";
 
 const QUERY_KEY = "orders";
 
@@ -32,7 +32,8 @@ export function useCreateOrder() {
 export function useGenerateOrders() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (quotationId: number) => orderApi.generateFromBestPrices(quotationId),
+    mutationFn: ({ quotationId, orderItems }: { quotationId: number; orderItems?: OrderItemConfig[] }) => 
+      orderApi.generateFromBestPrices(quotationId, orderItems),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
     },

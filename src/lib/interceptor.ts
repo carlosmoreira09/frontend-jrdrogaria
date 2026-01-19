@@ -1,7 +1,7 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
-const API_URL = 'https://api.jrdrogaria.com.br'
+const API_URL = 'http://localhost:3000'
 
 export const adminClient = axios.create({
     baseURL: `${API_URL}/admin/v1`,
@@ -30,7 +30,7 @@ adminClient.interceptors.response.use(
 
 
 export const apiClient = axios.create({
-    baseURL: 'https://api.jrdrogaria.com.br/api/v1',
+    baseURL: 'http://localhost:3000/api/v1',
 });
 
 apiClient.interceptors.request.use(
