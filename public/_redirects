@@ -1,0 +1,8 @@
+# Netlify redirects
+# Arquivos estáticos devem ser servidos diretamente
+/sitemap.xml    /sitemap.xml    200
+/robots.txt     /robots.txt     200
+/site.webmanifest /site.webmanifest 200
+
+# SPA fallback - todas as outras rotas vão para index.html
+/*    /index.html   200
