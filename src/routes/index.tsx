@@ -5,8 +5,6 @@ import SupplierList from "../pages/supplier/SupplierList";
 import AppLayout from "../pages/AppLayout";
 import ProductsPage from "../pages/product/Products";
 import ShoppingList from "../pages/shoppinglist/ShoppingList";
-import LandingPageLegacy from "../pages/landingpage/LandingPageLegacy";
-import CotaRodarLanding from "../pages/landingpage/CotaRodarLanding";
 import {ProtectedRoute} from "./ProtectedRoute/ProtectedRoute";
 import {ProfileRole} from "../types/ProfileRole";
 import {PriceComparison} from "../pages/shoppinglist/PriceComparison";
@@ -24,14 +22,6 @@ import QuotationListV2 from "../pages/v2/QuotationListV2";
 import CreateQuotationV2 from "../pages/v2/CreateQuotationV2";
 import QuotationDetailsV2 from "../pages/v2/QuotationDetailsV2";
 
-import AppLayoutV3 from "../components/v3/AppLayoutV3";
-import HomeV3 from "../pages/v3/HomeV3";
-import ProductsV3 from "../pages/v3/ProductsV3";
-import SuppliersV3 from "../pages/v3/SuppliersV3";
-import QuotationsV3 from "../pages/v3/QuotationsV3";
-import OrdersV3 from "../pages/v3/OrdersV3";
-import SubscriptionPage from "../pages/v3/SubscriptionPage";
-import TenantLogin from "../pages/v3/TenantLogin";
 
 import AdminLayout from "../components/admin/AdminLayout";
 import AdminDashboard from "../pages/admin/AdminDashboard";
@@ -43,6 +33,7 @@ import AdminCreateTenant from "../pages/admin/AdminCreateTenant";
 import { AdminAuthProvider } from "../context/AdminAuthContext";
 import AdminLoginLegacy from "../pages/AdminLogin";
 import Error401 from "../pages/Error401";
+import JRDrogariaLanding from "../pages/landingpage/JRDrogariaLanding.tsx";
 
 export const router = createBrowserRouter([
     // =============================================
@@ -50,7 +41,7 @@ export const router = createBrowserRouter([
     // =============================================
     {
         path: "/",
-        element: <LandingPageLegacy />
+        element: <JRDrogariaLanding />
     },
     {
         path: 'login',
@@ -175,29 +166,6 @@ export const router = createBrowserRouter([
     {
         path: 'quote-open/:token',
         element: <AnonymousSupplierForm />
-    },
-    // =============================================
-    // CotaRodar v3 Routes - Nova plataforma SaaS
-    // =============================================
-    {
-        path: 'v3',
-        element: <CotaRodarLanding />
-    },
-    {
-        path: 'v3/login',
-        element: <TenantLogin />
-    },
-    {
-        path: 'v3/app',
-        element: <AppLayoutV3 />,
-        children: [
-            { index: true, element: <HomeV3 /> },
-            { path: 'products', element: <ProductsV3 /> },
-            { path: 'suppliers', element: <SuppliersV3 /> },
-            { path: 'quotations', element: <QuotationsV3 /> },
-            { path: 'orders', element: <OrdersV3 /> },
-            { path: 'subscription', element: <SubscriptionPage /> },
-        ]
     },
     {
         path: 'admin/login',

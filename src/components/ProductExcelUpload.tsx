@@ -3,7 +3,7 @@ import {useStore} from "../hooks/store.tsx";
 import {useToast} from "../hooks/use-toast.ts";
 import * as XLSX from "xlsx"
 import {Product} from "../types/types.ts";
-import {createMultipleProducts} from "../service/productService.ts";
+import {createMultipleProducts} from "../services/productService.ts";
 import {Button} from "./ui/button.tsx";
 import {Upload} from "lucide-react";
 import {

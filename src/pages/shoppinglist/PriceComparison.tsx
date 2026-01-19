@@ -9,7 +9,7 @@ import * as XLSX from 'xlsx';
 import { toast } from "../../hooks/use-toast";
 import { useParams} from "react-router-dom";
 import {IProductAndStock} from "../../types/types.ts";
-import {findOneShoppingList} from "../../service/shoppingListService.ts";
+import {findOneShoppingList} from "../../services/shoppingListService.ts";
 import {useStore} from "../../hooks/store.tsx";
 
 interface SupplierPrice {

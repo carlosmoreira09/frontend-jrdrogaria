@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { CreateQuotationPayload } from "../../types/quotation";
 import { useNavigate } from "react-router-dom";
 import { useCreateQuotation } from "../../hooks/useQuotations";
-import { listProducts } from "../../service/productService";
+import { listProducts } from "../../services/productService.ts";
 import { Product } from "../../types/types";
 import { Loader2, Trash2, Plus, ArrowLeft, Save, Search, Package, RotateCcw } from "lucide-react";
 import { Button } from "../../components/ui/button";

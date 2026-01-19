@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuotation, useGenerateSupplierLinks, useUpdateQuotation } from "../../hooks/useQuotations";
-import { listSuppliers } from "../../service/supplierService";
+import { listSuppliers } from "../../services/supplierService.ts";
 import { useQuery } from "@tanstack/react-query";
 import { SupplierQuotation, QuotationStatus, QuotationItem } from "../../types/quotation";
 import { Supplier } from "../../types/types";

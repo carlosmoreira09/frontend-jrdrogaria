@@ -6,7 +6,7 @@ import {useToast} from "../../hooks/use-toast.ts";
 import {Button} from "../../components/ui/button.tsx";
 import {useNavigate} from "react-router";
 import {Supplier} from "../../types/types.ts";
-import {deleteSupplier, listSuppliers} from "../../service/supplierService.ts";
+import {deleteSupplier, listSuppliers} from "../../services/supplierService.ts";
 
 const ShoppingList: React.FC = () => {
 

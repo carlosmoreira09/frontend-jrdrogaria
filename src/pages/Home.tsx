@@ -2,11 +2,11 @@ import React, {useEffect, useRef, useState} from "react"
 import Cards from "../components/Cards.tsx";
 import { Pill, ShoppingBag, Truck, Package, Sparkles } from "lucide-react";
 import {useStore} from "../hooks/store.tsx";
-import {getTotalAmount} from "../service/generalService.ts";
+import {getTotalAmount} from "../services/generalService.ts";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/ui/card.tsx";
 import { Button } from "../components/ui/button.tsx";
 import {IShoppingList} from "../types/types.ts";
-import {listShoppingLists} from "../service/shoppingListService.ts";
+import {listShoppingLists} from "../services/shoppingListService.ts";
 import ShoppingListTable from "./shoppinglist/ShoppingListTable.tsx";
 import {useNavigate} from "react-router";
 

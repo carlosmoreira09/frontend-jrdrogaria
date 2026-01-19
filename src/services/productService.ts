@@ -1,5 +1,5 @@
 import { isAxiosError } from "axios";
-import apiClient from "../lib/interceptor";
+import apiClient from "../lib/interceptor.ts";
 import {GeneralResponse, Product} from "../types/types.ts";
 
 

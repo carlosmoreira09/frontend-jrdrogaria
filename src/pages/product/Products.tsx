@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useToast } from "../../hooks/use-toast.ts";
 import { Product } from "../../types/types.ts";
-import { createProduct, deleteProduct, listProducts } from "../../service/productService.ts";
+import { createProduct, deleteProduct, listProducts } from "../../services/productService.ts";
 import ProductExcelUpload from "../../components/ProductExcelUpload.tsx";
 import { Button } from "../../components/ui/button.tsx";
 import {

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { quotationApi } from "../../services/quotationApi";
 import { orderApi } from "../../services/orderApi";
-import { getTotalAmount } from "../../service/generalService";
+import { getTotalAmount } from "../../services/generalService.ts";
 import { useStore } from "../../hooks/store";
 import {
   FileText,

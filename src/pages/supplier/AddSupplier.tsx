@@ -7,7 +7,7 @@ import {useStore} from "../../hooks/store.tsx";
 import {toast} from "../../hooks/use-toast.ts";
 import {useNavigate} from "react-router";
 import {Supplier} from "../../types/types.ts";
-import {createSupplier} from "../../service/supplierService.ts";
+import {createSupplier} from "../../services/supplierService.ts";
 
 const AddSupplier: React.FC = () => {
 

@@ -3,15 +3,15 @@ import { Button } from "../../components/ui/button"
 import { Label } from "../../components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card"
 import {IProductAndStock, IShoppingList, Product, Supplier} from "../../types/types";
-import {listProducts} from "../../service/productService";
+import {listProducts} from "../../services/productService.ts";
 import {useStore} from "../../hooks/store";
 import {toast} from "../../hooks/use-toast";
 import AutocompleteFilter from "../../components/ProductFilter";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "../../components/ui/table";
 import {Download, MessageSquare, Trash2, BarChart2, SaveIcon, AlertCircle, CheckCircle2} from "lucide-react";
-import {createShoppingList, updateShoppingList} from "../../service/shoppingListService";
+import {createShoppingList, updateShoppingList} from "../../services/shoppingListService.ts";
 import {exportLeadsToCSV, exportBestPrices} from "../../components/serverExportCsv";
-import {listSuppliers} from "../../service/supplierService";
+import {listSuppliers} from "../../services/supplierService.ts";
 import {
   Dialog,
   DialogContent,

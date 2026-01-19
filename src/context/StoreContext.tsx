@@ -1,7 +1,7 @@
 import React, {createContext, useEffect, useState} from "react";
 import Cookies from 'js-cookie';
 import {GeneralResponse, ITokenPayload} from "../types/types";
-import { loginService } from "../service/authService";
+import { loginService } from "../services/authService.ts";
 import {jwtDecode} from "jwt-decode";
 import {ProfileRole} from "../types/ProfileRole";
 

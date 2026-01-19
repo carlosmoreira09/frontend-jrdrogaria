@@ -5,7 +5,7 @@ import {format, parse} from "date-fns";
 import {ptBR} from "date-fns/locale";
 import {useNavigate} from "react-router";
 import {BadgeX} from "lucide-react";
-import { deleteShoppingList } from "../../service/shoppingListService";
+import { deleteShoppingList } from "../../services/shoppingListService.ts";
 import { useStore } from "../../hooks/store";
 import { toast } from "../../hooks/use-toast";
 import {

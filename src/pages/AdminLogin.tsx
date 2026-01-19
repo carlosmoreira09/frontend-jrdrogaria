@@ -6,6 +6,7 @@ import { Toaster, toast } from 'react-hot-toast';
 import {useStore} from "../hooks/store.tsx";
 import  logoLogin  from "../assets/logo.jpeg"
 import {ArrowLeft} from "lucide-react";
+import SEO from '../components/SEO';
 
 export default function AdminLogin() {
   const navigate = useNavigate();
@@ -70,7 +71,12 @@ export default function AdminLogin() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
   return (
-
+      <>
+      <SEO 
+        title="Login Administrativo"
+        description="Acesse a área administrativa da JR Drogaria. Sistema de gestão de cotações, pedidos e fornecedores."
+        url="/login"
+      />
       <div className="min-h-screen flex flex-col items-center justify-center light:bg-gray-100 dark:bg-black">
           <ArrowLeft
               className="fixed top-20 left-10 text-2xl cursor-pointer text-amber-700 mr-2"
@@ -81,7 +87,7 @@ export default function AdminLogin() {
           <div className="text-center">
             <img
                 src={logoLogin}
-                alt="LocMoto Logo"
+                alt="JR Drogaria Logo"
                 className="mx-auto w-64 h-auto mb-8"
             />
             <h2 className="text-2xl font-bold text-primary dark:text-black">Área Admin</h2>
@@ -129,5 +135,6 @@ export default function AdminLogin() {
         </div>
         <Toaster position="top-right"/>
       </div>
+      </>
   );
 }
